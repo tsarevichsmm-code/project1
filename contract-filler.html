@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Заполнение договора и спецификации — Mebel Grand</title>
+<meta name="description" content="Заполнение договора и спецификации Mebel Grand СПБ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/pizzip@3.1.7/dist/pizzip.js"></script>
+<script src="https://unpkg.com/docxtemplater@3.48.0/build/docxtemplater.js"></script>
+<style>
+:root{
+  --bg:#f4f3f0;--surface:#fff;--surface2:#f9f8f6;--surface3:#f1efe9;
+  --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.14);
+  --text:#1a1a18;--text2:#6b6b67;--text3:#a8a8a4;
+  --blue:#2355f5;--blue-bg:#eef1fe;--blue-text:#1a3db8;
+  --green:#1a9e6e;--green-bg:#e4f5ef;--green-text:#0f6847;
+  --amber:#d97706;--amber-bg:#fef3e2;--amber-text:#92520a;
+  --red:#dc2626;--red-bg:#fef2f2;--red-text:#991b1b;
+  --r:10px;--rl:14px;--font:'Golos Text',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+[data-theme=dark]{
+  --bg:#111110;--surface:#1c1c1a;--surface2:#242422;--surface3:#2b2b28;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --text:#f0efe9;--text2:#8f8f8a;--text3:#5a5a56;
+  --blue:#4f78ff;--blue-bg:#1a2040;--blue-text:#93aaff;
+  --green-bg:#0f2a1f;--green-text:#4fd4a0;
+  --amber-bg:#2a1f0a;--amber-text:#fbbf65;
+  --red-bg:#2a1010;--red-text:#f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:9px}
+.lm{width:28px;height:28px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lm svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2}
+.lt{font-size:15px;font-weight:600;letter-spacing:-.02em}
+.lt span{color:var(--blue)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ibtn{width:30px;height:30px;border:1px solid var(--border2);border-radius:7px;background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;flex-shrink:0;font-family:var(--font)}
+.ibtn:hover{background:var(--border);color:var(--text)}
+.content{padding:24px 16px 48px;min-height:calc(100vh - 52px)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;max-width:900px;margin:0 auto}
+.card-title{font-size:16px;font-weight:600;letter-spacing:-.02em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.sec{margin-bottom:18px}
+.sec-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.fg{margin-bottom:10px}
+.fl{font-size:11px;color:var(--text2);font-weight:500;display:block;margin-bottom:4px;letter-spacing:.02em;text-transform:uppercase}
+.fi,.fselect{width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;font-family:var(--font);transition:border-color .12s}
+.fi:focus,.fselect:focus{border-color:var(--blue)}
+.fi[readonly]{opacity:.8;cursor:not-allowed;border-style:dashed}
+.fi-auto{background:var(--blue-bg);color:var(--blue-text);border-color:rgba(35,85,245,.2)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1.3fr .7fr .8fr;gap:10px}
+.tpl-block,.info-block,.summary-block{background:var(--surface2);border:1px dashed var(--border2);border-radius:8px;padding:12px}
+.tpl-info{font-size:12px;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.tpl-name{font-size:12px;font-weight:500;color:var(--blue-text);margin-top:5px;display:none;word-break:break-all}
+.tpl-btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:7px 14px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--text);cursor:pointer;font-size:13px;font-family:var(--font);font-weight:500;transition:all .12s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--surface2)}
+.btn:active{transform:scale(.98)}
+.btn-p{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-p:hover{background:#1a44dd;border-color:#1a44dd}
+.btn-d{color:var(--red-text);border-color:currentColor}
+.btn-d:hover{background:var(--red-bg)}
+.btn-s{padding:5px 11px;font-size:12px;border-radius:7px}
+.btn-gen{width:100%;padding:12px;font-size:14px;font-weight:600;justify-content:center;border-radius:var(--r);margin-top:16px}
+.auto-badge{font-size:9px;background:var(--blue-bg);color:var(--blue-text);border-radius:20px;padding:1px 6px;font-weight:600;letter-spacing:.03em;margin-left:4px;vertical-align:middle}
+.detail{border:1px solid var(--border);border-radius:10px;background:var(--surface2);overflow:hidden}
+.detail + .detail{margin-top:10px}
+.detail summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.detail summary::-webkit-details-marker{display:none}
+.detail summary span:last-child{color:var(--text2);font-size:12px;font-weight:500}
+.detail-body{padding:0 14px 14px}
+.spec-items{display:grid;gap:10px}
+.spec-item{border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:12px}
+.spec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.spec-title{font-size:13px;font-weight:600}
+.file-state{font-size:12px;color:var(--text2);word-break:break-word}
+.file-state.ok{color:var(--green-text)}
+.hint{font-size:12px;color:var(--text2)}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--amber-text);background:var(--amber-bg);border-radius:999px;padding:4px 8px}
+.tco{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.to{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:10px 16px;font-size:13px;font-weight:500;animation:tin .2s ease;max-width:340px}
+.to.s{border-left:3px solid var(--green)}
+.to.e{border-left:3px solid var(--red)}
+.to.i{border-left:3px solid var(--blue)}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:5px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:6px}
+@media (max-width:760px){
+  .card{padding:16px}
+  .grid2,.grid3,.summary-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">
+    <div class="lm"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><path d="M9 12h6M12 9v6"/></svg></div>
+    <div class="lt">Мебель<span>Гранд</span></div>
+  </div>
+  <div class="topbar-right">
+    <span style="font-size:12px;color:var(--text3)">Договор и спецификация</span>
+    <button class="ibtn" onclick="toggleTheme()" title="Тема">◑</button>
+  </div>
+</div>
+
+<div class="content">
+  <div class="card">
+    <div class="card-title">📋 Заполнение договора и спецификации</div>
+
+    <div class="sec">
+      <div class="sec-label">Договор</div>
+      <div class="grid2">
+        <div class="fg">
+          <label class="fl" for="contract_number">Номер договора</label>
+          <input class="fi" id="contract_number" type="text" placeholder="2025-001">
+        </div>
+        <div class="fg">
+          <label class="fl" for="contract_date">Дата <span class="auto-badge">авто</span></label>
+          <input class="fi fi-auto" id="contract_date" type="text" readonly>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">Клиент</div>
+      <div class="fg">
+        <label class="fl" for="client_name">ФИО клиента</label>
+        <input class="fi" id="client_name" type="text" placeholder="Иванов Иван Петрович">
+      </div>
+      <div class="fg">
+        <label class="fl" for="passport">Паспорт</label>
+        <input class="fi" id="passport" type="text" placeholder="4510 123456, выдан УФМС...">
+      </div>
+      <div class="fg">
+        <label class="fl" for="registration">Адрес регистрации</label>
+        <input class="fi" id="registration" type="text" placeholder="г. Санкт-Петербург, ул. Примерная, д. 1">
+      </div>
+      <div class="fg">
+        <label class="fl" for="delivery">Адрес доставки</label>
+        <input class="fi" id="delivery" type="text" placeholder="г. Санкт-Петербург, ул. Доставки, д. 2">
+      </div>
+      <div class="grid2">
+        <div class="fg">
+          <label class="fl" for="phone">Телефон</label>
+          <input class="fi" id="phone" type="tel" placeholder="+7 900 000-00-00">
+        </div>
+        <div class="fg">
+          <label class="fl" for="email">Email</label>
+          <input class="fi" id="email" type="email" placeholder="client@mail.ru">
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">Финансы</div>
+      <div class="grid2">
+        <div class="fg">
+          <label class="fl" for="amount">Сумма (₽)</label>
+          <input class="fi" id="amount" type="number" placeholder="150000" min="0">
+        </div>
+        <div class="fg">
+          <label class="fl" for="amount_words">Сумма прописью <span class="auto-badge">авто</span></label>
+          <input class="fi fi-auto" id="amount_words" type="text" readonly>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="fg">
+          <label class="fl" for="prepayment">Предоплата (₽)</label>
+          <input class="fi" id="prepayment" type="number" placeholder="50000" min="0">
+        </div>
+        <div class="fg">
+          <label class="fl" for="prepayment_words">Предоплата прописью <span class="auto-badge">авто</span></label>
+          <input class="fi fi-auto" id="prepayment_words" type="text" readonly>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">Подпись</div>
+      <div class="fg">
+        <label class="fl" for="initials">Инициалы клиента <span class="auto-badge">авто</span></label>
+        <input class="fi fi-auto" id="initials" type="text" readonly placeholder="Заполните ФИО выше">
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-label">Шаблоны</div>
+      <div class="grid2">
+        <div class="tpl-block">
+          <div class="tpl-info">📄 <span id="contract_tpl_label">Стандартный шаблон договора</span></div>
+          <div class="tpl-name" id="contract_tpl_name"></div>
+          <div class="tpl-btns">
+            <button class="btn btn-s" type="button" onclick="document.getElementById('contract_tpl_file').click()">📎 Загрузить свой .docx</button>
+            <button class="btn btn-s btn-d" type="button" id="contract_tpl_reset" style="display:none" onclick="resetContractTemplate()">✕ Сбросить</button>
+          </div>
+          <input type="file" id="contract_tpl_file" accept=".docx" style="display:none">
+        </div>
+        <div class="tpl-block">
+          <div class="tpl-info">📄 <span id="spec_tpl_label">Стандартный шаблон спецификации</span></div>
+          <div class="tpl-name" id="spec_tpl_name"></div>
+          <div class="tpl-btns">
+            <button class="btn btn-s" type="button" onclick="document.getElementById('spec_tpl_file').click()">📎 Загрузить свой .docx</button>
+            <button class="btn btn-s btn-d" type="button" id="spec_tpl_reset" style="display:none" onclick="resetSpecTemplate()">✕ Сбросить</button>
+          </div>
+          <input type="file" id="spec_tpl_file" accept=".docx" style="display:none">
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <details class="detail">
+        <summary>
+          <span>Спецификация "Мебель Гранд СПБ"</span>
+          <span>заполняется после договора</span>
+        </summary>
+        <div class="detail-body">
+          <div class="sec" style="margin-top:12px">
+            <div class="sec-label">Общие параметры</div>
+            <div class="grid3">
+              <div class="fg">
+                <label class="fl" for="assembly_percent">Процент сборки</label>
+                <input class="fi" id="assembly_percent" type="number" min="0" step="0.01" placeholder="10">
+              </div>
+              <div class="fg">
+                <label class="fl" for="spec_total">Общая сумма спец <span class="auto-badge">авто</span></label>
+                <input class="fi fi-auto" id="spec_total" type="text" readonly>
+              </div>
+              <div class="fg">
+                <label class="fl" for="assembly_total">Процент от общей суммы спец <span class="auto-badge">авто</span></label>
+                <input class="fi fi-auto" id="assembly_total" type="text" readonly>
+              </div>
+            </div>
+            <div class="info-block">
+              <div class="pill">Важно</div>
+              <div class="hint" style="margin-top:8px">
+                Если изображение не загружено, в спецификацию автоматически подставляется прочерк. Картинки хранятся только в браузере и сразу встраиваются в итоговый `.docx`.
+              </div>
+            </div>
+          </div>
+
+          <details class="detail" open>
+            <summary>
+              <span>10 товарных позиций и загрузка картинок</span>
+              <span>картинки, количество, сумма</span>
+            </summary>
+            <div class="detail-body" style="padding-top:12px">
+              <div class="spec-items" id="spec_items"></div>
+            </div>
+          </details>
+        </div>
+      </details>
+    </div>
+
+    <button class="btn btn-p btn-gen" id="btn_gen" type="button" onclick="generateAllDocuments()">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v9M4 7l4 4 4-4M2 14h12"/></svg>
+      Скачать договор и спецификацию
+    </button>
+  </div>
+</div>
+
+<div class="tco" id="tco"></div>
+
+<script>
+const CONTRACT_TEMPLATE_PATH = './Договор mebel_grand СПБ.docx';
+const SPEC_TEMPLATE_PATH = './Спецификая_Мебель_Гранд СПБ.docx';
+const SPEC_ITEM_COUNT = 10;
+const MAX_QUANTITY = 15;
+const DASH = '—';
+const IMAGE_MAX_WIDTH_PX = 160;
+const IMAGE_MAX_HEIGHT_PX = 110;
+const EMU_PER_PX = 9525;
+
+let customContractTemplate = null;
+let customSpecTemplate = null;
+const specState = {
+  assemblyPercent: '',
+  items: Array.from({length: SPEC_ITEM_COUNT}, (_, index) => ({
+    index: index + 1,
+    quantity: 1,
+    amount: '',
+    file: null,
+    fileName: ''
+  }))
+};
+
+function toggleTheme(){
+  const nextTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('cf_theme', nextTheme);
+}
+document.body.setAttribute('data-theme', localStorage.getItem('cf_theme') || 'light');
+
+function toast(msg, type='s'){
+  const el = document.createElement('div');
+  el.className = 'to ' + type;
+  el.textContent = msg;
+  document.getElementById('tco').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+function numberToWords(n){
+  n = Math.floor(Math.abs(n));
+  if(n === 0) return 'ноль';
+  const ones = ['', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'];
+  const onesF = ['', 'одна', 'две', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'];
+  const teens = ['десять', 'одиннадцать', 'двенадцать', 'тринадцать', 'четырнадцать', 'пятнадцать', 'шестнадцать', 'семнадцать', 'восемнадцать', 'девятнадцать'];
+  const tens = ['', '', 'двадцать', 'тридцать', 'сорок', 'пятьдесят', 'шестьдесят', 'семьдесят', 'восемьдесят', 'девяносто'];
+  const hundreds = ['', 'сто', 'двести', 'триста', 'четыреста', 'пятьсот', 'шестьсот', 'семьсот', 'восемьсот', 'девятьсот'];
+
+  function triplet(num, female){
+    let result = '';
+    const h = Math.floor(num / 100);
+    const t = Math.floor((num % 100) / 10);
+    const o = num % 10;
+    if(h) result += hundreds[h] + ' ';
+    if(t === 1){
+      result += teens[o] + ' ';
+    }else{
+      if(t) result += tens[t] + ' ';
+      if(o) result += (female ? onesF : ones)[o] + ' ';
+    }
+    return result;
+  }
+
+  function plural(num, one, two, five){
+    const mod100 = num % 100;
+    const mod10 = num % 10;
+    if(mod100 >= 11 && mod100 <= 19) return five;
+    if(mod10 === 1) return one;
+    if(mod10 >= 2 && mod10 <= 4) return two;
+    return five;
+  }
+
+  let result = '';
+  const millions = Math.floor(n / 1000000);
+  const thousands = Math.floor((n % 1000000) / 1000);
+  const rest = n % 1000;
+  if(millions) result += triplet(millions, false) + plural(millions, 'миллион', 'миллиона', 'миллионов') + ' ';
+  if(thousands) result += triplet(thousands, true) + plural(thousands, 'тысяча', 'тысячи', 'тысяч') + ' ';
+  if(rest) result += triplet(rest, false);
+  return result.trim();
+}
+
+function formatDate(){
+  const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+  const d = new Date();
+  return '«' + String(d.getDate()).padStart(2, '0') + '» ' + months[d.getMonth()] + ' ' + d.getFullYear() + ' г.';
+}
+
+function getInitials(fullName){
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if(!parts.length) return '';
+  if(parts.length === 1) return parts[0];
+  const surname = parts[0];
+  const initials = parts.slice(1).map(part => part[0].toUpperCase() + '.').join('');
+  return initials + ' ' + surname;
+}
+
+function formatNumber(value){
+  return Number(value).toLocaleString('ru-RU');
+}
+
+function formatMoneyValue(value){
+  return value ? formatNumber(value) + ' руб.' : DASH;
+}
+
+function normalizeNumber(value){
+  const normalized = String(value || '').replace(',', '.').trim();
+  if(!normalized) return 0;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function setAutoFields(){
+  document.getElementById('contract_date').value = formatDate();
+}
+
+function buildQuantityOptions(selected){
+  let options = '';
+  for(let i = 1; i <= MAX_QUANTITY; i++){
+    options += '<option value="' + i + '"' + (i === selected ? ' selected' : '') + '>' + i + '</option>';
+  }
+  return options;
+}
+
+function renderSpecItems(){
+  const container = document.getElementById('spec_items');
+  container.innerHTML = specState.items.map((item) => (
+    '<div class="spec-item">' +
+      '<div class="spec-head">' +
+        '<div class="spec-title">Позиция ' + item.index + '</div>' +
+        '<div class="file-state' + (item.file ? ' ok' : '') + '" id="file_state_' + item.index + '">' + (item.file ? 'Файл: ' + escapeHtml(item.fileName) : 'Изображение не выбрано, будет прочерк') + '</div>' +
+      '</div>' +
+      '<div class="grid3">' +
+        '<div class="fg">' +
+          '<label class="fl" for="image_' + item.index + '">Картинка</label>' +
+          '<input class="fi" id="image_' + item.index + '" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg">' +
+        '</div>' +
+        '<div class="fg">' +
+          '<label class="fl" for="quantity_' + item.index + '">Единица товара</label>' +
+          '<select class="fselect" id="quantity_' + item.index + '">' + buildQuantityOptions(item.quantity) + '</select>' +
+        '</div>' +
+        '<div class="fg">' +
+          '<label class="fl" for="amount_' + item.index + '">Сумма спец</label>' +
+          '<input class="fi" id="amount_' + item.index + '" type="number" min="0" step="0.01" value="' + escapeHtml(item.amount) + '" placeholder="0">' +
+        '</div>' +
+      '</div>' +
+    '</div>'
+  )).join('');
+
+  specState.items.forEach((item) => {
+    document.getElementById('image_' + item.index).addEventListener('change', (event) => {
+      const file = event.target.files[0] || null;
+      item.file = file;
+      item.fileName = file ? file.name : '';
+      updateFileState(item.index);
+      event.target.value = '';
+    });
+    document.getElementById('quantity_' + item.index).addEventListener('change', (event) => {
+      item.quantity = Number(event.target.value) || 1;
+    });
+    document.getElementById('amount_' + item.index).addEventListener('input', (event) => {
+      item.amount = event.target.value;
+      updateSpecTotals();
+    });
+  });
+}
+
+function escapeHtml(value){
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function updateFileState(index){
+  const item = specState.items[index - 1];
+  const node = document.getElementById('file_state_' + index);
+  if(!node) return;
+  node.textContent = item.file ? ('Файл: ' + item.fileName) : 'Изображение не выбрано, будет прочерк';
+  node.className = 'file-state' + (item.file ? ' ok' : '');
+}
+
+function updateSpecTotals(){
+  specState.assemblyPercent = document.getElementById('assembly_percent').value;
+  const total = specState.items.reduce((sum, item) => sum + normalizeNumber(item.amount), 0);
+  const percent = normalizeNumber(specState.assemblyPercent);
+  const assembly = total * percent / 100;
+  document.getElementById('spec_total').value = total ? formatNumber(total) + ' руб.' : '';
+  document.getElementById('assembly_total').value = assembly ? formatNumber(assembly) + ' руб.' : '';
+  return {total, percent, assembly};
+}
+
+function bindAutoFields(){
+  document.getElementById('client_name').addEventListener('input', function(){
+    document.getElementById('initials').value = getInitials(this.value);
+  });
+  document.getElementById('amount').addEventListener('input', function(){
+    const number = parseInt(this.value, 10) || 0;
+    document.getElementById('amount_words').value = number ? numberToWords(number) + ' рублей' : '';
+  });
+  document.getElementById('prepayment').addEventListener('input', function(){
+    const number = parseInt(this.value, 10) || 0;
+    document.getElementById('prepayment_words').value = number ? numberToWords(number) + ' рублей' : '';
+  });
+  document.getElementById('assembly_percent').addEventListener('input', updateSpecTotals);
+}
+
+function bindTemplateInputs(){
+  document.getElementById('contract_tpl_file').addEventListener('change', function(event){
+    handleTemplateUpload(event.target.files[0], 'contract');
+    this.value = '';
+  });
+  document.getElementById('spec_tpl_file').addEventListener('change', function(event){
+    handleTemplateUpload(event.target.files[0], 'spec');
+    this.value = '';
+  });
+}
+
+function handleTemplateUpload(file, type){
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(event){
+    if(type === 'contract'){
+      customContractTemplate = event.target.result;
+      document.getElementById('contract_tpl_label').textContent = 'Кастомный шаблон договора:';
+      document.getElementById('contract_tpl_name').textContent = file.name;
+      document.getElementById('contract_tpl_name').style.display = 'block';
+      document.getElementById('contract_tpl_reset').style.display = 'inline-flex';
+    }else{
+      customSpecTemplate = event.target.result;
+      document.getElementById('spec_tpl_label').textContent = 'Кастомный шаблон спецификации:';
+      document.getElementById('spec_tpl_name').textContent = file.name;
+      document.getElementById('spec_tpl_name').style.display = 'block';
+      document.getElementById('spec_tpl_reset').style.display = 'inline-flex';
+    }
+    toast('Шаблон загружен: ' + file.name, 'i');
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function resetContractTemplate(){
+  customContractTemplate = null;
+  document.getElementById('contract_tpl_label').textContent = 'Стандартный шаблон договора';
+  document.getElementById('contract_tpl_name').style.display = 'none';
+  document.getElementById('contract_tpl_reset').style.display = 'none';
+  toast('Сброшен шаблон договора', 'i');
+}
+
+function resetSpecTemplate(){
+  customSpecTemplate = null;
+  document.getElementById('spec_tpl_label').textContent = 'Стандартный шаблон спецификации';
+  document.getElementById('spec_tpl_name').style.display = 'none';
+  document.getElementById('spec_tpl_reset').style.display = 'none';
+  toast('Сброшен шаблон спецификации', 'i');
+}
+
+async function loadTemplate(path, customBuffer){
+  if(customBuffer){
+    return new PizZip(customBuffer);
+  }
+  const response = await fetch(path);
+  if(!response.ok){
+    throw new Error('Не удалось загрузить шаблон: ' + path);
+  }
+  return new PizZip(await response.arrayBuffer());
+}
+
+function getContractRenderData(){
+  const clientName = document.getElementById('client_name').value.trim();
+  const amountValue = normalizeNumber(document.getElementById('amount').value);
+  const prepaymentValue = normalizeNumber(document.getElementById('prepayment').value);
+  return {
+    'Номер_договора': document.getElementById('contract_number').value.trim() || DASH,
+    'Дата_договора': document.getElementById('contract_date').value,
+    'ФИО_клиента': clientName || DASH,
+    'Сумма_цифрами': amountValue ? formatNumber(amountValue) + ' руб.' : DASH,
+    'Сумма_прописью': document.getElementById('amount_words').value || DASH,
+    'Предоплата_цифрами': prepaymentValue ? formatNumber(prepaymentValue) + ' руб.' : DASH,
+    'Предоплата_прописью': document.getElementById('prepayment_words').value || DASH,
+    'Паспорт': document.getElementById('passport').value.trim() || DASH,
+    'Адрес_регистрации': document.getElementById('registration').value.trim() || DASH,
+    'Адрес_доставки': document.getElementById('delivery').value.trim() || DASH,
+    'Телефон': document.getElementById('phone').value.trim() || DASH,
+    'Email': document.getElementById('email').value.trim() || DASH,
+    'Инициалы_Фамилия': document.getElementById('initials').value.trim() || DASH
+  };
+}
+
+function getSpecRenderData(contractData){
+  const {total, percent, assembly} = updateSpecTotals();
+  const data = {
+    'Дата_договора': contractData['Дата_договора'],
+    'ФИО_клиента': contractData['ФИО_клиента'],
+    'Паспорт': contractData['Паспорт'],
+    'Инициалы_Фамилия': contractData['Инициалы_Фамилия'],
+    'Общая сумма спец': total ? formatNumber(total) + ' руб.' : DASH,
+    'Процент сборки': String(document.getElementById('assembly_percent').value || '').trim() ? String(document.getElementById('assembly_percent').value).trim() + '%' : DASH,
+    'Процент от общей суммы спец': assembly ? formatNumber(assembly) + ' руб.' : DASH
+  };
+
+  specState.items.forEach((item) => {
+    const suffix = String(item.index);
+    data['единица товара_' + suffix] = item.quantity || 1;
+    data['Сумма спец_' + suffix] = normalizeNumber(item.amount) ? formatNumber(normalizeNumber(item.amount)) + ' руб.' : DASH;
+    data['Если картинки нет то прочерк_' + suffix] = item.file ? '' : DASH;
+  });
+
+  return data;
+}
+
+function createDoc(zipData, renderData){
+  const doc = new window.docxtemplater(zipData, {
+    paragraphLoop: true,
+    delimiters: {start: '{{', end: '}}'},
+    nullGetter: function(){ return ''; }
+  });
+  doc.render(renderData);
+  return doc;
+}
+
+function blobToDownload(blob, fileName){
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function getSafeClientToken(){
+  const raw = document.getElementById('client_name').value.trim().split(/\s+/)[0] || 'клиент';
+  return raw.replace(/[^a-zA-Zа-яА-Я0-9]/g, '_');
+}
+
+function getSafeContractToken(){
+  const raw = document.getElementById('contract_number').value.trim();
+  return raw ? '_' + raw.replace(/[^a-zA-Zа-яА-Я0-9]/g, '_') : '';
+}
+
+async function generateContractDocument(contractData){
+  const zipData = await loadTemplate(CONTRACT_TEMPLATE_PATH, customContractTemplate);
+  const doc = createDoc(zipData, contractData);
+  const out = doc.getZip().generate({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  });
+  return {
+    blob: out,
+    fileName: 'Договор_' + getSafeClientToken() + getSafeContractToken() + '.docx'
+  };
+}
+
+function escapeRegExp(value){
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function getImageExtension(file){
+  const name = (file.name || '').toLowerCase();
+  if(name.endsWith('.png')) return 'png';
+  if(name.endsWith('.jpg')) return 'jpg';
+  if(name.endsWith('.jpeg')) return 'jpeg';
+  throw new Error('Поддерживаются только PNG и JPG/JPEG');
+}
+
+function getImageMime(extension){
+  if(extension === 'png') return 'image/png';
+  if(extension === 'jpg' || extension === 'jpeg') return 'image/jpeg';
+  throw new Error('Неподдерживаемый формат изображения');
+}
+
+async function readImageInfo(file){
+  const extension = getImageExtension(file);
+  const buffer = await file.arrayBuffer();
+  const img = await new Promise((resolve, reject) => {
+    const image = new Image();
+    const url = URL.createObjectURL(file);
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Не удалось прочитать изображение: ' + file.name));
+    };
+    image.src = url;
+  });
+  return {
+    extension,
+    mime: getImageMime(extension),
+    bytes: new Uint8Array(buffer),
+    width: img.naturalWidth,
+    height: img.naturalHeight,
+    fileName: file.name
+  };
+}
+
+function fitImageSize(width, height){
+  if(!width || !height){
+    return {widthPx: IMAGE_MAX_WIDTH_PX, heightPx: IMAGE_MAX_HEIGHT_PX};
+  }
+  const ratio = Math.min(1, IMAGE_MAX_WIDTH_PX / width, IMAGE_MAX_HEIGHT_PX / height);
+  return {
+    widthPx: Math.max(1, Math.round(width * ratio)),
+    heightPx: Math.max(1, Math.round(height * ratio))
+  };
+}
+
+function ensureContentType(zip, extension, mime){
+  let xml = zip.file('[Content_Types].xml').asText();
+  const pattern = new RegExp('Extension="' + escapeRegExp(extension) + '"', 'i');
+  if(!pattern.test(xml)){
+    xml = xml.replace('</Types>', '<Default Extension="' + extension + '" ContentType="' + mime + '"/></Types>');
+    zip.file('[Content_Types].xml', xml);
+  }
+}
+
+function addImageRelationship(zip, index, info){
+  const relsPath = 'word/_rels/document.xml.rels';
+  let relsXml = zip.file(relsPath).asText();
+  const relMatches = [...relsXml.matchAll(/Id="rId(\d+)"/g)];
+  const nextIdNumber = relMatches.reduce((max, match) => Math.max(max, Number(match[1])), 0) + 1;
+  const rId = 'rId' + nextIdNumber;
+  const target = 'media/spec_image_' + index + '.' + info.extension;
+  const relation = '<Relationship Id="' + rId + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="' + target + '"/>';
+  relsXml = relsXml.replace('</Relationships>', relation + '</Relationships>');
+  zip.file(relsPath, relsXml);
+  zip.file('word/' + target, info.bytes);
+  ensureContentType(zip, info.extension, info.mime);
+  return rId;
+}
+
+function buildDrawingXml(rId, index, info){
+  const fitted = fitImageSize(info.width, info.height);
+  const widthEmu = fitted.widthPx * EMU_PER_PX;
+  const heightEmu = fitted.heightPx * EMU_PER_PX;
+  const docPrId = 1000 + index;
+  const fileName = escapeXml(info.fileName || ('image_' + index));
+  return (
+    '<w:r>' +
+      '<w:drawing>' +
+        '<wp:inline distT="0" distB="0" distL="0" distR="0">' +
+          '<wp:extent cx="' + widthEmu + '" cy="' + heightEmu + '"/>' +
+          '<wp:effectExtent l="0" t="0" r="0" b="0"/>' +
+          '<wp:docPr id="' + docPrId + '" name="Picture ' + index + '" descr="' + fileName + '"/>' +
+          '<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
+          '<a:graphic>' +
+            '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+              '<pic:pic>' +
+                '<pic:nvPicPr>' +
+                  '<pic:cNvPr id="' + docPrId + '" name="' + fileName + '"/>' +
+                  '<pic:cNvPicPr/>' +
+                '</pic:nvPicPr>' +
+                '<pic:blipFill>' +
+                  '<a:blip r:embed="' + rId + '"/>' +
+                  '<a:stretch><a:fillRect/></a:stretch>' +
+                '</pic:blipFill>' +
+                '<pic:spPr>' +
+                  '<a:xfrm>' +
+                    '<a:off x="0" y="0"/>' +
+                    '<a:ext cx="' + widthEmu + '" cy="' + heightEmu + '"/>' +
+                  '</a:xfrm>' +
+                  '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>' +
+                '</pic:spPr>' +
+              '</pic:pic>' +
+            '</a:graphicData>' +
+          '</a:graphic>' +
+        '</wp:inline>' +
+      '</w:drawing>' +
+    '</w:r>'
+  );
+}
+
+function escapeXml(value){
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function replaceImageParagraph(xml, tagName, drawingXml){
+  const pattern = new RegExp('<w:p\\b[\\s\\S]*?<w:t[^>]*>`?\\{%'+ escapeRegExp(tagName) +'\\}`?<\\/w:t>[\\s\\S]*?<\\/w:p>');
+  return xml.replace(pattern, function(match){
+    const pPrMatch = match.match(/<w:pPr[\s\S]*?<\/w:pPr>/);
+    const pPr = pPrMatch ? pPrMatch[0] : '';
+    const run = drawingXml || '<w:r/>';
+    return '<w:p>' + pPr + run + '</w:p>';
+  });
+}
+
+async function applyImagesToSpecZip(zip){
+  let documentXml = zip.file('word/document.xml').asText();
+  for(const item of specState.items){
+    const tagName = 'Картинка_' + item.index;
+    if(item.file){
+      const info = await readImageInfo(item.file);
+      const rId = addImageRelationship(zip, item.index, info);
+      const drawingXml = buildDrawingXml(rId, item.index, info);
+      const nextXml = replaceImageParagraph(documentXml, tagName, drawingXml);
+      if(nextXml === documentXml){
+        throw new Error('Не найден image-тег ' + tagName + ' в шаблоне спецификации');
+      }
+      documentXml = nextXml;
+    }else{
+      const nextXml = replaceImageParagraph(documentXml, tagName, '');
+      if(nextXml === documentXml){
+        throw new Error('Не найден image-тег ' + tagName + ' в шаблоне спецификации');
+      }
+      documentXml = nextXml;
+    }
+  }
+  zip.file('word/document.xml', documentXml);
+}
+
+async function generateSpecDocument(contractData){
+  const zipData = await loadTemplate(SPEC_TEMPLATE_PATH, customSpecTemplate);
+  const doc = createDoc(zipData, getSpecRenderData(contractData));
+  const zip = doc.getZip();
+  await applyImagesToSpecZip(zip);
+  const out = zip.generate({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  });
+  return {
+    blob: out,
+    fileName: 'Спецификация_' + getSafeClientToken() + getSafeContractToken() + '.docx'
+  };
+}
+
+function validateBeforeGenerate(){
+  const clientName = document.getElementById('client_name').value.trim();
+  const passport = document.getElementById('passport').value.trim();
+  if(!clientName){
+    throw new Error('Заполните ФИО клиента');
+  }
+  if(!passport){
+    throw new Error('Заполните паспорт');
+  }
+  if(!document.getElementById('assembly_percent').value.trim()){
+    throw new Error('Заполните процент сборки');
+  }
+}
+
+async function generateAllDocuments(){
+  const btn = document.getElementById('btn_gen');
+  const previousHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.textContent = '⏳ Генерирую документы...';
+  try{
+    validateBeforeGenerate();
+    const contractData = getContractRenderData();
+    const contractResult = await generateContractDocument(contractData);
+    const specResult = await generateSpecDocument(contractData);
+    blobToDownload(contractResult.blob, contractResult.fileName);
+    setTimeout(() => blobToDownload(specResult.blob, specResult.fileName), 200);
+    toast('Скачаны два файла: договор и спецификация', 's');
+  }catch(error){
+    console.error(error);
+    toast('Ошибка: ' + error.message, 'e');
+  }finally{
+    btn.disabled = false;
+    btn.innerHTML = previousHtml;
+  }
+}
+
+setAutoFields();
+bindAutoFields();
+bindTemplateInputs();
+renderSpecItems();
+updateSpecTotals();
+</script>
+</body>
+</html>
