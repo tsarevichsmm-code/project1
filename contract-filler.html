@@ -750,6 +750,19 @@ function escapeXml(value){
     .replace(/'/g, '&apos;');
 }
 
+function ensureDrawingNamespaces(xml){
+  const documentTagMatch = xml.match(/<w:document\b[^>]*>/);
+  if(!documentTagMatch) return xml;
+  let documentTag = documentTagMatch[0];
+  if(!documentTag.includes('xmlns:a=')){
+    documentTag = documentTag.replace('<w:document', '<w:document xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"');
+  }
+  if(!documentTag.includes('xmlns:pic=')){
+    documentTag = documentTag.replace('<w:document', '<w:document xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"');
+  }
+  return xml.replace(documentTagMatch[0], documentTag);
+}
+
 function replaceImageParagraph(xml, tagName, drawingXml){
   const paragraphPattern = /<w:p\b[\s\S]*?<\/w:p>/g;
   const candidates = ['{%' + tagName + '}', '`{%' + tagName + '}`'];
@@ -770,6 +783,7 @@ function replaceImageParagraph(xml, tagName, drawingXml){
 
 async function applyImagesToSpecZip(zip){
   let documentXml = zip.file('word/document.xml').asText();
+  documentXml = ensureDrawingNamespaces(documentXml);
   for(const item of specState.items){
     const tagName = 'Картинка_' + item.index;
     if(item.file){
