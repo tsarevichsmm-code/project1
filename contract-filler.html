@@ -77,11 +77,13 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .spec-item{border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:12px}
 .spec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .spec-title{font-size:13px;font-weight:600}
+.spec-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .file-state{font-size:12px;color:var(--text2);word-break:break-word}
 .file-state.ok{color:var(--green-text)}
 .hint{font-size:12px;color:var(--text2)}
 .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--amber-text);background:var(--amber-bg);border-radius:999px;padding:4px 8px}
+.muted-link{font-size:12px;color:var(--text2)}
 .tco{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
 .to{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:10px 16px;font-size:13px;font-weight:500;animation:tin .2s ease;max-width:340px}
 .to.s{border-left:3px solid var(--green)}
@@ -193,7 +195,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
       <div class="sec-label">Шаблоны</div>
       <div class="grid2">
         <div class="tpl-block">
-          <div class="tpl-info">📄 <span id="contract_tpl_label">Стандартный шаблон договора</span></div>
+          <div class="tpl-info">📄 <span id="contract_tpl_label">Шаблон договора из папки проекта</span></div>
           <div class="tpl-name" id="contract_tpl_name"></div>
           <div class="tpl-btns">
             <button class="btn btn-s" type="button" onclick="document.getElementById('contract_tpl_file').click()">📎 Загрузить свой .docx</button>
@@ -202,7 +204,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
           <input type="file" id="contract_tpl_file" accept=".docx" style="display:none">
         </div>
         <div class="tpl-block">
-          <div class="tpl-info">📄 <span id="spec_tpl_label">Стандартный шаблон спецификации</span></div>
+          <div class="tpl-info">📄 <span id="spec_tpl_label">Шаблон спецификации из папки проекта</span></div>
           <div class="tpl-name" id="spec_tpl_name"></div>
           <div class="tpl-btns">
             <button class="btn btn-s" type="button" onclick="document.getElementById('spec_tpl_file').click()">📎 Загрузить свой .docx</button>
@@ -225,7 +227,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
             <div class="grid3">
               <div class="fg">
                 <label class="fl" for="assembly_percent">Процент сборки</label>
-                <input class="fi" id="assembly_percent" type="number" min="0" step="0.01" placeholder="10">
+                <input class="fi" id="assembly_percent" type="number" min="0" step="0.01" value="13" placeholder="13">
               </div>
               <div class="fg">
                 <label class="fl" for="spec_total">Общая сумма спец <span class="auto-badge">авто</span></label>
@@ -247,9 +249,13 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
           <details class="detail" open>
             <summary>
               <span>10 товарных позиций и загрузка картинок</span>
-              <span>картинки, количество, сумма</span>
+              <span>добавляйте по мере необходимости</span>
             </summary>
             <div class="detail-body" style="padding-top:12px">
+              <div class="tpl-btns" style="margin-bottom:10px">
+                <button class="btn btn-s" type="button" id="add_spec_item_btn" onclick="addSpecItem()">＋ Добавить позицию товара</button>
+                <span class="muted-link" id="spec_item_counter">Показана 1 из 10 позиций</span>
+              </div>
               <div class="spec-items" id="spec_items"></div>
             </div>
           </details>
@@ -272,14 +278,15 @@ const SPEC_TEMPLATE_PATH = './Спецификая_Мебель_Гранд СП�
 const SPEC_ITEM_COUNT = 10;
 const MAX_QUANTITY = 15;
 const DASH = '—';
-const IMAGE_MAX_WIDTH_PX = 160;
-const IMAGE_MAX_HEIGHT_PX = 110;
+const IMAGE_MAX_WIDTH_PX = 260;
+const IMAGE_MAX_HEIGHT_PX = 180;
 const EMU_PER_PX = 9525;
 
 let customContractTemplate = null;
 let customSpecTemplate = null;
 const specState = {
-  assemblyPercent: '',
+  assemblyPercent: '13',
+  visibleItems: 1,
   items: Array.from({length: SPEC_ITEM_COUNT}, (_, index) => ({
     index: index + 1,
     quantity: 1,
@@ -391,11 +398,14 @@ function buildQuantityOptions(selected){
 
 function renderSpecItems(){
   const container = document.getElementById('spec_items');
-  container.innerHTML = specState.items.map((item) => (
+  container.innerHTML = specState.items.slice(0, specState.visibleItems).map((item) => (
     '<div class="spec-item">' +
       '<div class="spec-head">' +
         '<div class="spec-title">Позиция ' + item.index + '</div>' +
-        '<div class="file-state' + (item.file ? ' ok' : '') + '" id="file_state_' + item.index + '">' + (item.file ? 'Файл: ' + escapeHtml(item.fileName) : 'Изображение не выбрано, будет прочерк') + '</div>' +
+        '<div class="spec-actions">' +
+          '<div class="file-state' + (item.file ? ' ok' : '') + '" id="file_state_' + item.index + '">' + (item.file ? 'Файл: ' + escapeHtml(item.fileName) : 'Изображение не выбрано, будет прочерк') + '</div>' +
+          '<button class="btn btn-s btn-d" type="button" id="remove_image_' + item.index + '"' + (item.file ? '' : ' style="display:none"') + '>Удалить картинку</button>' +
+        '</div>' +
       '</div>' +
       '<div class="grid3">' +
         '<div class="fg">' +
@@ -414,13 +424,20 @@ function renderSpecItems(){
     '</div>'
   )).join('');
 
-  specState.items.forEach((item) => {
+  specState.items.slice(0, specState.visibleItems).forEach((item) => {
     document.getElementById('image_' + item.index).addEventListener('change', (event) => {
       const file = event.target.files[0] || null;
       item.file = file;
       item.fileName = file ? file.name : '';
       updateFileState(item.index);
       event.target.value = '';
+      updateSpecTotals();
+    });
+    document.getElementById('remove_image_' + item.index).addEventListener('click', () => {
+      item.file = null;
+      item.fileName = '';
+      updateFileState(item.index);
+      updateSpecTotals();
     });
     document.getElementById('quantity_' + item.index).addEventListener('change', (event) => {
       item.quantity = Number(event.target.value) || 1;
@@ -430,6 +447,7 @@ function renderSpecItems(){
       updateSpecTotals();
     });
   });
+  updateSpecCounter();
 }
 
 function escapeHtml(value){
@@ -444,9 +462,31 @@ function escapeHtml(value){
 function updateFileState(index){
   const item = specState.items[index - 1];
   const node = document.getElementById('file_state_' + index);
+  const removeBtn = document.getElementById('remove_image_' + index);
   if(!node) return;
   node.textContent = item.file ? ('Файл: ' + item.fileName) : 'Изображение не выбрано, будет прочерк';
   node.className = 'file-state' + (item.file ? ' ok' : '');
+  if(removeBtn){
+    removeBtn.style.display = item.file ? 'inline-flex' : 'none';
+  }
+}
+
+function updateSpecCounter(){
+  const counter = document.getElementById('spec_item_counter');
+  const addBtn = document.getElementById('add_spec_item_btn');
+  if(counter){
+    counter.textContent = 'Показано ' + specState.visibleItems + ' из ' + SPEC_ITEM_COUNT + ' позиций';
+  }
+  if(addBtn){
+    addBtn.disabled = specState.visibleItems >= SPEC_ITEM_COUNT;
+    addBtn.textContent = specState.visibleItems >= SPEC_ITEM_COUNT ? 'Добавлены все 10 позиций' : '＋ Добавить позицию товара';
+  }
+}
+
+function addSpecItem(){
+  if(specState.visibleItems >= SPEC_ITEM_COUNT) return;
+  specState.visibleItems += 1;
+  renderSpecItems();
 }
 
 function updateSpecTotals(){
@@ -509,7 +549,7 @@ function handleTemplateUpload(file, type){
 
 function resetContractTemplate(){
   customContractTemplate = null;
-  document.getElementById('contract_tpl_label').textContent = 'Стандартный шаблон договора';
+  document.getElementById('contract_tpl_label').textContent = 'Шаблон договора из папки проекта';
   document.getElementById('contract_tpl_name').style.display = 'none';
   document.getElementById('contract_tpl_reset').style.display = 'none';
   toast('Сброшен шаблон договора', 'i');
@@ -517,7 +557,7 @@ function resetContractTemplate(){
 
 function resetSpecTemplate(){
   customSpecTemplate = null;
-  document.getElementById('spec_tpl_label').textContent = 'Стандартный шаблон спецификации';
+  document.getElementById('spec_tpl_label').textContent = 'Шаблон спецификации из папки проекта';
   document.getElementById('spec_tpl_name').style.display = 'none';
   document.getElementById('spec_tpl_reset').style.display = 'none';
   toast('Сброшен шаблон спецификации', 'i');
@@ -569,7 +609,7 @@ function getSpecRenderData(contractData){
 
   specState.items.forEach((item) => {
     const suffix = String(item.index);
-    data['единица товара_' + suffix] = item.quantity || 1;
+    data['единица товара_' + suffix] = item.file ? (item.quantity || 1) : DASH;
     data['Сумма спец_' + suffix] = normalizeNumber(item.amount) ? formatNumber(normalizeNumber(item.amount)) + ' руб.' : DASH;
     data['Если картинки нет то прочерк_' + suffix] = item.file ? '' : DASH;
   });
