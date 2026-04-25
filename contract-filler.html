@@ -51,6 +51,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .fi:focus,.fselect:focus{border-color:var(--blue)}
 .fi[readonly]{opacity:.8;cursor:not-allowed;border-style:dashed}
 .fi-auto{background:var(--blue-bg);color:var(--blue-text);border-color:rgba(35,85,245,.2)}
+.fi-error{border-color:var(--red)!important;background:var(--red-bg)!important;color:var(--red-text)!important}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid3{display:grid;grid-template-columns:1.3fr .7fr .8fr;gap:10px}
 .tpl-block,.info-block,.summary-block{background:var(--surface2);border:1px dashed var(--border2);border-radius:8px;padding:12px}
@@ -62,12 +63,16 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .btn:active{transform:scale(.98)}
 .btn-p{background:var(--blue);color:#fff;border-color:var(--blue)}
 .btn-p:hover{background:#1a44dd;border-color:#1a44dd}
+.btn-g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-g:hover{background:#13875d;border-color:#13875d}
 .btn-d{color:var(--red-text);border-color:currentColor}
 .btn-d:hover{background:var(--red-bg)}
 .btn-s{padding:5px 11px;font-size:12px;border-radius:7px}
 .btn-gen{width:100%;padding:12px;font-size:14px;font-weight:600;justify-content:center;border-radius:var(--r);margin-top:16px}
 .auto-badge{font-size:9px;background:var(--blue-bg);color:var(--blue-text);border-radius:20px;padding:1px 6px;font-weight:600;letter-spacing:.03em;margin-left:4px;vertical-align:middle}
 .detail{border:1px solid var(--border);border-radius:10px;background:var(--surface2);overflow:hidden}
+.detail-green{background:var(--green-bg);border-color:rgba(26,158,110,.25)}
+.detail-green summary{background:rgba(26,158,110,.08)}
 .detail + .detail{margin-top:10px}
 .detail summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .detail summary::-webkit-details-marker{display:none}
@@ -78,6 +83,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .spec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .spec-title{font-size:13px;font-weight:600}
 .spec-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.spec-main{display:grid;grid-template-columns:1.5fr .8fr .8fr;gap:10px}
 .file-state{font-size:12px;color:var(--text2);word-break:break-word}
 .file-state.ok{color:var(--green-text)}
 .hint{font-size:12px;color:var(--text2)}
@@ -115,6 +121,12 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
   <div class="card">
     <div class="card-title">📋 Заполнение договора и спецификации</div>
 
+    <details class="detail" id="contract_details" open>
+      <summary>
+        <span>Договор "Mebel Grand СПБ"</span>
+        <span>основные данные клиента и суммы</span>
+      </summary>
+      <div class="detail-body" style="padding-top:12px">
     <div class="sec">
       <div class="sec-label">Договор</div>
       <div class="grid2">
@@ -195,7 +207,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
       <div class="sec-label">Шаблоны</div>
       <div class="grid2">
         <div class="tpl-block">
-          <div class="tpl-info">📄 <span id="contract_tpl_label">Шаблон договора из папки проекта</span></div>
+          <div class="tpl-info">📄 <span id="contract_tpl_label">Шаблон договора из папки проекта - Договор mebel_grand СПБ.docx</span></div>
           <div class="tpl-name" id="contract_tpl_name"></div>
           <div class="tpl-btns">
             <button class="btn btn-s" type="button" onclick="document.getElementById('contract_tpl_file').click()">📎 Загрузить свой .docx</button>
@@ -204,7 +216,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
           <input type="file" id="contract_tpl_file" accept=".docx" style="display:none">
         </div>
         <div class="tpl-block">
-          <div class="tpl-info">📄 <span id="spec_tpl_label">Шаблон спецификации из папки проекта</span></div>
+          <div class="tpl-info">📄 <span id="spec_tpl_label">Шаблон спецификации из папки проекта - Спецификая_Мебель_Гранд СПБ.docx</span></div>
           <div class="tpl-name" id="spec_tpl_name"></div>
           <div class="tpl-btns">
             <button class="btn btn-s" type="button" onclick="document.getElementById('spec_tpl_file').click()">📎 Загрузить свой .docx</button>
@@ -214,9 +226,11 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
         </div>
       </div>
     </div>
+      </div>
+    </details>
 
     <div class="sec">
-      <details class="detail">
+      <details class="detail detail-green" id="spec_details">
         <summary>
           <span>Спецификация "Мебель Гранд СПБ"</span>
           <span>заполняется после договора</span>
@@ -230,11 +244,11 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
                 <input class="fi" id="assembly_percent" type="number" min="0" step="0.01" value="13" placeholder="13">
               </div>
               <div class="fg">
-                <label class="fl" for="spec_total">Общая сумма спец <span class="auto-badge">авто</span></label>
+                <label class="fl" for="spec_total">Общая сумма <span class="auto-badge">авто</span></label>
                 <input class="fi fi-auto" id="spec_total" type="text" readonly>
               </div>
               <div class="fg">
-                <label class="fl" for="assembly_total">Процент от общей суммы спец <span class="auto-badge">авто</span></label>
+                <label class="fl" for="assembly_total">Процент сборки <span class="auto-badge">авто</span></label>
                 <input class="fi fi-auto" id="assembly_total" type="text" readonly>
               </div>
             </div>
@@ -242,6 +256,9 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
               <div class="pill">Важно</div>
               <div class="hint" style="margin-top:8px">
                 Если изображение не загружено, в спецификацию автоматически подставляется прочерк. Картинки хранятся только в браузере и сразу встраиваются в итоговый `.docx`.
+              </div>
+              <div class="tpl-btns" style="margin-top:8px">
+                <button class="btn btn-s" type="button" id="toggle_contract_btn" onclick="toggleContractVisibility()">Скрыть договор</button>
               </div>
             </div>
           </div>
@@ -253,7 +270,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
             </summary>
             <div class="detail-body" style="padding-top:12px">
               <div class="tpl-btns" style="margin-bottom:10px">
-                <button class="btn btn-s" type="button" id="add_spec_item_btn" onclick="addSpecItem()">＋ Добавить позицию товара</button>
+                <button class="btn btn-s btn-g" type="button" id="add_spec_item_btn" onclick="addSpecItem()">＋ Добавить позицию товара</button>
                 <span class="muted-link" id="spec_item_counter">Показана 1 из 10 позиций</span>
               </div>
               <div class="spec-items" id="spec_items"></div>
@@ -278,8 +295,8 @@ const SPEC_TEMPLATE_PATH = './Спецификая_Мебель_Гранд СП�
 const SPEC_ITEM_COUNT = 10;
 const MAX_QUANTITY = 15;
 const DASH = '—';
-const IMAGE_MAX_WIDTH_PX = 260;
-const IMAGE_MAX_HEIGHT_PX = 180;
+const IMAGE_MAX_WIDTH_PX = 300;
+const IMAGE_MAX_HEIGHT_PX = 220;
 const EMU_PER_PX = 9525;
 
 let customContractTemplate = null;
@@ -289,6 +306,7 @@ const specState = {
   visibleItems: 1,
   items: Array.from({length: SPEC_ITEM_COUNT}, (_, index) => ({
     index: index + 1,
+    description: 'Мебель позиция №' + (index + 1),
     quantity: 1,
     amount: '',
     file: null,
@@ -407,7 +425,11 @@ function renderSpecItems(){
           '<button class="btn btn-s btn-d" type="button" id="remove_image_' + item.index + '"' + (item.file ? '' : ' style="display:none"') + '>Удалить картинку</button>' +
         '</div>' +
       '</div>' +
-      '<div class="grid3">' +
+      '<div class="spec-main">' +
+        '<div class="fg">' +
+          '<label class="fl" for="description_' + item.index + '">Описание</label>' +
+          '<input class="fi" id="description_' + item.index + '" type="text" value="' + escapeHtml(item.description) + '" placeholder="Мебель позиция №' + item.index + '">' +
+        '</div>' +
         '<div class="fg">' +
           '<label class="fl" for="image_' + item.index + '">Картинка</label>' +
           '<input class="fi" id="image_' + item.index + '" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg">' +
@@ -418,13 +440,16 @@ function renderSpecItems(){
         '</div>' +
         '<div class="fg">' +
           '<label class="fl" for="amount_' + item.index + '">Сумма спец</label>' +
-          '<input class="fi" id="amount_' + item.index + '" type="number" min="0" step="0.01" value="' + escapeHtml(item.amount) + '" placeholder="0">' +
+          '<input class="fi' + (item.file && !normalizeNumber(item.amount) ? ' fi-error' : '') + '" id="amount_' + item.index + '" type="number" min="0" step="0.01" value="' + escapeHtml(item.amount) + '" placeholder="0">' +
         '</div>' +
       '</div>' +
     '</div>'
   )).join('');
 
   specState.items.slice(0, specState.visibleItems).forEach((item) => {
+    document.getElementById('description_' + item.index).addEventListener('input', (event) => {
+      item.description = event.target.value;
+    });
     document.getElementById('image_' + item.index).addEventListener('change', (event) => {
       const file = event.target.files[0] || null;
       item.file = file;
@@ -489,13 +514,27 @@ function addSpecItem(){
   renderSpecItems();
 }
 
+function toggleContractVisibility(){
+  const contractDetails = document.getElementById('contract_details');
+  const btn = document.getElementById('toggle_contract_btn');
+  if(!contractDetails || !btn) return;
+  contractDetails.open = !contractDetails.open;
+  btn.textContent = contractDetails.open ? 'Скрыть договор' : 'Показать договор';
+}
+
 function updateSpecTotals(){
   specState.assemblyPercent = document.getElementById('assembly_percent').value;
-  const total = specState.items.reduce((sum, item) => sum + normalizeNumber(item.amount), 0);
+  const total = Math.round(specState.items.reduce((sum, item) => sum + normalizeNumber(item.amount), 0));
   const percent = normalizeNumber(specState.assemblyPercent);
-  const assembly = total * percent / 100;
+  const assembly = Math.round(total * percent / 100);
   document.getElementById('spec_total').value = total ? formatNumber(total) + ' руб.' : '';
   document.getElementById('assembly_total').value = assembly ? formatNumber(assembly) + ' руб.' : '';
+  specState.items.slice(0, specState.visibleItems).forEach((item) => {
+    const amountInput = document.getElementById('amount_' + item.index);
+    if(amountInput){
+      amountInput.classList.toggle('fi-error', Boolean(item.file) && !normalizeNumber(item.amount));
+    }
+  });
   return {total, percent, assembly};
 }
 
@@ -549,7 +588,7 @@ function handleTemplateUpload(file, type){
 
 function resetContractTemplate(){
   customContractTemplate = null;
-  document.getElementById('contract_tpl_label').textContent = 'Шаблон договора из папки проекта';
+  document.getElementById('contract_tpl_label').textContent = 'Шаблон договора из папки проекта - Договор mebel_grand СПБ.docx';
   document.getElementById('contract_tpl_name').style.display = 'none';
   document.getElementById('contract_tpl_reset').style.display = 'none';
   toast('Сброшен шаблон договора', 'i');
@@ -557,7 +596,7 @@ function resetContractTemplate(){
 
 function resetSpecTemplate(){
   customSpecTemplate = null;
-  document.getElementById('spec_tpl_label').textContent = 'Шаблон спецификации из папки проекта';
+  document.getElementById('spec_tpl_label').textContent = 'Шаблон спецификации из папки проекта - Спецификая_Мебель_Гранд СПБ.docx';
   document.getElementById('spec_tpl_name').style.display = 'none';
   document.getElementById('spec_tpl_reset').style.display = 'none';
   toast('Сброшен шаблон спецификации', 'i');
@@ -597,18 +636,20 @@ function getContractRenderData(){
 
 function getSpecRenderData(contractData){
   const {total, percent, assembly} = updateSpecTotals();
+  const hasAnyImage = specState.items.some((item) => item.file);
   const data = {
     'Дата_договора': contractData['Дата_договора'],
     'ФИО_клиента': contractData['ФИО_клиента'],
     'Паспорт': contractData['Паспорт'],
     'Инициалы_Фамилия': contractData['Инициалы_Фамилия'],
     'Общая сумма спец': total ? formatNumber(total) + ' руб.' : DASH,
-    'Процент сборки': String(document.getElementById('assembly_percent').value || '').trim() ? String(document.getElementById('assembly_percent').value).trim() + '%' : DASH,
+    'Процент сборки': hasAnyImage && String(document.getElementById('assembly_percent').value || '').trim() ? String(Math.round(normalizeNumber(document.getElementById('assembly_percent').value))) + '%' : DASH,
     'Процент от общей суммы спец': assembly ? formatNumber(assembly) + ' руб.' : DASH
   };
 
   specState.items.forEach((item) => {
     const suffix = String(item.index);
+    data['Описание_' + suffix] = item.description.trim() || ('Мебель позиция №' + suffix);
     data['единица товара_' + suffix] = item.file ? (item.quantity || 1) : DASH;
     data['Сумма спец_' + suffix] = normalizeNumber(item.amount) ? formatNumber(normalizeNumber(item.amount)) + ' руб.' : DASH;
     data['Если картинки нет то прочерк_' + suffix] = item.file ? '' : DASH;
