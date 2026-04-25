@@ -751,13 +751,21 @@ function escapeXml(value){
 }
 
 function replaceImageParagraph(xml, tagName, drawingXml){
-  const pattern = new RegExp('<w:p\\b[\\s\\S]*?<w:t[^>]*>`?\\{%'+ escapeRegExp(tagName) +'\\}`?<\\/w:t>[\\s\\S]*?<\\/w:p>');
-  return xml.replace(pattern, function(match){
-    const pPrMatch = match.match(/<w:pPr[\s\S]*?<\/w:pPr>/);
+  const paragraphPattern = /<w:p\b[\s\S]*?<\/w:p>/g;
+  const candidates = ['{%' + tagName + '}', '`{%' + tagName + '}`'];
+  let replaced = false;
+  const updatedXml = xml.replace(paragraphPattern, function(paragraphXml){
+    if(replaced) return paragraphXml;
+    const plainText = paragraphXml.replace(/<[^>]+>/g, '');
+    const hasTag = candidates.some((candidate) => plainText.includes(candidate));
+    if(!hasTag) return paragraphXml;
+    replaced = true;
+    const pPrMatch = paragraphXml.match(/<w:pPr[\s\S]*?<\/w:pPr>/);
     const pPr = pPrMatch ? pPrMatch[0] : '';
     const run = drawingXml || '<w:r/>';
     return '<w:p>' + pPr + run + '</w:p>';
   });
+  return updatedXml;
 }
 
 async function applyImagesToSpecZip(zip){
