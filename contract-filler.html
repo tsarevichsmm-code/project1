@@ -30,7 +30,9 @@
   --red-bg:#2a1010;--red-text:#f87171;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+html,body{min-height:100%;height:auto;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+html{background-color:var(--bg)}
+body{min-height:100dvh;background-color:var(--bg)}
 .topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;position:sticky;top:0;z-index:100}
 .logo{display:flex;align-items:center;gap:9px}
 .lm{width:28px;height:28px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -40,7 +42,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 .ibtn{width:30px;height:30px;border:1px solid var(--border2);border-radius:7px;background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;flex-shrink:0;font-family:var(--font)}
 .ibtn:hover{background:var(--border);color:var(--text)}
-.content{padding:24px 16px 48px;min-height:calc(100vh - 52px)}
+.content{padding:24px 16px 48px;min-height:calc(100dvh - 52px);background:var(--bg)}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;max-width:900px;margin:0 auto}
 .card-title{font-size:16px;font-weight:600;letter-spacing:-.02em;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .sec{margin-bottom:18px}
@@ -83,7 +85,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .spec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .spec-title{font-size:13px;font-weight:600}
 .spec-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.spec-main{display:grid;grid-template-columns:1.5fr .8fr .8fr;gap:10px}
+.spec-main{display:grid;grid-template-columns:1.4fr 1.2fr .75fr .8fr .8fr;gap:10px}
 .file-state{font-size:12px;color:var(--text2);word-break:break-word}
 .file-state.ok{color:var(--green-text)}
 .hint{font-size:12px;color:var(--text2)}
@@ -238,11 +240,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
         <div class="detail-body">
           <div class="sec" style="margin-top:12px">
             <div class="sec-label">Общие параметры</div>
-            <div class="grid3">
-              <div class="fg">
-                <label class="fl" for="assembly_percent">Процент сборки</label>
-                <input class="fi" id="assembly_percent" type="number" min="0" step="0.01" value="13" placeholder="13">
-              </div>
+            <div class="grid2">
               <div class="fg">
                 <label class="fl" for="spec_total">Общая сумма <span class="auto-badge">авто</span></label>
                 <input class="fi fi-auto" id="spec_total" type="text" readonly>
@@ -255,7 +253,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
             <div class="info-block">
               <div class="pill">Важно</div>
               <div class="hint" style="margin-top:8px">
-                Если изображение не загружено, в спецификацию автоматически подставляется прочерк. Картинки хранятся только в браузере и сразу встраиваются в итоговый `.docx`.
+                Если изображение не загружено, в спецификацию автоматически подставляется прочерк. Для каждой позиции процент по умолчанию 13%, но его можно изменить вручную.
               </div>
               <div class="tpl-btns" style="margin-top:8px">
                 <button class="btn btn-s" type="button" id="toggle_contract_btn" onclick="toggleContractVisibility()">Скрыть договор</button>
@@ -302,17 +300,29 @@ const EMU_PER_PX = 9525;
 let customContractTemplate = null;
 let customSpecTemplate = null;
 const specState = {
-  assemblyPercent: '13',
   visibleItems: 1,
   items: Array.from({length: SPEC_ITEM_COUNT}, (_, index) => ({
     index: index + 1,
     description: 'Мебель позиция №' + (index + 1),
+    percent: '13',
     quantity: 1,
     amount: '',
     file: null,
     fileName: ''
   }))
 };
+
+function createDefaultSpecItem(index){
+  return {
+    index,
+    description: 'Мебель позиция №' + index,
+    percent: '13',
+    quantity: 1,
+    amount: '',
+    file: null,
+    fileName: ''
+  };
+}
 
 function toggleTheme(){
   const nextTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -423,6 +433,7 @@ function renderSpecItems(){
         '<div class="spec-actions">' +
           '<div class="file-state' + (item.file ? ' ok' : '') + '" id="file_state_' + item.index + '">' + (item.file ? 'Файл: ' + escapeHtml(item.fileName) : 'Изображение не выбрано, будет прочерк') + '</div>' +
           '<button class="btn btn-s btn-d" type="button" id="remove_image_' + item.index + '"' + (item.file ? '' : ' style="display:none"') + '>Удалить картинку</button>' +
+          '<button class="btn btn-s btn-d" type="button" id="remove_item_' + item.index + '"' + (specState.visibleItems > 1 ? '' : ' style="display:none"') + '>Удалить позицию</button>' +
         '</div>' +
       '</div>' +
       '<div class="spec-main">' +
@@ -437,6 +448,10 @@ function renderSpecItems(){
         '<div class="fg">' +
           '<label class="fl" for="quantity_' + item.index + '">Единица товара</label>' +
           '<select class="fselect" id="quantity_' + item.index + '">' + buildQuantityOptions(item.quantity) + '</select>' +
+        '</div>' +
+        '<div class="fg">' +
+          '<label class="fl" for="percent_' + item.index + '">Процент сборки</label>' +
+          '<input class="fi" id="percent_' + item.index + '" type="number" min="0" step="0.01" value="' + escapeHtml(item.percent) + '" placeholder="13">' +
         '</div>' +
         '<div class="fg">' +
           '<label class="fl" for="amount_' + item.index + '">Сумма спец</label>' +
@@ -467,9 +482,16 @@ function renderSpecItems(){
     document.getElementById('quantity_' + item.index).addEventListener('change', (event) => {
       item.quantity = Number(event.target.value) || 1;
     });
+    document.getElementById('percent_' + item.index).addEventListener('input', (event) => {
+      item.percent = event.target.value;
+      updateSpecTotals();
+    });
     document.getElementById('amount_' + item.index).addEventListener('input', (event) => {
       item.amount = event.target.value;
       updateSpecTotals();
+    });
+    document.getElementById('remove_item_' + item.index).addEventListener('click', () => {
+      removeSpecItem(item.index);
     });
   });
   updateSpecCounter();
@@ -514,6 +536,29 @@ function addSpecItem(){
   renderSpecItems();
 }
 
+function removeSpecItem(index){
+  if(specState.visibleItems <= 1){
+    const slot = index - 1;
+    specState.items[slot] = createDefaultSpecItem(index);
+    renderSpecItems();
+    updateSpecTotals();
+    return;
+  }
+
+  const removeAt = index - 1;
+  for(let i = removeAt; i < specState.visibleItems - 1; i++){
+    const next = specState.items[i + 1];
+    specState.items[i] = {
+      ...next,
+      index: i + 1
+    };
+  }
+  specState.items[specState.visibleItems - 1] = createDefaultSpecItem(specState.visibleItems);
+  specState.visibleItems -= 1;
+  renderSpecItems();
+  updateSpecTotals();
+}
+
 function toggleContractVisibility(){
   const contractDetails = document.getElementById('contract_details');
   const btn = document.getElementById('toggle_contract_btn');
@@ -523,10 +568,14 @@ function toggleContractVisibility(){
 }
 
 function updateSpecTotals(){
-  specState.assemblyPercent = document.getElementById('assembly_percent').value;
-  const total = Math.round(specState.items.reduce((sum, item) => sum + normalizeNumber(item.amount), 0));
-  const percent = normalizeNumber(specState.assemblyPercent);
-  const assembly = Math.round(total * percent / 100);
+  const total = Math.round(specState.items.reduce((sum, item) => {
+    if(!item.file) return sum;
+    return sum + normalizeNumber(item.amount);
+  }, 0));
+  const assembly = Math.round(specState.items.reduce((sum, item) => {
+    if(!item.file) return sum;
+    return sum + (normalizeNumber(item.amount) * normalizeNumber(item.percent) / 100);
+  }, 0));
   document.getElementById('spec_total').value = total ? formatNumber(total) + ' руб.' : '';
   document.getElementById('assembly_total').value = assembly ? formatNumber(assembly) + ' руб.' : '';
   specState.items.slice(0, specState.visibleItems).forEach((item) => {
@@ -535,7 +584,7 @@ function updateSpecTotals(){
       amountInput.classList.toggle('fi-error', Boolean(item.file) && !normalizeNumber(item.amount));
     }
   });
-  return {total, percent, assembly};
+  return {total, assembly};
 }
 
 function bindAutoFields(){
@@ -550,7 +599,6 @@ function bindAutoFields(){
     const number = parseInt(this.value, 10) || 0;
     document.getElementById('prepayment_words').value = number ? numberToWords(number) + ' рублей' : '';
   });
-  document.getElementById('assembly_percent').addEventListener('input', updateSpecTotals);
 }
 
 function bindTemplateInputs(){
@@ -635,23 +683,22 @@ function getContractRenderData(){
 }
 
 function getSpecRenderData(contractData){
-  const {total, percent, assembly} = updateSpecTotals();
-  const hasAnyImage = specState.items.some((item) => item.file);
+  const {total, assembly} = updateSpecTotals();
   const data = {
     'Дата_договора': contractData['Дата_договора'],
     'ФИО_клиента': contractData['ФИО_клиента'],
     'Паспорт': contractData['Паспорт'],
     'Инициалы_Фамилия': contractData['Инициалы_Фамилия'],
     'Общая сумма спец': total ? formatNumber(total) + ' руб.' : DASH,
-    'Процент сборки': hasAnyImage && String(document.getElementById('assembly_percent').value || '').trim() ? String(Math.round(normalizeNumber(document.getElementById('assembly_percent').value))) + '%' : DASH,
     'Процент от общей суммы спец': assembly ? formatNumber(assembly) + ' руб.' : DASH
   };
 
   specState.items.forEach((item) => {
     const suffix = String(item.index);
-    data['Описание_' + suffix] = item.description.trim() || ('Мебель позиция №' + suffix);
+    data['Описание_' + suffix] = item.file ? (item.description.trim() || ('Мебель позиция №' + suffix)) : DASH;
     data['единица товара_' + suffix] = item.file ? (item.quantity || 1) : DASH;
-    data['Сумма спец_' + suffix] = normalizeNumber(item.amount) ? formatNumber(normalizeNumber(item.amount)) + ' руб.' : DASH;
+    data['Процент сборки_' + suffix] = item.file ? (String(Math.round(normalizeNumber(item.percent) || 13)) + '%') : DASH;
+    data['Сумма спец_' + suffix] = item.file && normalizeNumber(item.amount) ? formatNumber(normalizeNumber(item.amount)) + ' руб.' : DASH;
     data['Если картинки нет то прочерк_' + suffix] = item.file ? '' : DASH;
   });
 
@@ -910,9 +957,6 @@ function validateBeforeGenerate(){
   }
   if(!passport){
     throw new Error('Заполните паспорт');
-  }
-  if(!document.getElementById('assembly_percent').value.trim()){
-    throw new Error('Заполните процент сборки');
   }
 }
 
