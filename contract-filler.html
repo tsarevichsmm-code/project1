@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Заполнение договора и спецификации — Mebel Grand</title>
-<meta name="description" content="Заполнение договора и спецификации Mebel Grand СПБ">
+<meta name="description" content="Заполнение договора и спецификации Mebel Grand">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/pizzip@3.1.7/dist/pizzip.js"></script>
@@ -40,6 +40,10 @@ body{min-height:100dvh;background-color:var(--bg)}
 .lt{font-size:15px;font-weight:600;letter-spacing:-.02em}
 .lt span{color:var(--blue)}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.city-switch{display:flex;align-items:center;gap:4px;padding:3px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px}
+.city-btn{padding:5px 10px;border:none;border-radius:7px;background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--font);font-weight:600;transition:all .12s}
+.city-btn:hover{color:var(--text)}
+.city-btn.active{background:var(--blue);color:#fff}
 .ibtn{width:30px;height:30px;border:1px solid var(--border2);border-radius:7px;background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;flex-shrink:0;font-family:var(--font)}
 .ibtn:hover{background:var(--border);color:var(--text)}
 .content{padding:24px 16px 48px;min-height:calc(100dvh - 52px);background:var(--bg)}
@@ -125,6 +129,8 @@ body{min-height:100dvh;background-color:var(--bg)}
 @media (max-width:760px){
   .card{padding:16px}
   .grid2,.grid3,.summary-grid{grid-template-columns:1fr}
+  .topbar{height:auto;align-items:flex-start;flex-wrap:wrap;padding:10px 14px}
+  .topbar-right{width:100%;margin-left:0;justify-content:space-between;flex-wrap:wrap}
   .spec-head{align-items:flex-start;flex-direction:column}
   .spec-actions{width:100%}
   .spec-main{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -156,6 +162,10 @@ body{min-height:100dvh;background-color:var(--bg)}
     <div class="lt">Мебель<span>Гранд</span></div>
   </div>
   <div class="topbar-right">
+    <div class="city-switch" aria-label="Выбор города">
+      <button class="city-btn active" type="button" id="city_btn_spb" onclick="setCity('spb')">СПБ</button>
+      <button class="city-btn" type="button" id="city_btn_ekb" onclick="setCity('ekb')">ЕКБ</button>
+    </div>
     <span style="font-size:12px;color:var(--text3)">Договор и спецификация</span>
     <button class="ibtn" onclick="toggleTheme()" title="Тема">◑</button>
   </div>
@@ -167,7 +177,7 @@ body{min-height:100dvh;background-color:var(--bg)}
 
     <details class="detail" id="contract_details" open>
       <summary>
-        <span>Договор "Mebel Grand СПБ"</span>
+        <span id="contract_section_title">Договор "Mebel Grand СПБ"</span>
         <span>основные данные клиента и суммы</span>
       </summary>
       <div class="detail-body" style="padding-top:12px">
@@ -276,7 +286,7 @@ body{min-height:100dvh;background-color:var(--bg)}
     <div class="sec">
       <details class="detail detail-green" id="spec_details">
         <summary>
-          <span>Спецификация "Мебель Гранд СПБ"</span>
+          <span id="spec_section_title">Спецификация "Мебель Гранд СПБ"</span>
           <span>заполняется после договора</span>
         </summary>
         <div class="detail-body">
@@ -330,8 +340,18 @@ body{min-height:100dvh;background-color:var(--bg)}
 <div class="tco" id="tco"></div>
 
 <script>
-const CONTRACT_TEMPLATE_PATH = './Договор mebel_grand СПБ.docx';
-const SPEC_TEMPLATE_PATH = './Спецификая_Мебель_Гранд СПБ.docx';
+const CITY_TEMPLATES = {
+  spb: {
+    code: 'СПБ',
+    contractPath: './Договор mebel_grand СПБ.docx',
+    specPath: './Спецификая_Мебель_Гранд СПБ.docx'
+  },
+  ekb: {
+    code: 'ЕКБ',
+    contractPath: './Договор mebel_grand ЕКБ.docx',
+    specPath: './Спецификая_Мебель_Гранд ЕКБ.docx'
+  }
+};
 const SPEC_ITEM_COUNT = 10;
 const MAX_QUANTITY = 15;
 const DASH = '—';
@@ -341,6 +361,10 @@ const EMU_PER_PX = 9525;
 
 let customContractTemplate = null;
 let customSpecTemplate = null;
+let currentCity = localStorage.getItem('cf_city');
+if(!CITY_TEMPLATES[currentCity]){
+  currentCity = 'spb';
+}
 const specState = {
   visibleItems: 1,
   items: Array.from({length: SPEC_ITEM_COUNT}, (_, index) => ({
@@ -372,6 +396,52 @@ function toggleTheme(){
   localStorage.setItem('cf_theme', nextTheme);
 }
 document.body.setAttribute('data-theme', localStorage.getItem('cf_theme') || 'light');
+
+function getCurrentTemplates(){
+  return CITY_TEMPLATES[currentCity] || CITY_TEMPLATES.spb;
+}
+
+function getDefaultContractLabel(){
+  const templates = getCurrentTemplates();
+  return 'Шаблон договора из папки проекта - Договор mebel_grand ' + templates.code + '.docx';
+}
+
+function getDefaultSpecLabel(){
+  const templates = getCurrentTemplates();
+  return 'Шаблон спецификации из папки проекта - Спецификая_Мебель_Гранд ' + templates.code + '.docx';
+}
+
+function syncCityUI(){
+  const templates = getCurrentTemplates();
+  const spbBtn = document.getElementById('city_btn_spb');
+  const ekbBtn = document.getElementById('city_btn_ekb');
+  if(spbBtn) spbBtn.classList.toggle('active', currentCity === 'spb');
+  if(ekbBtn) ekbBtn.classList.toggle('active', currentCity === 'ekb');
+  const contractTitle = document.getElementById('contract_section_title');
+  const specTitle = document.getElementById('spec_section_title');
+  if(contractTitle) contractTitle.textContent = 'Договор "Mebel Grand ' + templates.code + '"';
+  if(specTitle) specTitle.textContent = 'Спецификация "Мебель Гранд ' + templates.code + '"';
+  if(!customContractTemplate){
+    document.getElementById('contract_tpl_label').textContent = getDefaultContractLabel();
+  }
+  if(!customSpecTemplate){
+    document.getElementById('spec_tpl_label').textContent = getDefaultSpecLabel();
+  }
+}
+
+function setCity(city){
+  if(!CITY_TEMPLATES[city] || city === currentCity) return;
+  currentCity = city;
+  localStorage.setItem('cf_city', currentCity);
+  customContractTemplate = null;
+  customSpecTemplate = null;
+  document.getElementById('contract_tpl_name').style.display = 'none';
+  document.getElementById('spec_tpl_name').style.display = 'none';
+  document.getElementById('contract_tpl_reset').style.display = 'none';
+  document.getElementById('spec_tpl_reset').style.display = 'none';
+  syncCityUI();
+  toast('Переключен город: ' + getCurrentTemplates().code, 'i');
+}
 
 function toast(msg, type='s'){
   const el = document.createElement('div');
@@ -689,7 +759,7 @@ function handleTemplateUpload(file, type){
 
 function resetContractTemplate(){
   customContractTemplate = null;
-  document.getElementById('contract_tpl_label').textContent = 'Шаблон договора из папки проекта - Договор mebel_grand СПБ.docx';
+  document.getElementById('contract_tpl_label').textContent = getDefaultContractLabel();
   document.getElementById('contract_tpl_name').style.display = 'none';
   document.getElementById('contract_tpl_reset').style.display = 'none';
   toast('Сброшен шаблон договора', 'i');
@@ -697,7 +767,7 @@ function resetContractTemplate(){
 
 function resetSpecTemplate(){
   customSpecTemplate = null;
-  document.getElementById('spec_tpl_label').textContent = 'Шаблон спецификации из папки проекта - Спецификая_Мебель_Гранд СПБ.docx';
+  document.getElementById('spec_tpl_label').textContent = getDefaultSpecLabel();
   document.getElementById('spec_tpl_name').style.display = 'none';
   document.getElementById('spec_tpl_reset').style.display = 'none';
   toast('Сброшен шаблон спецификации', 'i');
@@ -735,26 +805,47 @@ function getContractRenderData(){
   };
 }
 
+function getSpecItemsForTemplate(){
+  return specState.items
+    .slice(0, specState.visibleItems)
+    .filter((item) => {
+      const description = (item.description || '').trim();
+      const defaultDescription = 'Мебель позиция №' + item.index;
+      const hasCustomDescription = description && description !== defaultDescription;
+      const hasAmount = normalizeNumber(item.amount) > 0;
+      const hasCustomQuantity = Number(item.quantity || 1) !== 1;
+      const hasCustomPercent = Math.round(normalizeNumber(item.percent) || 13) !== 13;
+      return Boolean(item.file || hasAmount || hasCustomDescription || hasCustomQuantity || hasCustomPercent);
+    })
+    .map((item, index) => {
+      const description = (item.description || '').trim() || ('Мебель позиция №' + item.index);
+      const amount = normalizeNumber(item.amount);
+      const percent = Math.round(normalizeNumber(item.percent) || 13);
+      return {
+        num: String(index + 1),
+        description,
+        image: '',
+        imageDash: item.file ? '' : DASH,
+        quantity: String(item.quantity || 1),
+        amount: amount ? formatNumber(amount) + ' руб.' : DASH,
+        assemblyPercent: String(percent) + '%',
+        imageFile: item.file || null
+      };
+    });
+}
+
 function getSpecRenderData(contractData){
   const {total, assembly} = updateSpecTotals();
+  const items = getSpecItemsForTemplate();
   const data = {
     'Дата_договора': contractData['Дата_договора'],
     'ФИО_клиента': contractData['ФИО_клиента'],
     'Паспорт': contractData['Паспорт'],
     'Инициалы_Фамилия': contractData['Инициалы_Фамилия'],
     'Общая сумма спец': total ? formatNumber(total) + ' руб.' : DASH,
-    'Процент от общей суммы спец': assembly ? formatNumber(assembly) + ' руб.' : DASH
+    'Процент от общей суммы спец': assembly ? formatNumber(assembly) + ' руб.' : DASH,
+    items
   };
-
-  specState.items.forEach((item) => {
-    const suffix = String(item.index);
-    data['Описание_' + suffix] = item.file ? (item.description.trim() || ('Мебель позиция №' + suffix)) : DASH;
-    data['единица товара_' + suffix] = item.file ? (item.quantity || 1) : DASH;
-    data['Процент сборки_' + suffix] = item.file ? (String(Math.round(normalizeNumber(item.percent) || 13)) + '%') : DASH;
-    data['Сумма спец_' + suffix] = item.file && normalizeNumber(item.amount) ? formatNumber(normalizeNumber(item.amount)) + ' руб.' : DASH;
-    data['Если картинки нет то прочерк_' + suffix] = item.file ? '' : DASH;
-  });
-
   return data;
 }
 
@@ -790,7 +881,7 @@ function getSafeContractToken(){
 }
 
 async function generateContractDocument(contractData){
-  const zipData = await loadTemplate(CONTRACT_TEMPLATE_PATH, customContractTemplate);
+  const zipData = await loadTemplate(getCurrentTemplates().contractPath, customContractTemplate);
   const doc = createDoc(zipData, contractData);
   const out = doc.getZip().generate({
     type: 'blob',
@@ -965,21 +1056,22 @@ function replaceImageParagraph(xml, tagName, drawingXml){
 async function applyImagesToSpecZip(zip){
   let documentXml = zip.file('word/document.xml').asText();
   documentXml = ensureDrawingNamespaces(documentXml);
-  for(const item of specState.items){
-    const tagName = 'Картинка_' + item.index;
-    if(item.file){
-      const info = await readImageInfo(item.file);
-      const rId = addImageRelationship(zip, item.index, info);
-      const drawingXml = buildDrawingXml(rId, item.index, info);
-      const nextXml = replaceImageParagraph(documentXml, tagName, drawingXml);
+  const specItems = getSpecItemsForTemplate();
+  for(let index = 0; index < specItems.length; index += 1){
+    const item = specItems[index];
+    if(item.imageFile){
+      const info = await readImageInfo(item.imageFile);
+      const rId = addImageRelationship(zip, index + 1, info);
+      const drawingXml = buildDrawingXml(rId, index + 1, info);
+      const nextXml = replaceImageParagraph(documentXml, 'image', drawingXml);
       if(nextXml === documentXml){
-        throw new Error('Не найден image-тег ' + tagName + ' в шаблоне спецификации');
+        throw new Error('Не найден image-тег {%image} в шаблоне спецификации');
       }
       documentXml = nextXml;
     }else{
-      const nextXml = replaceImageParagraph(documentXml, tagName, '');
+      const nextXml = replaceImageParagraph(documentXml, 'image', '');
       if(nextXml === documentXml){
-        throw new Error('Не найден image-тег ' + tagName + ' в шаблоне спецификации');
+        throw new Error('Не найден image-тег {%image} в шаблоне спецификации');
       }
       documentXml = nextXml;
     }
@@ -988,7 +1080,7 @@ async function applyImagesToSpecZip(zip){
 }
 
 async function generateSpecDocument(contractData){
-  const zipData = await loadTemplate(SPEC_TEMPLATE_PATH, customSpecTemplate);
+  const zipData = await loadTemplate(getCurrentTemplates().specPath, customSpecTemplate);
   const doc = createDoc(zipData, getSpecRenderData(contractData));
   const zip = doc.getZip();
   await applyImagesToSpecZip(zip);
@@ -1038,6 +1130,7 @@ async function generateAllDocuments(){
 setAutoFields();
 bindAutoFields();
 bindTemplateInputs();
+syncCityUI();
 renderSpecItems();
 updateSpecTotals();
 </script>
