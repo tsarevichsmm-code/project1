@@ -89,13 +89,13 @@ body{min-height:100dvh;background-color:var(--bg)}
 .spec-main .fg{min-width:0}
 .spec-main .fl{font-size:10px;line-height:1.25}
 .spec-main .fi,.spec-main .fselect{font-size:12px;padding:8px 10px}
-.file-picker{display:flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:4px 8px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2)}
+.file-picker{display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:4px 8px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2)}
 .file-picker-input{display:none}
-.file-picker-btn{padding:4px 9px;border:1px solid var(--border2);border-radius:7px;background:var(--surface);color:var(--text);cursor:pointer;font-size:11px;font-weight:500;line-height:1.2;white-space:nowrap}
+.file-picker-btn{padding:4px 8px;border:1px solid var(--border2);border-radius:7px;background:var(--surface);color:var(--text);cursor:pointer;font-size:10px;font-weight:500;line-height:1.15;white-space:nowrap}
 .file-picker-btn:hover{background:var(--surface3)}
 .file-picker-btn.remove{border-color:var(--red-text);color:var(--red-text)}
 .file-picker-btn.remove:hover{background:var(--red-bg)}
-.file-picker-status{display:none;font-size:12px;color:var(--text2);word-break:break-word}
+.file-picker-status{display:inline;font-size:10px;color:var(--text2);line-height:1.15;white-space:nowrap}
 .file-picker-status.ok{color:var(--green-text);font-weight:600}
 .hint{font-size:12px;color:var(--text2)}
 .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -122,7 +122,6 @@ body{min-height:100dvh;background-color:var(--bg)}
   .spec-main .fg:nth-child(2),
   .spec-main .fg:nth-child(5){grid-column:1 / -1}
   .file-picker{justify-content:flex-start}
-  .file-picker-status{display:inline}
 }
 @media (max-width:480px){
   .content{padding:16px 10px 36px}
@@ -633,6 +632,9 @@ function bindAutoFields(){
   document.getElementById('amount').addEventListener('input', function(){
     const number = parseInt(this.value, 10) || 0;
     document.getElementById('amount_words').value = number ? numberToWords(number) + ' рублей' : '';
+    const prepaymentNumber = number ? Math.round(number / 2) : 0;
+    document.getElementById('prepayment').value = prepaymentNumber || '';
+    document.getElementById('prepayment_words').value = prepaymentNumber ? numberToWords(prepaymentNumber) + ' рублей' : '';
   });
   document.getElementById('prepayment').addEventListener('input', function(){
     const number = parseInt(this.value, 10) || 0;
