@@ -130,9 +130,11 @@ body{min-height:100dvh;background-color:var(--bg)}
 @media (max-width:760px){
   .card{padding:16px}
   .grid2,.grid3,.summary-grid{grid-template-columns:1fr}
-  .topbar{height:auto;align-items:flex-start;flex-wrap:wrap;padding:10px 14px}
-  .topbar-right{width:100%;margin-left:0;justify-content:flex-end;flex-wrap:wrap}
+  .topbar{height:auto;align-items:center;justify-content:space-between;flex-wrap:nowrap;padding:10px 14px}
+  .topbar-right{width:auto;margin-left:auto;justify-content:flex-end;flex-wrap:nowrap}
   .card-title{align-items:flex-start;flex-direction:column}
+  .card-title-text{width:100%}
+  .city-switch{align-self:flex-start}
   .spec-head{align-items:flex-start;flex-direction:column}
   .spec-actions{width:100%}
   .spec-main{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -309,7 +311,7 @@ body{min-height:100dvh;background-color:var(--bg)}
             <div class="info-block">
               <div class="pill">Справка</div>
               <div class="hint" style="margin-top:8px">
-                Если изображение не загружено, в справку автоматически подставляется прочерк. Кнопкой "Скрыть договор" и "Показать договор" можно прятать договор под спойлер. Для каждой позиции процент по умолчанию 13%, но его можно изменить вручную.
+                Если изображение не загружено, в документе автоматически подставляется прочерк. Кнопкой "Скрыть договор" и "Показать договор" можно прятать договор под спойлер.
               </div>
               <div class="tpl-btns" style="margin-top:8px">
                 <button class="btn btn-s" type="button" id="toggle_contract_btn" onclick="toggleContractVisibility()">Скрыть договор</button>
@@ -712,8 +714,23 @@ function updateSpecTotals(){
 }
 
 function bindAutoFields(){
+  const registrationInput = document.getElementById('registration');
+  const deliveryInput = document.getElementById('delivery');
   document.getElementById('client_name').addEventListener('input', function(){
     document.getElementById('initials').value = getInitials(this.value);
+  });
+  registrationInput.addEventListener('input', function(){
+    const currentAutoValue = deliveryInput.dataset.autofillValue || '';
+    const isManualDelivery = deliveryInput.dataset.manual === 'true';
+    if(!isManualDelivery || !deliveryInput.value || deliveryInput.value === currentAutoValue){
+      deliveryInput.value = this.value;
+      deliveryInput.dataset.autofillValue = this.value;
+      deliveryInput.dataset.manual = 'false';
+    }
+  });
+  deliveryInput.addEventListener('input', function(){
+    const currentAutoValue = deliveryInput.dataset.autofillValue || '';
+    deliveryInput.dataset.manual = this.value !== currentAutoValue ? 'true' : 'false';
   });
   document.getElementById('amount').addEventListener('input', function(){
     const number = parseInt(this.value, 10) || 0;
