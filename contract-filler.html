@@ -104,6 +104,25 @@ body{min-height:100dvh;background-color:var(--bg)}
 @media (max-width:760px){
   .card{padding:16px}
   .grid2,.grid3,.summary-grid{grid-template-columns:1fr}
+  .spec-head{align-items:flex-start;flex-direction:column}
+  .spec-actions{width:100%}
+  .file-state{width:100%}
+  .spec-main{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .spec-main .fg:nth-child(1),
+  .spec-main .fg:nth-child(2),
+  .spec-main .fg:nth-child(5){grid-column:1 / -1}
+}
+@media (max-width:480px){
+  .content{padding:16px 10px 36px}
+  .card{padding:14px}
+  .detail summary{align-items:flex-start;flex-direction:column}
+  .spec-item{padding:10px}
+  .spec-main{grid-template-columns:1fr}
+  .spec-main .fg:nth-child(1),
+  .spec-main .fg:nth-child(2),
+  .spec-main .fg:nth-child(5){grid-column:auto}
+  .btn{width:100%;justify-content:center}
+  .btn-s{width:auto}
 }
 </style>
 </head>
