@@ -86,6 +86,12 @@ body{min-height:100dvh;background-color:var(--bg)}
 .spec-title{font-size:13px;font-weight:600}
 .spec-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .spec-main{display:grid;grid-template-columns:1.4fr 1.2fr .75fr .8fr .8fr;gap:10px}
+.file-picker{display:flex;align-items:center;gap:10px;min-height:40px;padding:7px 11px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2)}
+.file-picker-input{display:none}
+.file-picker-btn{padding:6px 10px;border:1px solid var(--border2);border-radius:7px;background:var(--surface);color:var(--text);cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap}
+.file-picker-btn:hover{background:var(--surface3)}
+.file-picker-status{font-size:12px;color:var(--text2);word-break:break-word}
+.file-picker-status.ok{color:var(--green-text);font-weight:600}
 .file-state{font-size:12px;color:var(--text2);word-break:break-word}
 .file-state.ok{color:var(--green-text)}
 .hint{font-size:12px;color:var(--text2)}
@@ -462,7 +468,11 @@ function renderSpecItems(){
         '</div>' +
         '<div class="fg">' +
           '<label class="fl" for="image_' + item.index + '">Картинка</label>' +
-          '<input class="fi" id="image_' + item.index + '" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg">' +
+          '<div class="file-picker">' +
+            '<label class="file-picker-btn" for="image_' + item.index + '">Выбрать файл</label>' +
+            '<span class="file-picker-status' + (item.file ? ' ok' : '') + '" id="image_status_' + item.index + '">' + (item.file ? 'Файл добавлен' : 'Файл не выбран') + '</span>' +
+            '<input class="file-picker-input" id="image_' + item.index + '" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg">' +
+          '</div>' +
         '</div>' +
         '<div class="fg">' +
           '<label class="fl" for="quantity_' + item.index + '">Единица товара</label>' +
@@ -529,9 +539,14 @@ function updateFileState(index){
   const item = specState.items[index - 1];
   const node = document.getElementById('file_state_' + index);
   const removeBtn = document.getElementById('remove_image_' + index);
+  const imageStatus = document.getElementById('image_status_' + index);
   if(!node) return;
   node.textContent = item.file ? ('Файл: ' + item.fileName) : 'Изображение не выбрано, будет прочерк';
   node.className = 'file-state' + (item.file ? ' ok' : '');
+  if(imageStatus){
+    imageStatus.textContent = item.file ? 'Файл добавлен' : 'Файл не выбран';
+    imageStatus.className = 'file-picker-status' + (item.file ? ' ok' : '');
+  }
   if(removeBtn){
     removeBtn.style.display = item.file ? 'inline-flex' : 'none';
   }
