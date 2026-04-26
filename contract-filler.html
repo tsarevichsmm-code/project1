@@ -84,16 +84,16 @@ body{min-height:100dvh;background-color:var(--bg)}
 .spec-item{border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:12px}
 .spec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .spec-title{font-size:13px;font-weight:600}
-.spec-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.spec-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .spec-main{display:grid;grid-template-columns:1.4fr 1.2fr .75fr .8fr .8fr;gap:10px}
 .file-picker{display:flex;align-items:center;gap:10px;min-height:40px;padding:7px 11px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2)}
 .file-picker-input{display:none}
 .file-picker-btn{padding:6px 10px;border:1px solid var(--border2);border-radius:7px;background:var(--surface);color:var(--text);cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap}
 .file-picker-btn:hover{background:var(--surface3)}
+.file-picker-btn.remove{border-color:var(--red-text);color:var(--red-text)}
+.file-picker-btn.remove:hover{background:var(--red-bg)}
 .file-picker-status{font-size:12px;color:var(--text2);word-break:break-word}
 .file-picker-status.ok{color:var(--green-text);font-weight:600}
-.file-state{font-size:12px;color:var(--text2);word-break:break-word}
-.file-state.ok{color:var(--green-text)}
 .hint{font-size:12px;color:var(--text2)}
 .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--amber-text);background:var(--amber-bg);border-radius:999px;padding:4px 8px}
@@ -456,8 +456,6 @@ function renderSpecItems(){
       '<div class="spec-head">' +
         '<div class="spec-title">Позиция ' + item.index + '</div>' +
         '<div class="spec-actions">' +
-          '<div class="file-state' + (item.file ? ' ok' : '') + '" id="file_state_' + item.index + '">' + (item.file ? 'Файл: ' + escapeHtml(item.fileName) : 'Изображение не выбрано, будет прочерк') + '</div>' +
-          '<button class="btn btn-s btn-d" type="button" id="remove_image_' + item.index + '"' + (item.file ? '' : ' style="display:none"') + '>Удалить картинку</button>' +
           '<button class="btn btn-s btn-d" type="button" id="remove_item_' + item.index + '"' + (specState.visibleItems > 1 ? '' : ' style="display:none"') + '>Удалить позицию</button>' +
         '</div>' +
       '</div>' +
@@ -469,7 +467,7 @@ function renderSpecItems(){
         '<div class="fg">' +
           '<label class="fl" for="image_' + item.index + '">Картинка</label>' +
           '<div class="file-picker">' +
-            '<label class="file-picker-btn" for="image_' + item.index + '">Выбрать файл</label>' +
+            '<button class="file-picker-btn' + (item.file ? ' remove' : '') + '" type="button" id="image_toggle_' + item.index + '">' + (item.file ? 'Удалить' : 'Выбрать файл') + '</button>' +
             '<span class="file-picker-status' + (item.file ? ' ok' : '') + '" id="image_status_' + item.index + '">' + (item.file ? 'Файл добавлен' : 'Файл не выбран') + '</span>' +
             '<input class="file-picker-input" id="image_' + item.index + '" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg">' +
           '</div>' +
@@ -494,18 +492,22 @@ function renderSpecItems(){
     document.getElementById('description_' + item.index).addEventListener('input', (event) => {
       item.description = event.target.value;
     });
+    document.getElementById('image_toggle_' + item.index).addEventListener('click', () => {
+      if(item.file){
+        item.file = null;
+        item.fileName = '';
+        updateFileState(item.index);
+        updateSpecTotals();
+        return;
+      }
+      document.getElementById('image_' + item.index).click();
+    });
     document.getElementById('image_' + item.index).addEventListener('change', (event) => {
       const file = event.target.files[0] || null;
       item.file = file;
       item.fileName = file ? file.name : '';
       updateFileState(item.index);
       event.target.value = '';
-      updateSpecTotals();
-    });
-    document.getElementById('remove_image_' + item.index).addEventListener('click', () => {
-      item.file = null;
-      item.fileName = '';
-      updateFileState(item.index);
       updateSpecTotals();
     });
     document.getElementById('quantity_' + item.index).addEventListener('change', (event) => {
@@ -537,18 +539,15 @@ function escapeHtml(value){
 
 function updateFileState(index){
   const item = specState.items[index - 1];
-  const node = document.getElementById('file_state_' + index);
-  const removeBtn = document.getElementById('remove_image_' + index);
+  const toggleBtn = document.getElementById('image_toggle_' + index);
   const imageStatus = document.getElementById('image_status_' + index);
-  if(!node) return;
-  node.textContent = item.file ? ('Файл: ' + item.fileName) : 'Изображение не выбрано, будет прочерк';
-  node.className = 'file-state' + (item.file ? ' ok' : '');
+  if(toggleBtn){
+    toggleBtn.textContent = item.file ? 'Удалить' : 'Выбрать файл';
+    toggleBtn.className = 'file-picker-btn' + (item.file ? ' remove' : '');
+  }
   if(imageStatus){
     imageStatus.textContent = item.file ? 'Файл добавлен' : 'Файл не выбран';
     imageStatus.className = 'file-picker-status' + (item.file ? ' ok' : '');
-  }
-  if(removeBtn){
-    removeBtn.style.display = item.file ? 'inline-flex' : 'none';
   }
 }
 
