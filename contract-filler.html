@@ -375,7 +375,7 @@ const specState = {
   visibleItems: 1,
   items: Array.from({length: SPEC_ITEM_COUNT}, (_, index) => ({
     index: index + 1,
-    description: 'Мебель позиция №' + (index + 1),
+    description: 'Мебель позиция №' + (index + 1) + ' (Согласно проекту)',
     percent: '13',
     quantity: 1,
     amount: '',
@@ -387,7 +387,7 @@ const specState = {
 function createDefaultSpecItem(index){
   return {
     index,
-    description: 'Мебель позиция №' + index,
+    description: 'Мебель позиция №' + index + ' (Согласно проекту)',
     percent: '13',
     quantity: 1,
     amount: '',
@@ -555,7 +555,7 @@ function renderSpecItems(){
       '<div class="spec-main">' +
         '<div class="fg">' +
           '<label class="fl" for="description_' + item.index + '">Описание</label>' +
-          '<input class="fi" id="description_' + item.index + '" type="text" value="' + escapeHtml(item.description) + '" placeholder="Мебель позиция №' + item.index + '">' +
+          '<input class="fi" id="description_' + item.index + '" type="text" value="' + escapeHtml(item.description) + '" placeholder="Мебель позиция №' + item.index + ' (Согласно проекту)">' +
         '</div>' +
         '<div class="fg">' +
           '<label class="fl" for="image_' + item.index + '">Картинка</label>' +
@@ -831,7 +831,7 @@ function getSpecItemsForTemplate(){
     .slice(0, specState.visibleItems)
     .filter((item) => {
       const description = (item.description || '').trim();
-      const defaultDescription = 'Мебель позиция №' + item.index;
+      const defaultDescription = 'Мебель позиция №' + item.index + ' (Согласно проекту)';
       const hasCustomDescription = description && description !== defaultDescription;
       const hasAmount = normalizeNumber(item.amount) > 0;
       const hasCustomQuantity = Number(item.quantity || 1) !== 1;
@@ -839,7 +839,7 @@ function getSpecItemsForTemplate(){
       return Boolean(item.file || hasAmount || hasCustomDescription || hasCustomQuantity || hasCustomPercent);
     })
     .map((item, index) => {
-      const description = (item.description || '').trim() || ('Мебель позиция №' + item.index);
+      const description = (item.description || '').trim() || ('Мебель позиция №' + item.index + ' (Согласно проекту)');
       const amount = normalizeNumber(item.amount);
       const percent = Math.round(normalizeNumber(item.percent) || 13);
       return {
