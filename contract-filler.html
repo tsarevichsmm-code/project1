@@ -50,7 +50,17 @@ body{min-height:100dvh;background-color:var(--bg)}
 .fg{margin-bottom:10px}
 .fl{font-size:11px;color:var(--text2);font-weight:500;display:block;margin-bottom:4px;letter-spacing:.02em;text-transform:uppercase}
 .fi,.fselect{width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;font-family:var(--font);transition:border-color .12s}
-.fi:focus,.fselect:focus{border-color:var(--blue)}
+.fi:focus,.fselect:focus{border-color:var(--blue);background:var(--surface2);color:var(--text)}
+.fi:-webkit-autofill,
+.fi:-webkit-autofill:hover,
+.fi:-webkit-autofill:focus,
+.fi:-webkit-autofill:active{
+  -webkit-text-fill-color:var(--text);
+  -webkit-box-shadow:0 0 0 1000px var(--surface2) inset;
+  box-shadow:0 0 0 1000px var(--surface2) inset;
+  caret-color:var(--text);
+  transition:background-color 9999s ease-out 0s;
+}
 .fi[readonly]{opacity:.8;cursor:not-allowed;border-style:dashed}
 .fi-auto{background:var(--blue-bg);color:var(--blue-text);border-color:rgba(35,85,245,.2)}
 .fi-error{border-color:var(--red)!important;background:var(--red-bg)!important;color:var(--red-text)!important}
@@ -89,12 +99,14 @@ body{min-height:100dvh;background-color:var(--bg)}
 .spec-main .fg{min-width:0}
 .spec-main .fl{font-size:10px;line-height:1.25}
 .spec-main .fi,.spec-main .fselect{font-size:12px;padding:8px 10px}
+.spec-item .btn-d{color:var(--text2);border-color:var(--border2);background:var(--surface)}
+.spec-item .btn-d:hover{background:var(--surface2);color:var(--text)}
 .file-picker{display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:4px 8px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2)}
 .file-picker-input{display:none}
 .file-picker-btn{padding:4px 8px;border:1px solid var(--border2);border-radius:7px;background:var(--surface);color:var(--text);cursor:pointer;font-size:10px;font-weight:500;line-height:1.15;white-space:nowrap}
 .file-picker-btn:hover{background:var(--surface3)}
-.file-picker-btn.remove{border-color:var(--red-text);color:var(--red-text)}
-.file-picker-btn.remove:hover{background:var(--red-bg)}
+.file-picker-btn.remove{border-color:var(--border2);color:var(--text2)}
+.file-picker-btn.remove:hover{background:var(--surface3);color:var(--text)}
 .file-picker-status{display:inline;font-size:10px;color:var(--text2);line-height:1.15;white-space:nowrap}
 .file-picker-status.ok{color:var(--green-text);font-weight:600}
 .hint{font-size:12px;color:var(--text2)}
