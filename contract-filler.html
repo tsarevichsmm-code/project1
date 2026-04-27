@@ -90,6 +90,8 @@ body{min-height:100dvh;background-color:var(--bg)}
 .detail{border:1px solid var(--border);border-radius:10px;background:var(--surface2);overflow:hidden}
 .detail-green{background:var(--green-bg);border-color:rgba(26,158,110,.25)}
 .detail-green summary{background:rgba(26,158,110,.08)}
+.detail-amber{background:var(--amber-bg);border-color:rgba(217,119,6,.22)}
+.detail-amber summary{background:rgba(217,119,6,.08)}
 .detail + .detail{margin-top:10px}
 .detail summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .detail summary::-webkit-details-marker{display:none}
@@ -284,6 +286,15 @@ body{min-height:100dvh;background-color:var(--bg)}
           </div>
           <input type="file" id="spec_tpl_file" accept=".docx" style="display:none">
         </div>
+        <div class="tpl-block">
+          <div class="tpl-info">📄 <span id="act_tpl_label">Шаблон акта из папки проекта - Акт доставки СПБ.docx</span></div>
+          <div class="tpl-name" id="act_tpl_name"></div>
+          <div class="tpl-btns">
+            <!-- <button class="btn btn-s" type="button" onclick="document.getElementById('act_tpl_file').click()">📎 Загрузить свой .docx</button> -->
+            <button class="btn btn-s btn-d" type="button" id="act_tpl_reset" style="display:none" onclick="resetActTemplate()">✕ Сбросить</button>
+          </div>
+          <input type="file" id="act_tpl_file" accept=".docx" style="display:none">
+        </div>
       </div>
     </div>
       </div>
@@ -336,9 +347,47 @@ body{min-height:100dvh;background-color:var(--bg)}
       </details>
     </div>
 
+    <div class="sec">
+      <details class="detail detail-amber" id="act_details">
+        <summary>
+          <span id="act_section_title">Акт доставки "Мебель Гранд СПБ"</span>
+          <span>данные акта и остаток по оплате</span>
+        </summary>
+        <div class="detail-body">
+          <div class="sec" style="margin-top:12px">
+            <div class="sec-label">Акт доставки</div>
+            <div class="grid2">
+              <div class="fg">
+                <label class="fl" for="act_description">Описание Акт</label>
+                <input class="fi" id="act_description" type="text" value="Мебель в коробках">
+              </div>
+              <div class="fg">
+                <label class="fl" for="act_units">Ед. акт</label>
+                <input class="fi" id="act_units" type="number" min="0" step="1" value="10">
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="fg">
+                <label class="fl" for="act_units_total">Ед. акт общее <span class="auto-badge">авто</span></label>
+                <input class="fi fi-auto" id="act_units_total" type="text" readonly>
+              </div>
+              <div class="fg">
+                <label class="fl" for="act_remainder">Остаток <span class="auto-badge">авто</span></label>
+                <input class="fi fi-auto" id="act_remainder" type="text" readonly>
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl" for="act_remainder_words">Сумма прописью акт <span class="auto-badge">авто</span></label>
+              <input class="fi fi-auto" id="act_remainder_words" type="text" readonly>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+
     <button class="btn btn-p btn-gen" id="btn_gen" type="button" onclick="generateAllDocuments()">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v9M4 7l4 4 4-4M2 14h12"/></svg>
-      Скачать договор и спецификацию
+      Скачать договор, спецификацию и акт
     </button>
   </div>
 </div>
@@ -350,12 +399,14 @@ const CITY_TEMPLATES = {
   spb: {
     code: 'СПБ',
     contractPath: './Договор mebel_grand СПБ.docx',
-    specPath: './Спецификая_Мебель_Гранд СПБ.docx'
+    specPath: './Спецификая_Мебель_Гранд СПБ.docx',
+    actPath: './Акт доставки СПБ.docx'
   },
   ekb: {
     code: 'ЕКБ',
     contractPath: './Договор mebel_grand ЕКБ.docx',
-    specPath: './Спецификая_Мебель_Гранд ЕКБ.docx'
+    specPath: './Спецификая_Мебель_Гранд ЕКБ.docx',
+    actPath: './Акт доставки ЕКБ.docx'
   }
 };
 const SPEC_ITEM_COUNT = 10;
@@ -367,6 +418,7 @@ const EMU_PER_PX = 9525;
 
 let customContractTemplate = null;
 let customSpecTemplate = null;
+let customActTemplate = null;
 let currentCity = localStorage.getItem('cf_city');
 if(!CITY_TEMPLATES[currentCity]){
   currentCity = 'spb';
@@ -417,6 +469,11 @@ function getDefaultSpecLabel(){
   return 'Шаблон справки из папки проекта - Спецификая_Мебель_Гранд ' + templates.code + '.docx';
 }
 
+function getDefaultActLabel(){
+  const templates = getCurrentTemplates();
+  return 'Шаблон акта из папки проекта - Акт доставки ' + templates.code + '.docx';
+}
+
 function syncCityUI(){
   const templates = getCurrentTemplates();
   const spbBtn = document.getElementById('city_btn_spb');
@@ -425,13 +482,18 @@ function syncCityUI(){
   if(ekbBtn) ekbBtn.classList.toggle('active', currentCity === 'ekb');
   const contractTitle = document.getElementById('contract_section_title');
   const specTitle = document.getElementById('spec_section_title');
+  const actTitle = document.getElementById('act_section_title');
   if(contractTitle) contractTitle.textContent = 'Договор "Мебель Гранд ' + templates.code + '"';
   if(specTitle) specTitle.textContent = 'Спецификация "Мебель Гранд ' + templates.code + '"';
+  if(actTitle) actTitle.textContent = 'Акт доставки "Мебель Гранд ' + templates.code + '"';
   if(!customContractTemplate){
     document.getElementById('contract_tpl_label').textContent = getDefaultContractLabel();
   }
   if(!customSpecTemplate){
     document.getElementById('spec_tpl_label').textContent = getDefaultSpecLabel();
+  }
+  if(!customActTemplate){
+    document.getElementById('act_tpl_label').textContent = getDefaultActLabel();
   }
 }
 
@@ -441,10 +503,13 @@ function setCity(city){
   localStorage.setItem('cf_city', currentCity);
   customContractTemplate = null;
   customSpecTemplate = null;
+  customActTemplate = null;
   document.getElementById('contract_tpl_name').style.display = 'none';
   document.getElementById('spec_tpl_name').style.display = 'none';
+  document.getElementById('act_tpl_name').style.display = 'none';
   document.getElementById('contract_tpl_reset').style.display = 'none';
   document.getElementById('spec_tpl_reset').style.display = 'none';
+  document.getElementById('act_tpl_reset').style.display = 'none';
   syncCityUI();
   toast('Переключен город: ' + getCurrentTemplates().code, 'i');
 }
@@ -719,10 +784,23 @@ function updateSpecTotals(){
   return {total, assembly};
 }
 
+function updateActTotals(){
+  const unitsValue = Math.max(0, Math.round(normalizeNumber(document.getElementById('act_units')?.value)));
+  const amountValue = normalizeNumber(document.getElementById('amount')?.value);
+  const prepaymentValue = normalizeNumber(document.getElementById('prepayment')?.value);
+  const remainder = Math.max(0, Math.round(amountValue - prepaymentValue));
+  document.getElementById('act_units').value = unitsValue || '';
+  document.getElementById('act_units_total').value = unitsValue ? (unitsValue + ' шт') : '';
+  document.getElementById('act_remainder').value = remainder ? formatNumber(remainder) + ' руб.' : '';
+  document.getElementById('act_remainder_words').value = remainder ? numberToWords(remainder) + ' рублей' : '';
+  return {unitsValue, remainder};
+}
+
 function bindAutoFields(){
   const registrationInput = document.getElementById('registration');
   const deliveryInput = document.getElementById('delivery');
   const passportInput = document.getElementById('passport');
+  const actUnitsInput = document.getElementById('act_units');
   document.getElementById('client_name').addEventListener('input', function(){
     document.getElementById('initials').value = getInitials(this.value);
   });
@@ -748,10 +826,15 @@ function bindAutoFields(){
     const prepaymentNumber = number ? Math.round(number / 2) : 0;
     document.getElementById('prepayment').value = prepaymentNumber || '';
     document.getElementById('prepayment_words').value = prepaymentNumber ? numberToWords(prepaymentNumber) + ' рублей' : '';
+    updateActTotals();
   });
   document.getElementById('prepayment').addEventListener('input', function(){
     const number = parseInt(this.value, 10) || 0;
     document.getElementById('prepayment_words').value = number ? numberToWords(number) + ' рублей' : '';
+    updateActTotals();
+  });
+  actUnitsInput.addEventListener('input', function(){
+    updateActTotals();
   });
 }
 
@@ -762,6 +845,10 @@ function bindTemplateInputs(){
   });
   document.getElementById('spec_tpl_file').addEventListener('change', function(event){
     handleTemplateUpload(event.target.files[0], 'spec');
+    this.value = '';
+  });
+  document.getElementById('act_tpl_file').addEventListener('change', function(event){
+    handleTemplateUpload(event.target.files[0], 'act');
     this.value = '';
   });
 }
@@ -776,12 +863,18 @@ function handleTemplateUpload(file, type){
       document.getElementById('contract_tpl_name').textContent = file.name;
       document.getElementById('contract_tpl_name').style.display = 'block';
       document.getElementById('contract_tpl_reset').style.display = 'inline-flex';
-    }else{
+    }else if(type === 'spec'){
       customSpecTemplate = event.target.result;
       document.getElementById('spec_tpl_label').textContent = 'Кастомный шаблон спецификации:';
       document.getElementById('spec_tpl_name').textContent = file.name;
       document.getElementById('spec_tpl_name').style.display = 'block';
       document.getElementById('spec_tpl_reset').style.display = 'inline-flex';
+    }else{
+      customActTemplate = event.target.result;
+      document.getElementById('act_tpl_label').textContent = 'Кастомный шаблон акта:';
+      document.getElementById('act_tpl_name').textContent = file.name;
+      document.getElementById('act_tpl_name').style.display = 'block';
+      document.getElementById('act_tpl_reset').style.display = 'inline-flex';
     }
     toast('Шаблон загружен: ' + file.name, 'i');
   };
@@ -802,6 +895,14 @@ function resetSpecTemplate(){
   document.getElementById('spec_tpl_name').style.display = 'none';
   document.getElementById('spec_tpl_reset').style.display = 'none';
   toast('Сброшен шаблон спецификации', 'i');
+}
+
+function resetActTemplate(){
+  customActTemplate = null;
+  document.getElementById('act_tpl_label').textContent = getDefaultActLabel();
+  document.getElementById('act_tpl_name').style.display = 'none';
+  document.getElementById('act_tpl_reset').style.display = 'none';
+  toast('Сброшен шаблон акта', 'i');
 }
 
 async function loadTemplate(path, customBuffer){
@@ -878,6 +979,21 @@ function getSpecRenderData(contractData){
     items
   };
   return data;
+}
+
+function getActRenderData(contractData){
+  const {unitsValue, remainder} = updateActTotals();
+  return {
+    'Номер_договора': contractData['Номер_договора'],
+    'ФИО_клиента': contractData['ФИО_клиента'],
+    'Адрес_доставки': contractData['Адрес_доставки'],
+    'Телефон': contractData['Телефон'],
+    'Описание Акт': document.getElementById('act_description').value.trim() || 'Мебель в коробках',
+    'ед. акт': unitsValue ? (unitsValue + ' шт') : '',
+    'ед. акт общее': unitsValue ? (unitsValue + ' шт') : '',
+    'Остаток': remainder ? formatNumber(remainder) + ' руб.' : '',
+    'Сумма прописью акт': remainder ? numberToWords(remainder) + ' рублей' : ''
+  };
 }
 
 function createDoc(zipData, renderData){
@@ -1125,6 +1241,19 @@ async function generateSpecDocument(contractData){
   };
 }
 
+async function generateActDocument(contractData){
+  const zipData = await loadTemplate(getCurrentTemplates().actPath, customActTemplate);
+  const doc = createDoc(zipData, getActRenderData(contractData));
+  const out = doc.getZip().generate({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  });
+  return {
+    blob: out,
+    fileName: 'Акт_доставки_' + getSafeClientToken() + getSafeContractToken() + '.docx'
+  };
+}
+
 function validateBeforeGenerate(){
   const clientName = document.getElementById('client_name').value.trim();
   const passport = document.getElementById('passport').value.trim();
@@ -1146,9 +1275,11 @@ async function generateAllDocuments(){
     const contractData = getContractRenderData();
     const contractResult = await generateContractDocument(contractData);
     const specResult = await generateSpecDocument(contractData);
+    const actResult = await generateActDocument(contractData);
     blobToDownload(contractResult.blob, contractResult.fileName);
     setTimeout(() => blobToDownload(specResult.blob, specResult.fileName), 200);
-    toast('Скачаны два файла: договор и спецификация', 's');
+    setTimeout(() => blobToDownload(actResult.blob, actResult.fileName), 400);
+    toast('Скачаны три файла: договор, спецификация и акт', 's');
   }catch(error){
     console.error(error);
     toast('Ошибка: ' + error.message, 'e');
@@ -1164,6 +1295,7 @@ bindTemplateInputs();
 syncCityUI();
 renderSpecItems();
 updateSpecTotals();
+updateActTotals();
 </script>
 </body>
 </html>
