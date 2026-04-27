@@ -106,6 +106,12 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .publish-text{font-size:13px;color:var(--green-text);font-weight:600}
 .deals-toolbar{max-width:1100px;margin:0 auto 12px;display:flex;gap:8px;align-items:center;justify-content:space-between}
 .deals-table{max-width:1100px;margin:0 auto}
+.users-wrap{max-width:1100px;margin:0 auto}
+.users-grid{display:grid;grid-template-columns:minmax(320px,.9fr) minmax(0,1.1fr);gap:12px}
+.user-card{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:12px}
+.user-card + .user-card{margin-top:8px}
+.user-card-title{font-size:13px;font-weight:600}
+.user-card-meta{font-size:11px;color:var(--text2);margin-top:3px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;max-width:900px;margin:0 auto}
 .card-title{font-size:16px;font-weight:600;letter-spacing:-.02em;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .card-title-text{display:flex;align-items:center;gap:8px}
@@ -206,6 +212,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   .app-main{height:100dvh}
   .menu-btn{display:flex}
   .dash-grid,.dashboard-row{grid-template-columns:1fr}
+  .users-grid{grid-template-columns:1fr}
   .publish-box{align-items:flex-start;flex-direction:column}
   .deal-row{grid-template-columns:1fr}
   .card{padding:16px}
@@ -273,6 +280,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     <div class="nav-title">Menu</div>
     <button class="nav-item active" type="button" data-view="dashboard" onclick="setView('dashboard')">Dashboard</button>
     <button class="nav-item" type="button" data-view="deals" onclick="setView('deals')">Deals</button>
+    <button class="nav-item" type="button" data-view="users" id="nav_users" onclick="setView('users')" style="display:none">Users</button>
   </nav>
   <div class="sidebar-user">
     <div class="user-row">
@@ -569,6 +577,59 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <div class="list" id="deals_list"></div>
     </div>
   </section>
+
+  <section class="view" id="view_users">
+    <div class="users-wrap">
+      <div class="users-grid">
+        <div class="panel">
+          <div class="panel-title">Create user</div>
+          <div class="fg">
+            <label class="fl" for="new_user_name">Full name</label>
+            <input class="fi" id="new_user_name" type="text">
+          </div>
+          <div class="fg">
+            <label class="fl" for="new_user_email">Email</label>
+            <input class="fi" id="new_user_email" type="email" placeholder="manager@example.com">
+          </div>
+          <div class="grid2">
+            <div class="fg">
+              <label class="fl" for="new_user_password">Password</label>
+              <input class="fi" id="new_user_password" type="text" value="Manager123!">
+            </div>
+            <div class="fg">
+              <label class="fl" for="new_user_city">City</label>
+              <select class="fselect" id="new_user_city">
+                <option value="spb">SPB</option>
+                <option value="ekb">EKB</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="fg">
+              <label class="fl" for="new_user_role">Role</label>
+              <select class="fselect" id="new_user_role" onchange="syncNewUserRoleUI()">
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl" for="new_user_manager_type">Manager type</label>
+              <select class="fselect" id="new_user_manager_type">
+                <option value="remote">Remote</option>
+                <option value="field">Field</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-p" type="button" id="create_user_btn" onclick="createInternalUser()">Create user</button>
+          <div class="hint" style="margin-top:10px">Only super admin can create internal users from here.</div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Current users</div>
+          <div class="list" id="users_list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <div class="modal-overlay" id="publish_modal">
@@ -652,6 +713,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const appState = {
   user: null,
   profile: null,
+  profiles: [],
   managers: [],
   deals: [],
   rating: [],
@@ -890,23 +952,26 @@ function syncUserUI(){
   document.getElementById('user_name').textContent = profile?.full_name || appState.user?.email || 'User';
   document.getElementById('user_role').textContent = roleLabel(profile);
   document.getElementById('user_avatar').textContent = getShortName(profile?.full_name || appState.user?.email);
+  document.getElementById('nav_users').style.display = profile?.role === 'super_admin' ? 'flex' : 'none';
 }
 
 async function loadAppData(){
   if(!appState.user) return;
   const [profilesResult, dealsResult, ratingResult] = await Promise.all([
-    sb.from('profiles').select('id, full_name, email, role, manager_type, city, is_active').eq('is_active', true).order('full_name'),
+    sb.from('profiles').select('id, full_name, email, role, manager_type, city, is_active').order('full_name'),
     sb.from('published_deals').select('*').order('published_at', {ascending:false}),
     sb.from('manager_deal_totals').select('*').order('total_amount', {ascending:false})
   ]);
   if(profilesResult.error) throw profilesResult.error;
   if(dealsResult.error) throw dealsResult.error;
   if(ratingResult.error) throw ratingResult.error;
-  appState.managers = profilesResult.data || [];
+  appState.profiles = profilesResult.data || [];
+  appState.managers = appState.profiles.filter((item) => item.is_active);
   appState.deals = dealsResult.data || [];
   appState.rating = ratingResult.data || [];
   renderDashboard();
   renderDeals();
+  renderUsers();
 }
 
 function renderDashboard(){
@@ -967,6 +1032,27 @@ function dealCardHtml(deal){
 function renderDeals(){
   const list = document.getElementById('deals_list');
   list.innerHTML = appState.deals.length ? appState.deals.map(dealCardHtml).join('') : '<div class="panel"><div class="hint">No deals are visible for this user yet.</div></div>';
+}
+
+function renderUsers(){
+  const list = document.getElementById('users_list');
+  if(!list) return;
+  if(appState.profile?.role !== 'super_admin'){
+    list.innerHTML = '<div class="hint">Users section is available only for super admin.</div>';
+    return;
+  }
+  list.innerHTML = appState.profiles.length ? appState.profiles.map((profile) => (
+    '<div class="user-card">' +
+      '<div class="user-card-title">' + escapeHtml(profile.full_name || profile.email || 'User') + '</div>' +
+      '<div class="user-card-meta">' + escapeHtml(profile.email || '') + '</div>' +
+      '<div class="user-card-meta">' + escapeHtml(roleLabel(profile)) + ' · ' + (profile.is_active ? 'active' : 'inactive') + '</div>' +
+    '</div>'
+  )).join('') : '<div class="hint">No users found.</div>';
+}
+
+function syncNewUserRoleUI(){
+  const role = document.getElementById('new_user_role').value;
+  document.getElementById('new_user_manager_type').disabled = role !== 'manager';
 }
 
 function fillManagerSelect(selectId, type, selectedId, allowEmpty=true){
@@ -1115,6 +1201,49 @@ async function saveDealChanges(){
   }catch(error){
     console.error(error);
     toast('Save error: ' + error.message, 'e');
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+async function createInternalUser(){
+  if(appState.profile?.role !== 'super_admin'){
+    toast('Only super admin can create users', 'e');
+    return;
+  }
+  const btn = document.getElementById('create_user_btn');
+  btn.disabled = true;
+  try{
+    const fullName = document.getElementById('new_user_name').value.trim();
+    const email = document.getElementById('new_user_email').value.trim().toLowerCase();
+    const password = document.getElementById('new_user_password').value;
+    const role = document.getElementById('new_user_role').value;
+    const managerType = document.getElementById('new_user_manager_type').value;
+    const city = document.getElementById('new_user_city').value;
+    if(!fullName || !email || !password){
+      throw new Error('Fill in name, email and password');
+    }
+    const {error} = await sb.rpc('create_internal_user', {
+      p_email: email,
+      p_password: password,
+      p_full_name: fullName,
+      p_role: role,
+      p_manager_type: role === 'manager' ? managerType : null,
+      p_city: city
+    });
+    if(error) throw error;
+    document.getElementById('new_user_name').value = '';
+    document.getElementById('new_user_email').value = '';
+    document.getElementById('new_user_password').value = 'Manager123!';
+    document.getElementById('new_user_role').value = 'manager';
+    document.getElementById('new_user_manager_type').value = 'remote';
+    document.getElementById('new_user_city').value = 'spb';
+    syncNewUserRoleUI();
+    toast('User created', 's');
+    await loadAppData();
+  }catch(error){
+    console.error(error);
+    toast('Create user error: ' + error.message, 'e');
   }finally{
     btn.disabled = false;
   }
@@ -1925,6 +2054,7 @@ renderSpecItems();
 updateSpecTotals();
 updateActTotals();
 bindAuthForm();
+syncNewUserRoleUI();
 loadSession().catch((error) => {
   console.error(error);
   showLoginError(error.message);
