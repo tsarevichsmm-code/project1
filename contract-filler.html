@@ -292,7 +292,7 @@ body{min-height:100dvh;background-color:var(--bg)}
     <div class="sec">
       <details class="detail detail-green" id="spec_details">
         <summary>
-          <span id="spec_section_title">Справка "Мебель Гранд СПБ"</span>
+          <span id="spec_section_title">Спецификация "Мебель Гранд СПБ"</span>
           <span>заполняется после договора</span>
         </summary>
         <div class="detail-body">
@@ -523,6 +523,12 @@ function formatMoneyValue(value){
   return value ? formatNumber(value) + ' руб.' : DASH;
 }
 
+function formatPassportValue(value){
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 10);
+  if(digits.length <= 4) return digits;
+  return digits.slice(0, 4) + ' ' + digits.slice(4);
+}
+
 function normalizeNumber(value){
   const normalized = String(value || '').replace(',', '.').trim();
   if(!normalized) return 0;
@@ -716,8 +722,12 @@ function updateSpecTotals(){
 function bindAutoFields(){
   const registrationInput = document.getElementById('registration');
   const deliveryInput = document.getElementById('delivery');
+  const passportInput = document.getElementById('passport');
   document.getElementById('client_name').addEventListener('input', function(){
     document.getElementById('initials').value = getInitials(this.value);
+  });
+  passportInput.addEventListener('input', function(){
+    this.value = formatPassportValue(this.value);
   });
   registrationInput.addEventListener('input', function(){
     const currentAutoValue = deliveryInput.dataset.autofillValue || '';
