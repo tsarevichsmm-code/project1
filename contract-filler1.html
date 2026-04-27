@@ -1304,9 +1304,7 @@ function bindAuthForm(){
       const login = document.getElementById('login_email').value.trim().toLowerCase();
       const password = document.getElementById('login_password').value;
       const {data: profileByLogin, error: profileError} = await sb
-        .from('profiles')
-        .select('email, is_active')
-        .eq('username', login)
+        .rpc('get_login_email_by_username', {p_username: login})
         .maybeSingle();
       if(profileError) throw profileError;
       if(!profileByLogin?.email){
