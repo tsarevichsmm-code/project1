@@ -592,13 +592,9 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
             <label class="fl" for="new_user_username">Логин</label>
             <input class="fi" id="new_user_username" type="text" placeholder="manager_spb">
           </div>
-          <div class="fg">
-            <label class="fl" for="new_user_email">Почта</label>
-            <input class="fi" id="new_user_email" type="email" placeholder="manager@example.com">
-          </div>
           <div class="grid2">
             <div class="fg">
-            <label class="fl" for="new_user_password">Пароль</label>
+              <label class="fl" for="new_user_password">Пароль</label>
               <input class="fi" id="new_user_password" type="text" value="Manager123!">
             </div>
             <div class="fg">
@@ -626,7 +622,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
             </div>
           </div>
           <button class="btn btn-p" type="button" id="create_user_btn" onclick="createInternalUser()">Создать пользователя</button>
-          <div class="hint" style="margin-top:10px">Создавать пользователей отсюда может только супер-админ.</div>
+          <div class="hint" style="margin-top:10px">Создавать и удалять пользователей отсюда могут админ и супер-админ.</div>
         </div>
         <div class="panel">
           <div class="panel-title">Текущие пользователи</div>
@@ -979,7 +975,7 @@ function syncUserUI(){
   document.getElementById('user_name').textContent = profile?.full_name || appState.user?.email || 'Пользователь';
   document.getElementById('user_role').textContent = roleLabel(profile);
   document.getElementById('user_avatar').textContent = getShortName(profile?.full_name || appState.user?.email);
-  document.getElementById('nav_users').style.display = profile?.role === 'super_admin' ? 'flex' : 'none';
+  document.getElementById('nav_users').style.display = ['admin', 'super_admin'].includes(profile?.role) ? 'flex' : 'none';
 }
 
 async function loadAppData(){
@@ -1064,16 +1060,16 @@ function renderDeals(){
 function renderUsers(){
   const list = document.getElementById('users_list');
   if(!list) return;
-  if(appState.profile?.role !== 'super_admin'){
-    list.innerHTML = '<div class="hint">Раздел пользователей доступен только супер-админу.</div>';
+  if(!['admin', 'super_admin'].includes(appState.profile?.role)){
+    list.innerHTML = '<div class="hint">Раздел пользователей доступен только админу и супер-админу.</div>';
     return;
   }
-  list.innerHTML = appState.profiles.length ? appState.profiles.map((profile) => (
+  const visibleProfiles = appState.profiles.filter((profile) => profile.is_active);
+  list.innerHTML = visibleProfiles.length ? visibleProfiles.map((profile) => (
     '<div class="user-card">' +
       '<div class="user-card-title">' + escapeHtml(profile.full_name || profile.email || 'Пользователь') + '</div>' +
       '<div class="user-card-meta">Логин: ' + escapeHtml(profile.username || '') + '</div>' +
-      '<div class="user-card-meta">' + escapeHtml(profile.email || '') + '</div>' +
-      '<div class="user-card-meta">' + escapeHtml(roleLabel(profile)) + ' · ' + (profile.is_active ? 'активен' : 'неактивен') + '</div>' +
+      '<div class="user-card-meta">' + escapeHtml(roleLabel(profile)) + '</div>' +
       (profile.role === 'super_admin'
         ? ''
         : '<div class="user-card-actions"><button class="btn btn-s btn-d" type="button" onclick="deactivateUser(\'' + profile.id + '\')">Удалить</button></div>') +
@@ -1238,8 +1234,8 @@ async function saveDealChanges(){
 }
 
 async function createInternalUser(){
-  if(appState.profile?.role !== 'super_admin'){
-    toast('Создавать пользователей может только супер-админ', 'e');
+  if(appState.profile?.role !== 'admin' && appState.profile?.role !== 'super_admin'){
+    toast('Создавать пользователей может только админ или супер-админ', 'e');
     return;
   }
   const btn = document.getElementById('create_user_btn');
@@ -1247,16 +1243,15 @@ async function createInternalUser(){
   try{
     const fullName = document.getElementById('new_user_name').value.trim();
     const username = document.getElementById('new_user_username').value.trim().toLowerCase();
-    const email = document.getElementById('new_user_email').value.trim().toLowerCase();
     const password = document.getElementById('new_user_password').value;
     const role = document.getElementById('new_user_role').value;
     const managerType = document.getElementById('new_user_manager_type').value;
     const city = document.getElementById('new_user_city').value;
-    if(!fullName || !username || !email || !password){
-      throw new Error('Заполните ФИО, логин, почту и пароль');
+    if(!fullName || !username || !password){
+      throw new Error('Заполните ФИО, логин и пароль');
     }
     const {error} = await sb.rpc('create_internal_user', {
-      p_email: email,
+      p_email: null,
       p_password: password,
       p_full_name: fullName,
       p_role: role,
@@ -1267,7 +1262,6 @@ async function createInternalUser(){
     if(error) throw error;
     document.getElementById('new_user_name').value = '';
     document.getElementById('new_user_username').value = '';
-    document.getElementById('new_user_email').value = '';
     document.getElementById('new_user_password').value = 'Manager123!';
     document.getElementById('new_user_role').value = 'manager';
     document.getElementById('new_user_manager_type').value = 'remote';
