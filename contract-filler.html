@@ -183,7 +183,7 @@ body{min-height:100dvh;background-color:var(--bg)}
 
     <details class="detail" id="contract_details">
       <summary>
-        <span id="contract_section_title">Договор "Mebel Grand СПБ"</span>
+        <span id="contract_section_title">"Мебель Гранд СПБ"</span>
         <span>основные данные клиента и суммы</span>
       </summary>
       <div class="detail-body" style="padding-top:12px">
@@ -425,8 +425,8 @@ function syncCityUI(){
   if(ekbBtn) ekbBtn.classList.toggle('active', currentCity === 'ekb');
   const contractTitle = document.getElementById('contract_section_title');
   const specTitle = document.getElementById('spec_section_title');
-  if(contractTitle) contractTitle.textContent = 'Договор "Mebel Grand ' + templates.code + '"';
-  if(specTitle) specTitle.textContent = 'Справка "Мебель Гранд ' + templates.code + '"';
+  if(contractTitle) contractTitle.textContent = '"Мебель Гранд ' + templates.code + '"';
+  if(specTitle) specTitle.textContent = 'Спецификация "Мебель Гранд ' + templates.code + '"';
   if(!customContractTemplate){
     document.getElementById('contract_tpl_label').textContent = getDefaultContractLabel();
   }
