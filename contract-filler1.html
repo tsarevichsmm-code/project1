@@ -112,6 +112,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .user-card + .user-card{margin-top:8px}
 .user-card-title{font-size:13px;font-weight:600}
 .user-card-meta{font-size:11px;color:var(--text2);margin-top:3px}
+.user-card-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;max-width:900px;margin:0 auto}
 .card-title{font-size:16px;font-weight:600;letter-spacing:-.02em;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .card-title-text{display:flex;align-items:center;gap:8px}
@@ -255,8 +256,8 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     </div>
     <div class="login-error" id="login_error"></div>
     <div class="fg">
-      <label class="fl" for="login_email">Почта</label>
-      <input class="fi" id="login_email" type="email" autocomplete="email" required>
+      <label class="fl" for="login_email">Логин</label>
+      <input class="fi" id="login_email" type="text" autocomplete="username" required>
     </div>
     <div class="fg">
       <label class="fl" for="login_password">Пароль</label>
@@ -586,6 +587,10 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           <div class="fg">
             <label class="fl" for="new_user_name">ФИО</label>
             <input class="fi" id="new_user_name" type="text">
+          </div>
+          <div class="fg">
+            <label class="fl" for="new_user_username">Логин</label>
+            <input class="fi" id="new_user_username" type="text" placeholder="manager_spb">
           </div>
           <div class="fg">
             <label class="fl" for="new_user_email">Почта</label>
@@ -943,6 +948,7 @@ async function ensureProfile(user){
   const fallbackProfile = {
     id: user.id,
     full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Пользователь',
+    username: user.user_metadata?.username || user.email?.split('@')[0] || ('user_' + String(user.id).slice(0, 8)),
     email: user.email,
     role: 'manager',
     manager_type: 'remote',
@@ -979,7 +985,7 @@ function syncUserUI(){
 async function loadAppData(){
   if(!appState.user) return;
   const [profilesResult, dealsResult, ratingResult] = await Promise.all([
-    sb.from('profiles').select('id, full_name, email, role, manager_type, city, is_active').order('full_name'),
+    sb.from('profiles').select('id, full_name, username, email, role, manager_type, city, is_active').order('full_name'),
     sb.from('published_deals').select('*').order('published_at', {ascending:false}),
     sb.from('manager_deal_totals').select('*').order('total_amount', {ascending:false})
   ]);
@@ -1065,8 +1071,12 @@ function renderUsers(){
   list.innerHTML = appState.profiles.length ? appState.profiles.map((profile) => (
     '<div class="user-card">' +
       '<div class="user-card-title">' + escapeHtml(profile.full_name || profile.email || 'Пользователь') + '</div>' +
+      '<div class="user-card-meta">Логин: ' + escapeHtml(profile.username || '') + '</div>' +
       '<div class="user-card-meta">' + escapeHtml(profile.email || '') + '</div>' +
       '<div class="user-card-meta">' + escapeHtml(roleLabel(profile)) + ' · ' + (profile.is_active ? 'активен' : 'неактивен') + '</div>' +
+      (profile.role === 'super_admin'
+        ? ''
+        : '<div class="user-card-actions"><button class="btn btn-s btn-d" type="button" onclick="deactivateUser(\'' + profile.id + '\')">Удалить</button></div>') +
     '</div>'
   )).join('') : '<div class="hint">Пользователей пока нет.</div>';
 }
@@ -1236,13 +1246,14 @@ async function createInternalUser(){
   btn.disabled = true;
   try{
     const fullName = document.getElementById('new_user_name').value.trim();
+    const username = document.getElementById('new_user_username').value.trim().toLowerCase();
     const email = document.getElementById('new_user_email').value.trim().toLowerCase();
     const password = document.getElementById('new_user_password').value;
     const role = document.getElementById('new_user_role').value;
     const managerType = document.getElementById('new_user_manager_type').value;
     const city = document.getElementById('new_user_city').value;
-    if(!fullName || !email || !password){
-      throw new Error('Заполните ФИО, почту и пароль');
+    if(!fullName || !username || !email || !password){
+      throw new Error('Заполните ФИО, логин, почту и пароль');
     }
     const {error} = await sb.rpc('create_internal_user', {
       p_email: email,
@@ -1250,10 +1261,12 @@ async function createInternalUser(){
       p_full_name: fullName,
       p_role: role,
       p_manager_type: role === 'manager' ? managerType : null,
-      p_city: city
+      p_city: city,
+      p_username: username
     });
     if(error) throw error;
     document.getElementById('new_user_name').value = '';
+    document.getElementById('new_user_username').value = '';
     document.getElementById('new_user_email').value = '';
     document.getElementById('new_user_password').value = 'Manager123!';
     document.getElementById('new_user_role').value = 'manager';
@@ -1270,6 +1283,22 @@ async function createInternalUser(){
   }
 }
 
+async function deactivateUser(userId){
+  if(appState.profile?.role !== 'admin' && appState.profile?.role !== 'super_admin'){
+    toast('Удалять пользователей может только админ или супер-админ', 'e');
+    return;
+  }
+  try{
+    const {error} = await sb.rpc('deactivate_internal_user', {p_user_id: userId});
+    if(error) throw error;
+    toast('Пользователь удалён', 's');
+    await loadAppData();
+  }catch(error){
+    console.error(error);
+    toast('Ошибка удаления пользователя: ' + error.message, 'e');
+  }
+}
+
 function bindAuthForm(){
   document.getElementById('login_form').addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -1278,12 +1307,28 @@ function bindAuthForm(){
     errorBox.style.display = 'none';
     btn.disabled = true;
     try{
-      const email = document.getElementById('login_email').value.trim();
+      const login = document.getElementById('login_email').value.trim().toLowerCase();
       const password = document.getElementById('login_password').value;
-      const {data, error} = await sb.auth.signInWithPassword({email, password});
+      const {data: profileByLogin, error: profileError} = await sb
+        .from('profiles')
+        .select('email, is_active')
+        .eq('username', login)
+        .maybeSingle();
+      if(profileError) throw profileError;
+      if(!profileByLogin?.email){
+        throw new Error('Пользователь с таким логином не найден');
+      }
+      if(profileByLogin.is_active === false){
+        throw new Error('Пользователь деактивирован');
+      }
+      const {data, error} = await sb.auth.signInWithPassword({email: profileByLogin.email, password});
       if(error) throw error;
       appState.user = data.user;
       appState.profile = await ensureProfile(appState.user);
+      if(appState.profile?.is_active === false){
+        await sb.auth.signOut();
+        throw new Error('Пользователь деактивирован');
+      }
       document.body.classList.add('authed');
       syncUserUI();
       await loadAppData();
