@@ -255,15 +255,15 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     </div>
     <div class="login-error" id="login_error"></div>
     <div class="fg">
-      <label class="fl" for="login_email">Email</label>
+      <label class="fl" for="login_email">Почта</label>
       <input class="fi" id="login_email" type="email" autocomplete="email" required>
     </div>
     <div class="fg">
-      <label class="fl" for="login_password">Password</label>
+      <label class="fl" for="login_password">Пароль</label>
       <input class="fi" id="login_password" type="password" autocomplete="current-password" required>
     </div>
-    <button class="btn btn-p btn-gen" id="login_btn" type="submit" style="margin-top:4px">Sign in</button>
-    <div class="login-note">Supabase Auth controls access. User role and manager type load from profiles.</div>
+    <button class="btn btn-p btn-gen" id="login_btn" type="submit" style="margin-top:4px">Войти</button>
+    <div class="login-note">Доступ управляется через Supabase Auth. Роль и тип менеджера подтягиваются из `profiles`.</div>
   </form>
 </div>
 
@@ -277,17 +277,17 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     </div>
   </div>
   <nav class="sidebar-nav">
-    <div class="nav-title">Menu</div>
-    <button class="nav-item active" type="button" data-view="dashboard" onclick="setView('dashboard')">Dashboard</button>
-    <button class="nav-item" type="button" data-view="deals" onclick="setView('deals')">Deals</button>
-    <button class="nav-item" type="button" data-view="users" id="nav_users" onclick="setView('users')" style="display:none">Users</button>
+    <div class="nav-title">Меню</div>
+    <button class="nav-item active" type="button" data-view="dashboard" onclick="setView('dashboard')">Дашборд</button>
+    <button class="nav-item" type="button" data-view="deals" onclick="setView('deals')">Сделки</button>
+    <button class="nav-item" type="button" data-view="users" id="nav_users" onclick="setView('users')" style="display:none">Пользователи</button>
   </nav>
   <div class="sidebar-user">
     <div class="user-row">
       <div class="avatar" id="user_avatar">--</div>
       <div class="user-meta">
         <div class="user-name" id="user_name">User</div>
-        <div class="user-role" id="user_role">manager</div>
+        <div class="user-role" id="user_role">менеджер</div>
       </div>
       <button class="ibtn" type="button" onclick="signOut()" title="Sign out">↪</button>
     </div>
@@ -295,7 +295,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 </aside>
 
 <div class="topbar">
-  <button class="ibtn menu-btn" type="button" onclick="openMobileMenu()" title="Menu">☰</button>
+  <button class="ibtn menu-btn" type="button" onclick="openMobileMenu()" title="Меню">☰</button>
   <div class="logo">
     <div class="lm"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><path d="M9 12h6M12 9v6"/></svg></div>
     <div class="lt">Мебель<span>Гранд</span></div>
@@ -311,29 +311,29 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     <div class="dash-wrap">
       <div class="dash-grid">
         <div class="stat-card">
-          <div class="stat-label">My deals</div>
+          <div class="stat-label">Мои сделки</div>
           <div class="stat-value" id="stat_my_count">0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">My amount</div>
+          <div class="stat-label">Моя сумма</div>
           <div class="stat-value" id="stat_my_amount">0 ₽</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">All deals</div>
+          <div class="stat-label">Все сделки</div>
           <div class="stat-value" id="stat_all_count">0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Total amount</div>
+          <div class="stat-label">Общая сумма</div>
           <div class="stat-value" id="stat_all_amount">0 ₽</div>
         </div>
       </div>
       <div class="dashboard-row">
         <div class="panel">
-          <div class="panel-title">Recent published deals</div>
+          <div class="panel-title">Последние опубликованные сделки</div>
           <div class="list" id="recent_deals"></div>
         </div>
         <div class="panel">
-          <div class="panel-title">Manager rating</div>
+          <div class="panel-title">Рейтинг менеджеров</div>
           <div class="list" id="rating_list"></div>
         </div>
       </div>
@@ -341,10 +341,10 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 
     <div class="publish-box" id="publish_box">
       <div>
-        <div class="publish-text" id="publish_text">Documents downloaded. The deal can be published.</div>
-        <div class="hint">Publishing sends the deal summary to Supabase.</div>
+        <div class="publish-text" id="publish_text">Документы скачаны. Сделку можно опубликовать.</div>
+        <div class="hint">После публикации сделка попадёт в Supabase.</div>
       </div>
-      <button class="btn btn-g" type="button" onclick="openPublishModal()">Publish deal</button>
+      <button class="btn btn-g" type="button" onclick="openPublishModal()">Опубликовать сделку</button>
     </div>
 
   <div class="card">
@@ -568,10 +568,10 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   <section class="view" id="view_deals">
     <div class="deals-toolbar">
       <div>
-        <div class="panel-title" style="margin-bottom:2px">Published deals</div>
-        <div class="hint">Deals appear here only after explicit publication.</div>
+        <div class="panel-title" style="margin-bottom:2px">Опубликованные сделки</div>
+        <div class="hint">Здесь показываются только явно опубликованные сделки.</div>
       </div>
-      <button class="btn btn-s" type="button" onclick="loadAppData()">Refresh</button>
+      <button class="btn btn-s" type="button" onclick="loadAppData()">Обновить</button>
     </div>
     <div class="deals-table">
       <div class="list" id="deals_list"></div>
@@ -582,22 +582,22 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     <div class="users-wrap">
       <div class="users-grid">
         <div class="panel">
-          <div class="panel-title">Create user</div>
+          <div class="panel-title">Создать пользователя</div>
           <div class="fg">
-            <label class="fl" for="new_user_name">Full name</label>
+            <label class="fl" for="new_user_name">ФИО</label>
             <input class="fi" id="new_user_name" type="text">
           </div>
           <div class="fg">
-            <label class="fl" for="new_user_email">Email</label>
+            <label class="fl" for="new_user_email">Почта</label>
             <input class="fi" id="new_user_email" type="email" placeholder="manager@example.com">
           </div>
           <div class="grid2">
             <div class="fg">
-              <label class="fl" for="new_user_password">Password</label>
+            <label class="fl" for="new_user_password">Пароль</label>
               <input class="fi" id="new_user_password" type="text" value="Manager123!">
             </div>
             <div class="fg">
-              <label class="fl" for="new_user_city">City</label>
+            <label class="fl" for="new_user_city">Город</label>
               <select class="fselect" id="new_user_city">
                 <option value="spb">SPB</option>
                 <option value="ekb">EKB</option>
@@ -606,25 +606,25 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           </div>
           <div class="grid2">
             <div class="fg">
-              <label class="fl" for="new_user_role">Role</label>
+            <label class="fl" for="new_user_role">Роль</label>
               <select class="fselect" id="new_user_role" onchange="syncNewUserRoleUI()">
-                <option value="manager">Manager</option>
-                <option value="admin">Admin</option>
+                <option value="manager">Менеджер</option>
+                <option value="admin">Админ</option>
               </select>
             </div>
             <div class="fg">
-              <label class="fl" for="new_user_manager_type">Manager type</label>
+            <label class="fl" for="new_user_manager_type">Тип менеджера</label>
               <select class="fselect" id="new_user_manager_type">
-                <option value="remote">Remote</option>
-                <option value="field">Field</option>
+                <option value="remote">Удалённый</option>
+                <option value="field">Выездной</option>
               </select>
             </div>
           </div>
-          <button class="btn btn-p" type="button" id="create_user_btn" onclick="createInternalUser()">Create user</button>
-          <div class="hint" style="margin-top:10px">Only super admin can create internal users from here.</div>
+          <button class="btn btn-p" type="button" id="create_user_btn" onclick="createInternalUser()">Создать пользователя</button>
+          <div class="hint" style="margin-top:10px">Создавать пользователей отсюда может только супер-админ.</div>
         </div>
         <div class="panel">
-          <div class="panel-title">Current users</div>
+          <div class="panel-title">Текущие пользователи</div>
           <div class="list" id="users_list"></div>
         </div>
       </div>
@@ -635,42 +635,42 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 <div class="modal-overlay" id="publish_modal">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title">Publish deal</div>
+      <div class="modal-title">Публикация сделки</div>
       <button class="ibtn" type="button" onclick="closePublishModal()">×</button>
     </div>
     <div class="summary-block" style="margin-bottom:12px">
       <div class="summary-grid">
         <div>
-          <div class="stat-label">Client</div>
+          <div class="stat-label">Клиент</div>
           <div class="deal-title" id="publish_client">—</div>
         </div>
         <div>
-          <div class="stat-label">Amount</div>
+          <div class="stat-label">Сумма</div>
           <div class="deal-amount" id="publish_amount">0 ₽</div>
         </div>
         <div>
-          <div class="stat-label">City</div>
+          <div class="stat-label">Город</div>
           <div class="deal-title" id="publish_city">—</div>
         </div>
       </div>
     </div>
     <div class="grid2">
       <div class="fg">
-        <label class="fl" for="publish_remote_manager">Remote manager</label>
+        <label class="fl" for="publish_remote_manager">Удалённый менеджер</label>
         <select class="fselect" id="publish_remote_manager"></select>
       </div>
       <div class="fg">
-        <label class="fl" for="publish_field_manager">Field manager</label>
+        <label class="fl" for="publish_field_manager">Выездной менеджер</label>
         <select class="fselect" id="publish_field_manager"></select>
       </div>
     </div>
     <div class="fg">
-      <label class="fl" for="publish_note">Note</label>
+      <label class="fl" for="publish_note">Заметка</label>
       <textarea class="fi" id="publish_note" rows="3" style="resize:vertical;min-height:74px"></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn" type="button" onclick="closePublishModal()">Cancel</button>
-      <button class="btn btn-g" id="publish_submit" type="button" onclick="publishLastDeal()">Publish</button>
+      <button class="btn" type="button" onclick="closePublishModal()">Отмена</button>
+      <button class="btn btn-g" id="publish_submit" type="button" onclick="publishLastDeal()">Опубликовать</button>
     </div>
   </div>
 </div>
@@ -678,27 +678,27 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 <div class="modal-overlay" id="deal_modal">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title" id="deal_modal_title">Deal</div>
+      <div class="modal-title" id="deal_modal_title">Сделка</div>
       <button class="ibtn" type="button" onclick="closeDealModal()">×</button>
     </div>
     <div class="summary-block" id="deal_modal_summary" style="margin-bottom:12px"></div>
     <div class="grid2">
       <div class="fg">
-        <label class="fl" for="deal_remote_manager">Remote manager</label>
+        <label class="fl" for="deal_remote_manager">Удалённый менеджер</label>
         <select class="fselect" id="deal_remote_manager"></select>
       </div>
       <div class="fg">
-        <label class="fl" for="deal_field_manager">Field manager</label>
+        <label class="fl" for="deal_field_manager">Выездной менеджер</label>
         <select class="fselect" id="deal_field_manager"></select>
       </div>
     </div>
     <div class="fg">
-      <label class="fl" for="deal_note">Note</label>
+      <label class="fl" for="deal_note">Заметка</label>
       <textarea class="fi" id="deal_note" rows="3" style="resize:vertical;min-height:74px"></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn" type="button" onclick="closeDealModal()">Close</button>
-      <button class="btn btn-p" id="deal_save_btn" type="button" onclick="saveDealChanges()">Save changes</button>
+      <button class="btn" type="button" onclick="closeDealModal()">Закрыть</button>
+      <button class="btn btn-p" id="deal_save_btn" type="button" onclick="saveDealChanges()">Сохранить изменения</button>
     </div>
   </div>
 </div>
@@ -850,8 +850,21 @@ function toast(msg, type='s'){
 
 function roleLabel(profile){
   if(!profile) return '';
-  const type = profile.manager_type === 'field' ? 'field' : profile.manager_type === 'remote' ? 'remote' : '';
-  return [profile.role, type, profile.city].filter(Boolean).join(' / ');
+  const roleMap = {
+    super_admin: 'супер-админ',
+    admin: 'админ',
+    manager: 'менеджер'
+  };
+  const typeMap = {
+    field: 'выездной',
+    remote: 'удалённый'
+  };
+  const cityMap = {
+    spb: 'СПБ',
+    ekb: 'ЕКБ'
+  };
+  const type = profile.manager_type ? typeMap[profile.manager_type] || profile.manager_type : '';
+  return [roleMap[profile.role] || profile.role, type, cityMap[profile.city] || profile.city].filter(Boolean).join(' / ');
 }
 
 function getShortName(name){
@@ -869,6 +882,14 @@ function isoDateFromForm(){
 function managerName(id){
   const manager = appState.managers.find((item) => item.id === id);
   return manager ? manager.full_name : '—';
+}
+
+function managerTypeLabel(value){
+  return value === 'remote' ? 'удалённый' : value === 'field' ? 'выездной' : value || '';
+}
+
+function cityLabel(value){
+  return value === 'spb' ? 'СПБ' : value === 'ekb' ? 'ЕКБ' : value || '';
 }
 
 function isAdmin(){
@@ -921,7 +942,7 @@ async function ensureProfile(user){
 
   const fallbackProfile = {
     id: user.id,
-    full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+    full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Пользователь',
     email: user.email,
     role: 'manager',
     manager_type: 'remote',
@@ -949,7 +970,7 @@ async function loadSession(){
 
 function syncUserUI(){
   const profile = appState.profile;
-  document.getElementById('user_name').textContent = profile?.full_name || appState.user?.email || 'User';
+  document.getElementById('user_name').textContent = profile?.full_name || appState.user?.email || 'Пользователь';
   document.getElementById('user_role').textContent = roleLabel(profile);
   document.getElementById('user_avatar').textContent = getShortName(profile?.full_name || appState.user?.email);
   document.getElementById('nav_users').style.display = profile?.role === 'super_admin' ? 'flex' : 'none';
@@ -996,7 +1017,7 @@ function renderDashboard(){
 function renderRecentDeals(deals){
   const list = document.getElementById('recent_deals');
   const source = (deals.length ? deals : appState.deals).slice(0, 5);
-  list.innerHTML = source.length ? source.map(dealCardHtml).join('') : '<div class="hint">No published deals yet.</div>';
+  list.innerHTML = source.length ? source.map(dealCardHtml).join('') : '<div class="hint">Пока нет опубликованных сделок.</div>';
 }
 
 function ratingClass(index, rating){
@@ -1010,11 +1031,11 @@ function renderRating(){
   const ratings = appState.rating || [];
   list.innerHTML = ratings.length ? ratings.map((item, index) => (
     '<div class="rank-row' + ratingClass(index, item) + '">' +
-      '<div><div class="rank-name">' + escapeHtml(item.manager_name || 'Manager') + '</div>' +
-      '<div class="rank-meta">' + escapeHtml(item.manager_type || '') + ' / ' + escapeHtml(item.city || '') + ' / ' + Number(item.deals_count || 0) + '</div></div>' +
+      '<div><div class="rank-name">' + escapeHtml(item.manager_name || 'Менеджер') + '</div>' +
+      '<div class="rank-meta">' + escapeHtml(managerTypeLabel(item.manager_type)) + ' / ' + escapeHtml(cityLabel(item.city)) + ' / ' + Number(item.deals_count || 0) + '</div></div>' +
       '<div class="rank-amount">' + money(item.total_amount) + '</div>' +
     '</div>'
-  )).join('') : '<div class="hint">Rating will appear after first publication.</div>';
+  )).join('') : '<div class="hint">Рейтинг появится после первой публикации.</div>';
 }
 
 function dealCardHtml(deal){
@@ -1022,7 +1043,7 @@ function dealCardHtml(deal){
     '<div class="deal-row" onclick="openDealModal(&quot;' + deal.id + '&quot;)">' +
       '<div class="deal-main">' +
         '<div class="deal-title">' + escapeHtml(deal.client_initials || deal.client_full_name) + '</div>' +
-        '<div class="deal-meta">' + escapeHtml((deal.city || '').toUpperCase()) + ' · remote: ' + escapeHtml(managerName(deal.remote_manager_id)) + ' · field: ' + escapeHtml(managerName(deal.field_manager_id)) + '</div>' +
+        '<div class="deal-meta">' + escapeHtml((deal.city || '').toUpperCase()) + ' · удалённый: ' + escapeHtml(managerName(deal.remote_manager_id)) + ' · выездной: ' + escapeHtml(managerName(deal.field_manager_id)) + '</div>' +
       '</div>' +
       '<div class="deal-amount">' + money(deal.contract_amount) + '</div>' +
     '</div>'
@@ -1031,23 +1052,23 @@ function dealCardHtml(deal){
 
 function renderDeals(){
   const list = document.getElementById('deals_list');
-  list.innerHTML = appState.deals.length ? appState.deals.map(dealCardHtml).join('') : '<div class="panel"><div class="hint">No deals are visible for this user yet.</div></div>';
+  list.innerHTML = appState.deals.length ? appState.deals.map(dealCardHtml).join('') : '<div class="panel"><div class="hint">Для этого пользователя пока нет видимых сделок.</div></div>';
 }
 
 function renderUsers(){
   const list = document.getElementById('users_list');
   if(!list) return;
   if(appState.profile?.role !== 'super_admin'){
-    list.innerHTML = '<div class="hint">Users section is available only for super admin.</div>';
+    list.innerHTML = '<div class="hint">Раздел пользователей доступен только супер-админу.</div>';
     return;
   }
   list.innerHTML = appState.profiles.length ? appState.profiles.map((profile) => (
     '<div class="user-card">' +
-      '<div class="user-card-title">' + escapeHtml(profile.full_name || profile.email || 'User') + '</div>' +
+      '<div class="user-card-title">' + escapeHtml(profile.full_name || profile.email || 'Пользователь') + '</div>' +
       '<div class="user-card-meta">' + escapeHtml(profile.email || '') + '</div>' +
-      '<div class="user-card-meta">' + escapeHtml(roleLabel(profile)) + ' · ' + (profile.is_active ? 'active' : 'inactive') + '</div>' +
+      '<div class="user-card-meta">' + escapeHtml(roleLabel(profile)) + ' · ' + (profile.is_active ? 'активен' : 'неактивен') + '</div>' +
     '</div>'
-  )).join('') : '<div class="hint">No users found.</div>';
+  )).join('') : '<div class="hint">Пользователей пока нет.</div>';
 }
 
 function syncNewUserRoleUI(){
@@ -1058,7 +1079,7 @@ function syncNewUserRoleUI(){
 function fillManagerSelect(selectId, type, selectedId, allowEmpty=true){
   const select = document.getElementById(selectId);
   const managers = appState.managers.filter((item) => item.role === 'manager' && item.manager_type === type);
-  select.innerHTML = (allowEmpty ? '<option value="">Not selected</option>' : '') + managers.map((item) => (
+  select.innerHTML = (allowEmpty ? '<option value="">Не выбран</option>' : '') + managers.map((item) => (
     '<option value="' + item.id + '"' + (item.id === selectedId ? ' selected' : '') + '>' + escapeHtml(item.full_name) + '</option>'
   )).join('');
 }
@@ -1088,13 +1109,13 @@ function showPublishBox(){
     box.classList.remove('show');
     return;
   }
-  document.getElementById('publish_text').textContent = 'Ready to publish: ' + appState.lastDownloadedDeal.client_initials + ' · ' + money(appState.lastDownloadedDeal.contract_amount);
+  document.getElementById('publish_text').textContent = 'Готово к публикации: ' + appState.lastDownloadedDeal.client_initials + ' · ' + money(appState.lastDownloadedDeal.contract_amount);
   box.classList.add('show');
 }
 
 function openPublishModal(){
   if(!appState.lastDownloadedDeal){
-    toast('Download documents first', 'i');
+    toast('Сначала скачайте документы', 'i');
     return;
   }
   const deal = appState.lastDownloadedDeal;
@@ -1139,11 +1160,11 @@ async function publishLastDeal(){
     appState.lastDownloadedDeal = null;
     document.getElementById('publish_box').classList.remove('show');
     closePublishModal();
-    toast('Deal published', 's');
+    toast('Сделка опубликована', 's');
     await loadAppData();
   }catch(error){
     console.error(error);
-    toast('Publish error: ' + error.message, 'e');
+    toast('Ошибка публикации: ' + error.message, 'e');
   }finally{
     btn.disabled = false;
   }
@@ -1156,11 +1177,11 @@ function openDealModal(id){
   document.getElementById('deal_modal_title').textContent = deal.client_initials || deal.client_full_name;
   document.getElementById('deal_modal_summary').innerHTML =
     '<div class="summary-grid">' +
-      '<div><div class="stat-label">Amount</div><div class="deal-amount">' + money(deal.contract_amount) + '</div></div>' +
-      '<div><div class="stat-label">City</div><div class="deal-title">' + escapeHtml(String(deal.city || '').toUpperCase()) + '</div></div>' +
-      '<div><div class="stat-label">Contract</div><div class="deal-title">' + escapeHtml(deal.contract_number || '—') + '</div></div>' +
+      '<div><div class="stat-label">Сумма</div><div class="deal-amount">' + money(deal.contract_amount) + '</div></div>' +
+      '<div><div class="stat-label">Город</div><div class="deal-title">' + escapeHtml(String(deal.city || '').toUpperCase()) + '</div></div>' +
+      '<div><div class="stat-label">Договор</div><div class="deal-title">' + escapeHtml(deal.contract_number || '—') + '</div></div>' +
     '</div>' +
-    '<div class="hint" style="margin-top:10px">Published: ' + escapeHtml(new Date(deal.published_at).toLocaleString('ru-RU')) + ' · by ' + escapeHtml(managerName(deal.published_by)) + '</div>';
+    '<div class="hint" style="margin-top:10px">Опубликовано: ' + escapeHtml(new Date(deal.published_at).toLocaleString('ru-RU')) + ' · кем: ' + escapeHtml(managerName(deal.published_by)) + '</div>';
   fillManagerSelect('deal_remote_manager', 'remote', deal.remote_manager_id);
   fillManagerSelect('deal_field_manager', 'field', deal.field_manager_id);
   document.getElementById('deal_remote_manager').disabled = !isAdmin() && appState.profile?.manager_type === 'remote';
@@ -1196,11 +1217,11 @@ async function saveDealChanges(){
       event_payload: payload
     });
     closeDealModal();
-    toast('Deal updated', 's');
+    toast('Сделка обновлена', 's');
     await loadAppData();
   }catch(error){
     console.error(error);
-    toast('Save error: ' + error.message, 'e');
+    toast('Ошибка сохранения: ' + error.message, 'e');
   }finally{
     btn.disabled = false;
   }
@@ -1208,7 +1229,7 @@ async function saveDealChanges(){
 
 async function createInternalUser(){
   if(appState.profile?.role !== 'super_admin'){
-    toast('Only super admin can create users', 'e');
+    toast('Создавать пользователей может только супер-админ', 'e');
     return;
   }
   const btn = document.getElementById('create_user_btn');
@@ -1221,7 +1242,7 @@ async function createInternalUser(){
     const managerType = document.getElementById('new_user_manager_type').value;
     const city = document.getElementById('new_user_city').value;
     if(!fullName || !email || !password){
-      throw new Error('Fill in name, email and password');
+      throw new Error('Заполните ФИО, почту и пароль');
     }
     const {error} = await sb.rpc('create_internal_user', {
       p_email: email,
@@ -1239,11 +1260,11 @@ async function createInternalUser(){
     document.getElementById('new_user_manager_type').value = 'remote';
     document.getElementById('new_user_city').value = 'spb';
     syncNewUserRoleUI();
-    toast('User created', 's');
+    toast('Пользователь создан', 's');
     await loadAppData();
   }catch(error){
     console.error(error);
-    toast('Create user error: ' + error.message, 'e');
+    toast('Ошибка создания пользователя: ' + error.message, 'e');
   }finally{
     btn.disabled = false;
   }
