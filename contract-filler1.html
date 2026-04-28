@@ -91,14 +91,20 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .list{display:grid;gap:8px}
 .deal-row{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;cursor:pointer}
 .deal-row:hover{border-color:var(--border2);background:var(--surface2)}
+.draft-row{border-style:dashed}
 .deal-main{min-width:0}
 .deal-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .deal-meta{font-size:11px;color:var(--text2);margin-top:2px}
+.deal-flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.deal-flag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;background:var(--surface3);font-size:10px;color:var(--text2)}
 .deal-amount{font-size:13px;font-weight:600;font-family:var(--mono);color:var(--blue)}
 .rank-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;background:var(--surface)}
 .rank-name{font-size:13px;font-weight:600}
 .rank-meta{font-size:11px;color:var(--text2)}
 .rank-amount{font-family:var(--mono);font-size:12px;font-weight:600}
+.rating-columns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rating-column{display:grid;gap:8px}
+.rating-column .panel-title{margin-bottom:2px}
 .rank-gold{border-color:rgba(180,83,9,.35);background:var(--gold-bg);color:var(--gold)}
 .rank-purple{border-color:rgba(124,58,237,.28);background:var(--purple-bg);color:var(--purple-text)}
 .publish-box{display:none;max-width:900px;margin:0 auto 14px;background:var(--green-bg);border:1px solid rgba(26,158,110,.25);border-radius:var(--rl);padding:12px 14px;align-items:center;justify-content:space-between;gap:12px}
@@ -213,6 +219,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   .app-main{height:100dvh}
   .menu-btn{display:flex}
   .dash-grid,.dashboard-row{grid-template-columns:1fr}
+  .rating-columns{grid-template-columns:1fr}
   .users-grid{grid-template-columns:1fr}
   .publish-box{align-items:flex-start;flex-direction:column}
   .deal-row{grid-template-columns:1fr}
@@ -279,7 +286,8 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   </div>
   <nav class="sidebar-nav">
     <div class="nav-title">Меню</div>
-    <button class="nav-item active" type="button" data-view="dashboard" onclick="setView('dashboard')">Дашборд</button>
+    <button class="nav-item active" type="button" data-view="contract" onclick="setView('contract')">Договор</button>
+    <button class="nav-item" type="button" data-view="dashboard" onclick="setView('dashboard')">Дашборд</button>
     <button class="nav-item" type="button" data-view="deals" onclick="setView('deals')">Сделки</button>
     <button class="nav-item" type="button" data-view="users" id="nav_users" onclick="setView('users')" style="display:none">Пользователи</button>
   </nav>
@@ -302,13 +310,13 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     <div class="lt">Мебель<span>Гранд</span></div>
   </div>
   <div class="topbar-right">
-    <span style="font-size:12px;color:var(--text3)">Договор и спецификация</span>
+    <span style="font-size:12px;color:var(--text3)">Договор</span>
     <button class="ibtn" onclick="toggleTheme()" title="Тема">◑</button>
   </div>
 </div>
 
 <div class="content">
-  <section class="view active" id="view_dashboard">
+  <section class="view" id="view_dashboard">
     <div class="dash-wrap">
       <div class="dash-grid">
         <div class="stat-card">
@@ -334,16 +342,27 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           <div class="list" id="recent_deals"></div>
         </div>
         <div class="panel">
-          <div class="panel-title">Рейтинг менеджеров</div>
-          <div class="list" id="rating_list"></div>
+          <div class="panel-title">Рейтинг по менеджерам</div>
+          <div class="rating-columns">
+            <div class="rating-column">
+              <div class="hint">Удалённые</div>
+              <div class="list" id="rating_remote_list"></div>
+            </div>
+            <div class="rating-column">
+              <div class="hint">Выездные</div>
+              <div class="list" id="rating_field_list"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+  </section>
 
+  <section class="view active" id="view_contract">
     <div class="publish-box" id="publish_box">
       <div>
-        <div class="publish-text" id="publish_text">Документы скачаны. Сделку можно опубликовать.</div>
-        <div class="hint">После публикации сделка попадёт в Supabase.</div>
+        <div class="publish-text" id="publish_text">Документы скачаны. Сделка сохранена как черновик.</div>
+        <div class="hint">Черновик уже в базе и будет виден в разделе сделок, пока вы не решите публиковать его или нет.</div>
       </div>
       <button class="btn btn-g" type="button" onclick="openPublishModal()">Опубликовать сделку</button>
     </div>
@@ -569,10 +588,13 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   <section class="view" id="view_deals">
     <div class="deals-toolbar">
       <div>
-        <div class="panel-title" style="margin-bottom:2px">Опубликованные сделки</div>
-        <div class="hint">Здесь показываются только явно опубликованные сделки.</div>
+        <div class="panel-title" style="margin-bottom:2px">Сделки и черновики</div>
+        <div class="hint">Здесь лежат ваши черновики до публикации и опубликованные сделки.</div>
       </div>
-      <button class="btn btn-s" type="button" onclick="loadAppData()">Обновить</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-s" type="button" onclick="openManualDealModal()">Создать вручную</button>
+        <button class="btn btn-s" type="button" onclick="loadAppData()">Обновить</button>
+      </div>
     </div>
     <div class="deals-table">
       <div class="list" id="deals_list"></div>
@@ -615,14 +637,14 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
             </div>
             <div class="fg">
             <label class="fl" for="new_user_manager_type">Тип менеджера</label>
-              <select class="fselect" id="new_user_manager_type">
+              <select class="fselect" id="new_user_manager_type" onchange="syncNewUserRoleUI()">
                 <option value="remote">Удалённый</option>
                 <option value="field">Выездной</option>
               </select>
             </div>
           </div>
           <button class="btn btn-p" type="button" id="create_user_btn" onclick="createInternalUser()">Создать пользователя</button>
-          <div class="hint" style="margin-top:10px">Создавать и удалять пользователей отсюда могут админ и супер-админ.</div>
+          <div class="hint" style="margin-top:10px">Для удалённого сотрудника город не нужен. Админ и супер-админ тоже могут быть удалёнными или выездными и участвуют в рейтинге.</div>
         </div>
         <div class="panel">
           <div class="panel-title">Текущие пользователи</div>
@@ -653,6 +675,10 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           <div class="stat-label">Город</div>
           <div class="deal-title" id="publish_city">—</div>
         </div>
+        <div>
+          <div class="stat-label">Договор</div>
+          <div class="deal-title" id="publish_contract_number">—</div>
+        </div>
       </div>
     </div>
     <div class="grid2">
@@ -671,6 +697,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     </div>
     <div class="modal-actions">
       <button class="btn" type="button" onclick="closePublishModal()">Отмена</button>
+      <button class="btn btn-d" id="publish_delete_btn" type="button" onclick="deleteCurrentDraft()">Удалить черновик</button>
       <button class="btn btn-g" id="publish_submit" type="button" onclick="publishLastDeal()">Опубликовать</button>
     </div>
   </div>
@@ -699,7 +726,68 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     </div>
     <div class="modal-actions">
       <button class="btn" type="button" onclick="closeDealModal()">Закрыть</button>
+      <button class="btn btn-d" id="deal_delete_btn" type="button" onclick="deleteSelectedDeal()" style="display:none">Удалить сделку</button>
       <button class="btn btn-p" id="deal_save_btn" type="button" onclick="saveDealChanges()">Сохранить изменения</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="manual_deal_modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Создать сделку вручную</div>
+      <button class="ibtn" type="button" onclick="closeManualDealModal()">×</button>
+    </div>
+    <div class="grid2">
+      <div class="fg">
+        <label class="fl" for="manual_client_name">ФИО клиента</label>
+        <input class="fi" id="manual_client_name" type="text">
+      </div>
+      <div class="fg">
+        <label class="fl" for="manual_initials">Фамилия и инициалы</label>
+        <input class="fi" id="manual_initials" type="text">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="fg">
+        <label class="fl" for="manual_contract_number">Номер договора</label>
+        <input class="fi" id="manual_contract_number" type="text">
+      </div>
+      <div class="fg">
+        <label class="fl" for="manual_contract_date">Дата договора</label>
+        <input class="fi" id="manual_contract_date" type="date">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="fg">
+        <label class="fl" for="manual_amount">Сумма</label>
+        <input class="fi" id="manual_amount" type="number" min="0" step="0.01">
+      </div>
+      <div class="fg">
+        <label class="fl" for="manual_city">Город</label>
+        <select class="fselect" id="manual_city">
+          <option value="spb">SPB</option>
+          <option value="ekb">EKB</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="fg">
+        <label class="fl" for="manual_remote_manager">Удалённый менеджер</label>
+        <select class="fselect" id="manual_remote_manager"></select>
+      </div>
+      <div class="fg">
+        <label class="fl" for="manual_field_manager">Выездной менеджер</label>
+        <select class="fselect" id="manual_field_manager"></select>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl" for="manual_note">Заметка</label>
+      <textarea class="fi" id="manual_note" rows="3" style="resize:vertical;min-height:74px"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" type="button" onclick="closeManualDealModal()">Отмена</button>
+      <button class="btn btn-p" id="manual_deal_save_btn" type="button" onclick="createManualDealDraft()">Сохранить черновик</button>
     </div>
   </div>
 </div>
@@ -716,10 +804,12 @@ const appState = {
   profile: null,
   profiles: [],
   managers: [],
+  drafts: [],
   deals: [],
   rating: [],
   lastDownloadedDeal: null,
-  selectedDeal: null
+  selectedDeal: null,
+  activePublishDraftId: null
 };
 
 const CITY_TEMPLATES = {
@@ -881,7 +971,7 @@ function isoDateFromForm(){
 }
 
 function managerName(id){
-  const manager = appState.managers.find((item) => item.id === id);
+  const manager = appState.profiles.find((item) => item.id === id);
   return manager ? manager.full_name : '—';
 }
 
@@ -906,10 +996,26 @@ function canEditDeal(deal){
     || deal.field_manager_id === appState.user.id;
 }
 
+function canDeletePublishedDeal(deal){
+  if(!appState.user || !deal) return false;
+  return isAdmin() || deal.published_by === appState.user.id;
+}
+
+function currentUserManagerType(){
+  return appState.profile?.manager_type || null;
+}
+
+function closeAllDealDetails(){
+  document.querySelectorAll('details').forEach((node) => {
+    node.open = false;
+  });
+}
+
 function setView(view){
   document.querySelectorAll('.view').forEach((node) => node.classList.toggle('active', node.id === 'view_' + view));
   document.querySelectorAll('.nav-item').forEach((node) => node.classList.toggle('active', node.dataset.view === view));
   closeMobileMenu();
+  if(view === 'dashboard') renderDashboard();
   if(view === 'deals') renderDeals();
 }
 
@@ -927,6 +1033,11 @@ async function signOut(){
   await sb.auth.signOut();
   appState.user = null;
   appState.profile = null;
+  appState.drafts = [];
+  appState.deals = [];
+  appState.rating = [];
+  appState.lastDownloadedDeal = null;
+  appState.activePublishDraftId = null;
   document.body.classList.remove('authed');
 }
 
@@ -980,21 +1091,28 @@ function syncUserUI(){
 
 async function loadAppData(){
   if(!appState.user) return;
-  const [profilesResult, dealsResult, ratingResult] = await Promise.all([
+  const [profilesResult, draftsResult, dealsResult, ratingResult] = await Promise.all([
     sb.from('profiles').select('id, full_name, username, email, role, manager_type, city, is_active').order('full_name'),
+    sb.from('deal_drafts').select('*').order('created_at', {ascending:false}),
     sb.from('published_deals').select('*').order('published_at', {ascending:false}),
     sb.from('manager_deal_totals').select('*').order('total_amount', {ascending:false})
   ]);
   if(profilesResult.error) throw profilesResult.error;
+  if(draftsResult.error) throw draftsResult.error;
   if(dealsResult.error) throw dealsResult.error;
   if(ratingResult.error) throw ratingResult.error;
   appState.profiles = profilesResult.data || [];
-  appState.managers = appState.profiles.filter((item) => item.is_active);
+  appState.managers = appState.profiles.filter((item) => item.is_active && item.manager_type);
+  appState.drafts = draftsResult.data || [];
   appState.deals = dealsResult.data || [];
   appState.rating = ratingResult.data || [];
+  if(appState.lastDownloadedDeal?.id){
+    appState.lastDownloadedDeal = appState.drafts.find((item) => item.id === appState.lastDownloadedDeal.id) || null;
+  }
   renderDashboard();
   renderDeals();
   renderUsers();
+  showPublishBox();
 }
 
 function renderDashboard(){
@@ -1022,29 +1140,34 @@ function renderRecentDeals(deals){
   list.innerHTML = source.length ? source.map(dealCardHtml).join('') : '<div class="hint">Пока нет опубликованных сделок.</div>';
 }
 
-function ratingClass(index, rating){
+function ratingClass(index, ratings, rating){
   if(index === 0 && Number(rating.total_amount || 0) > 0) return ' rank-gold';
-  if(appState.rating.length >= 3 && index > 0 && index < appState.rating.length - 1) return ' rank-purple';
+  if(ratings.length >= 3 && index > 0 && index < ratings.length - 1) return ' rank-purple';
   return '';
 }
 
-function renderRating(){
-  const list = document.getElementById('rating_list');
-  const ratings = appState.rating || [];
+function renderRatingColumn(listId, ratings){
+  const list = document.getElementById(listId);
   list.innerHTML = ratings.length ? ratings.map((item, index) => (
-    '<div class="rank-row' + ratingClass(index, item) + '">' +
+    '<div class="rank-row' + ratingClass(index, ratings, item) + '">' +
       '<div><div class="rank-name">' + escapeHtml(item.manager_name || 'Менеджер') + '</div>' +
-      '<div class="rank-meta">' + escapeHtml(managerTypeLabel(item.manager_type)) + ' / ' + escapeHtml(cityLabel(item.city)) + ' / ' + Number(item.deals_count || 0) + '</div></div>' +
+      '<div class="rank-meta">' + escapeHtml(roleLabel(item)) + ' / ' + Number(item.deals_count || 0) + '</div></div>' +
       '<div class="rank-amount">' + money(item.total_amount) + '</div>' +
     '</div>'
-  )).join('') : '<div class="hint">Рейтинг появится после первой публикации.</div>';
+  )).join('') : '<div class="hint">Пока пусто.</div>';
+}
+
+function renderRating(){
+  const ratings = appState.rating || [];
+  renderRatingColumn('rating_remote_list', ratings.filter((item) => item.manager_type === 'remote'));
+  renderRatingColumn('rating_field_list', ratings.filter((item) => item.manager_type === 'field'));
 }
 
 function dealCardHtml(deal){
   return (
     '<div class="deal-row" onclick="openDealModal(&quot;' + deal.id + '&quot;)">' +
       '<div class="deal-main">' +
-        '<div class="deal-title">' + escapeHtml(deal.client_initials || deal.client_full_name) + '</div>' +
+        '<div class="deal-title">' + escapeHtml((deal.client_initials || deal.client_full_name) + (deal.contract_number ? ' · №' + deal.contract_number : '')) + '</div>' +
         '<div class="deal-meta">' + escapeHtml((deal.city || '').toUpperCase()) + ' · удалённый: ' + escapeHtml(managerName(deal.remote_manager_id)) + ' · выездной: ' + escapeHtml(managerName(deal.field_manager_id)) + '</div>' +
       '</div>' +
       '<div class="deal-amount">' + money(deal.contract_amount) + '</div>' +
@@ -1052,9 +1175,34 @@ function dealCardHtml(deal){
   );
 }
 
+function draftCardHtml(draft){
+  const flags = [
+    '<span class="deal-flag">Черновик</span>',
+    '<span class="deal-flag">' + escapeHtml(draft.source === 'manual' ? 'Создан вручную' : 'После скачивания') + '</span>'
+  ];
+  return (
+    '<div class="deal-row draft-row" onclick="openPublishModal(&quot;' + draft.id + '&quot;)">' +
+      '<div class="deal-main">' +
+        '<div class="deal-title">' + escapeHtml((draft.client_initials || draft.client_full_name) + (draft.contract_number ? ' · №' + draft.contract_number : '')) + '</div>' +
+        '<div class="deal-meta">' + escapeHtml((draft.city || '').toUpperCase()) + ' · удалённый: ' + escapeHtml(managerName(draft.remote_manager_id)) + ' · выездной: ' + escapeHtml(managerName(draft.field_manager_id)) + '</div>' +
+        '<div class="deal-flags">' + flags.join('') + '</div>' +
+      '</div>' +
+      '<div class="deal-amount">' + money(draft.contract_amount) + '</div>' +
+    '</div>'
+  );
+}
+
 function renderDeals(){
   const list = document.getElementById('deals_list');
-  list.innerHTML = appState.deals.length ? appState.deals.map(dealCardHtml).join('') : '<div class="panel"><div class="hint">Для этого пользователя пока нет видимых сделок.</div></div>';
+  const draftsHtml = appState.drafts.length
+    ? appState.drafts.map(draftCardHtml).join('')
+    : '<div class="hint">Черновиков пока нет.</div>';
+  const dealsHtml = appState.deals.length
+    ? appState.deals.map(dealCardHtml).join('')
+    : '<div class="hint">Опубликованных сделок пока нет.</div>';
+  list.innerHTML =
+    '<div class="panel"><div class="panel-title">Черновики</div><div class="list">' + draftsHtml + '</div></div>' +
+    '<div class="panel"><div class="panel-title">Опубликованные сделки</div><div class="list">' + dealsHtml + '</div></div>';
 }
 
 function renderUsers(){
@@ -1078,13 +1226,17 @@ function renderUsers(){
 }
 
 function syncNewUserRoleUI(){
-  const role = document.getElementById('new_user_role').value;
-  document.getElementById('new_user_manager_type').disabled = role !== 'manager';
+  const managerType = document.getElementById('new_user_manager_type').value;
+  const citySelect = document.getElementById('new_user_city');
+  citySelect.disabled = managerType !== 'field';
+  if(managerType !== 'field'){
+    citySelect.value = 'spb';
+  }
 }
 
 function fillManagerSelect(selectId, type, selectedId, allowEmpty=true){
   const select = document.getElementById(selectId);
-  const managers = appState.managers.filter((item) => item.role === 'manager' && item.manager_type === type);
+  const managers = appState.managers.filter((item) => item.manager_type === type);
   select.innerHTML = (allowEmpty ? '<option value="">Не выбран</option>' : '') + managers.map((item) => (
     '<option value="' + item.id + '"' + (item.id === selectedId ? ' selected' : '') + '>' + escapeHtml(item.full_name) + '</option>'
   )).join('');
@@ -1094,6 +1246,7 @@ function buildDownloadedDeal(){
   const amountValue = normalizeNumber(document.getElementById('amount').value);
   const clientName = document.getElementById('client_name').value.trim();
   const initials = document.getElementById('initials').value.trim() || getInitials(clientName) || clientName;
+  const managerType = currentUserManagerType();
   return {
     contract_number: document.getElementById('contract_number').value.trim() || null,
     contract_date: isoDateFromForm(),
@@ -1102,11 +1255,22 @@ function buildDownloadedDeal(){
     contract_amount: amountValue,
     city: currentCity,
     downloaded_by: appState.user?.id,
-    published_by: appState.user?.id,
-    remote_manager_id: appState.profile?.manager_type === 'remote' ? appState.user?.id : null,
-    field_manager_id: appState.profile?.manager_type === 'field' ? appState.user?.id : null,
-    deal_note: ''
+    created_by: appState.user?.id,
+    remote_manager_id: managerType === 'remote' ? appState.user?.id : null,
+    field_manager_id: managerType === 'field' ? appState.user?.id : null,
+    deal_note: '',
+    source: 'downloaded'
   };
+}
+
+function getDraftById(id){
+  return appState.drafts.find((item) => item.id === id) || null;
+}
+
+async function saveDraft(payload){
+  const {data, error} = await sb.from('deal_drafts').insert(payload).select('*').single();
+  if(error) throw error;
+  return data;
 }
 
 function showPublishBox(){
@@ -1115,55 +1279,70 @@ function showPublishBox(){
     box.classList.remove('show');
     return;
   }
-  document.getElementById('publish_text').textContent = 'Готово к публикации: ' + appState.lastDownloadedDeal.client_initials + ' · ' + money(appState.lastDownloadedDeal.contract_amount);
+  document.getElementById('publish_text').textContent = 'Черновик готов: ' + appState.lastDownloadedDeal.client_initials + (appState.lastDownloadedDeal.contract_number ? ' · №' + appState.lastDownloadedDeal.contract_number : '') + ' · ' + money(appState.lastDownloadedDeal.contract_amount);
   box.classList.add('show');
 }
 
-function openPublishModal(){
-  if(!appState.lastDownloadedDeal){
-    toast('Сначала скачайте документы', 'i');
+function openPublishModal(draftId){
+  const draft = draftId ? getDraftById(draftId) : appState.lastDownloadedDeal;
+  if(!draft){
+    toast('Сначала сохраните или скачайте сделку', 'i');
     return;
   }
-  const deal = appState.lastDownloadedDeal;
-  document.getElementById('publish_client').textContent = deal.client_initials || deal.client_full_name;
-  document.getElementById('publish_amount').textContent = money(deal.contract_amount);
-  document.getElementById('publish_city').textContent = String(deal.city || '').toUpperCase();
-  fillManagerSelect('publish_remote_manager', 'remote', deal.remote_manager_id);
-  fillManagerSelect('publish_field_manager', 'field', deal.field_manager_id);
-  document.getElementById('publish_remote_manager').disabled = appState.profile?.manager_type === 'remote';
-  document.getElementById('publish_field_manager').disabled = appState.profile?.manager_type === 'field';
-  document.getElementById('publish_note').value = deal.deal_note || '';
+  appState.activePublishDraftId = draft.id;
+  document.getElementById('publish_client').textContent = draft.client_initials || draft.client_full_name;
+  document.getElementById('publish_amount').textContent = money(draft.contract_amount);
+  document.getElementById('publish_city').textContent = String(draft.city || '').toUpperCase() || '—';
+  document.getElementById('publish_contract_number').textContent = draft.contract_number || '—';
+  fillManagerSelect('publish_remote_manager', 'remote', draft.remote_manager_id);
+  fillManagerSelect('publish_field_manager', 'field', draft.field_manager_id);
+  document.getElementById('publish_remote_manager').disabled = currentUserManagerType() === 'remote';
+  document.getElementById('publish_field_manager').disabled = currentUserManagerType() === 'field';
+  document.getElementById('publish_note').value = draft.deal_note || '';
   document.getElementById('publish_modal').classList.add('open');
 }
 
 function closePublishModal(){
   document.getElementById('publish_modal').classList.remove('open');
+  appState.activePublishDraftId = null;
 }
 
 async function publishLastDeal(){
-  if(!appState.lastDownloadedDeal || !appState.user) return;
+  const draft = getDraftById(appState.activePublishDraftId || appState.lastDownloadedDeal?.id);
+  if(!draft || !appState.user) return;
   const btn = document.getElementById('publish_submit');
   btn.disabled = true;
   try{
     let remoteManagerId = document.getElementById('publish_remote_manager').value || null;
     let fieldManagerId = document.getElementById('publish_field_manager').value || null;
-    if(appState.profile?.manager_type === 'remote') remoteManagerId = appState.user.id;
-    if(appState.profile?.manager_type === 'field') fieldManagerId = appState.user.id;
+    if(currentUserManagerType() === 'remote') remoteManagerId = appState.user.id;
+    if(currentUserManagerType() === 'field') fieldManagerId = appState.user.id;
     const payload = {
-      ...appState.lastDownloadedDeal,
+      contract_number: draft.contract_number,
+      contract_date: draft.contract_date,
+      client_full_name: draft.client_full_name,
+      client_initials: draft.client_initials,
+      contract_amount: draft.contract_amount,
+      city: draft.city || currentCity,
+      downloaded_by: draft.downloaded_by,
+      published_by: appState.user.id,
       remote_manager_id: remoteManagerId,
       field_manager_id: fieldManagerId,
       deal_note: document.getElementById('publish_note').value.trim() || null
     };
     const {data, error} = await sb.from('published_deals').insert(payload).select('*').single();
     if(error) throw error;
+    const {error: draftDeleteError} = await sb.from('deal_drafts').delete().eq('id', draft.id);
+    if(draftDeleteError) throw draftDeleteError;
     await sb.from('deal_events').insert({
       deal_id: data.id,
       actor_id: appState.user.id,
       event_type: 'published',
       event_payload: {client_initials: data.client_initials, amount: data.contract_amount}
     });
-    appState.lastDownloadedDeal = null;
+    if(appState.lastDownloadedDeal?.id === draft.id){
+      appState.lastDownloadedDeal = null;
+    }
     document.getElementById('publish_box').classList.remove('show');
     closePublishModal();
     toast('Сделка опубликована', 's');
@@ -1173,6 +1352,24 @@ async function publishLastDeal(){
     toast('Ошибка публикации: ' + error.message, 'e');
   }finally{
     btn.disabled = false;
+  }
+}
+
+async function deleteCurrentDraft(){
+  const draft = getDraftById(appState.activePublishDraftId || appState.lastDownloadedDeal?.id);
+  if(!draft) return;
+  try{
+    const {error} = await sb.from('deal_drafts').delete().eq('id', draft.id);
+    if(error) throw error;
+    if(appState.lastDownloadedDeal?.id === draft.id){
+      appState.lastDownloadedDeal = null;
+    }
+    closePublishModal();
+    toast('Черновик удалён', 's');
+    await loadAppData();
+  }catch(error){
+    console.error(error);
+    toast('Ошибка удаления черновика: ' + error.message, 'e');
   }
 }
 
@@ -1187,19 +1384,88 @@ function openDealModal(id){
       '<div><div class="stat-label">Город</div><div class="deal-title">' + escapeHtml(String(deal.city || '').toUpperCase()) + '</div></div>' +
       '<div><div class="stat-label">Договор</div><div class="deal-title">' + escapeHtml(deal.contract_number || '—') + '</div></div>' +
     '</div>' +
-    '<div class="hint" style="margin-top:10px">Опубликовано: ' + escapeHtml(new Date(deal.published_at).toLocaleString('ru-RU')) + ' · кем: ' + escapeHtml(managerName(deal.published_by)) + '</div>';
+    '<div class="hint" style="margin-top:10px">Оформил: ' + escapeHtml(managerName(deal.downloaded_by)) + ' · опубликовано: ' + escapeHtml(new Date(deal.published_at).toLocaleString('ru-RU')) + ' · кем: ' + escapeHtml(managerName(deal.published_by)) + '</div>';
   fillManagerSelect('deal_remote_manager', 'remote', deal.remote_manager_id);
   fillManagerSelect('deal_field_manager', 'field', deal.field_manager_id);
-  document.getElementById('deal_remote_manager').disabled = !isAdmin() && appState.profile?.manager_type === 'remote';
-  document.getElementById('deal_field_manager').disabled = !isAdmin() && appState.profile?.manager_type === 'field';
+  document.getElementById('deal_remote_manager').disabled = !isAdmin() && currentUserManagerType() === 'remote';
+  document.getElementById('deal_field_manager').disabled = !isAdmin() && currentUserManagerType() === 'field';
   document.getElementById('deal_note').value = deal.deal_note || '';
   document.getElementById('deal_save_btn').style.display = canEditDeal(deal) ? 'inline-flex' : 'none';
+  document.getElementById('deal_delete_btn').style.display = canDeletePublishedDeal(deal) ? 'inline-flex' : 'none';
   document.getElementById('deal_modal').classList.add('open');
 }
 
 function closeDealModal(){
   document.getElementById('deal_modal').classList.remove('open');
   appState.selectedDeal = null;
+}
+
+async function deleteSelectedDeal(){
+  const deal = appState.selectedDeal;
+  if(!deal || !canDeletePublishedDeal(deal)) return;
+  try{
+    const {error} = await sb.rpc('delete_published_deal', {p_deal_id: deal.id});
+    if(error) throw error;
+    closeDealModal();
+    toast('Опубликованная сделка удалена', 's');
+    await loadAppData();
+  }catch(error){
+    console.error(error);
+    toast('Ошибка удаления сделки: ' + error.message, 'e');
+  }
+}
+
+function openManualDealModal(){
+  fillManagerSelect('manual_remote_manager', 'remote', currentUserManagerType() === 'remote' ? appState.user?.id : null);
+  fillManagerSelect('manual_field_manager', 'field', currentUserManagerType() === 'field' ? appState.user?.id : null);
+  document.getElementById('manual_client_name').value = '';
+  document.getElementById('manual_initials').value = '';
+  document.getElementById('manual_contract_number').value = '';
+  document.getElementById('manual_contract_date').value = isoDateFromForm();
+  document.getElementById('manual_amount').value = '';
+  document.getElementById('manual_city').value = currentCity;
+  document.getElementById('manual_note').value = '';
+  document.getElementById('manual_deal_modal').classList.add('open');
+}
+
+function closeManualDealModal(){
+  document.getElementById('manual_deal_modal').classList.remove('open');
+}
+
+async function createManualDealDraft(){
+  const btn = document.getElementById('manual_deal_save_btn');
+  btn.disabled = true;
+  try{
+    const clientName = document.getElementById('manual_client_name').value.trim();
+    const initials = document.getElementById('manual_initials').value.trim() || getInitials(clientName) || clientName;
+    if(!clientName){
+      throw new Error('Заполните ФИО клиента');
+    }
+    const payload = {
+      contract_number: document.getElementById('manual_contract_number').value.trim() || null,
+      contract_date: document.getElementById('manual_contract_date').value || isoDateFromForm(),
+      client_full_name: clientName,
+      client_initials: initials,
+      contract_amount: normalizeNumber(document.getElementById('manual_amount').value),
+      city: document.getElementById('manual_city').value || currentCity,
+      downloaded_by: null,
+      created_by: appState.user.id,
+      remote_manager_id: currentUserManagerType() === 'remote' ? appState.user.id : (document.getElementById('manual_remote_manager').value || null),
+      field_manager_id: currentUserManagerType() === 'field' ? appState.user.id : (document.getElementById('manual_field_manager').value || null),
+      deal_note: document.getElementById('manual_note').value.trim() || null,
+      source: 'manual'
+    };
+    const draft = await saveDraft(payload);
+    appState.lastDownloadedDeal = draft;
+    closeManualDealModal();
+    toast('Черновик сохранён', 's');
+    await loadAppData();
+  }catch(error){
+    console.error(error);
+    toast('Ошибка сохранения черновика: ' + error.message, 'e');
+  }finally{
+    btn.disabled = false;
+  }
 }
 
 async function saveDealChanges(){
@@ -1246,7 +1512,7 @@ async function createInternalUser(){
     const password = document.getElementById('new_user_password').value;
     const role = document.getElementById('new_user_role').value;
     const managerType = document.getElementById('new_user_manager_type').value;
-    const city = document.getElementById('new_user_city').value;
+    const city = managerType === 'field' ? document.getElementById('new_user_city').value : null;
     if(!fullName || !username || !password){
       throw new Error('Заполните ФИО, логин и пароль');
     }
@@ -1255,7 +1521,7 @@ async function createInternalUser(){
       p_password: password,
       p_full_name: fullName,
       p_role: role,
-      p_manager_type: role === 'manager' ? managerType : null,
+      p_manager_type: managerType,
       p_city: city,
       p_username: username
     });
@@ -2091,9 +2357,10 @@ async function generateAllDocuments(){
     setTimeout(() => blobToDownload(specResult.blob, specResult.fileName), 200);
     setTimeout(() => blobToDownload(actResult.blob, actResult.fileName), 400);
     if(appState.user){
-      appState.lastDownloadedDeal = buildDownloadedDeal();
-      showPublishBox();
+      appState.lastDownloadedDeal = await saveDraft(buildDownloadedDeal());
+      await loadAppData();
     }
+    closeAllDealDetails();
     toast('Скачаны три файла: договор, спецификация и акт', 's');
   }catch(error){
     console.error(error);
