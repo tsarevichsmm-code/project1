@@ -100,6 +100,10 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .deal-flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .deal-flag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;background:var(--surface3);font-size:10px;color:var(--text2)}
 .deal-amount{font-size:13px;font-weight:600;font-family:var(--mono);color:var(--blue)}
+.deals-spoiler{padding:0;overflow:hidden}
+.deals-spoiler summary{list-style:none;cursor:pointer;padding:12px 14px}
+.deals-spoiler summary::-webkit-details-marker{display:none}
+.deals-spoiler .list{padding:0 14px 14px}
 .rank-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px;border:1px solid var(--border);border-radius:8px;padding:7px 8px;background:var(--surface);min-width:0}
 .rank-row > div{min-width:0}
 .rank-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -117,11 +121,14 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .deals-table{max-width:1100px;margin:0 auto}
 .users-wrap{max-width:1100px;margin:0 auto}
 .users-grid{display:grid;grid-template-columns:minmax(320px,.9fr) minmax(0,1.1fr);gap:12px}
-.user-card{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:12px}
+.user-card{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:10px}
 .user-card + .user-card{margin-top:8px}
-.user-card-title{font-size:13px;font-weight:600}
+.user-card-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-card-meta{font-size:11px;color:var(--text2);margin-top:3px}
-.user-card-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.user-card-edit{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.55fr) auto;gap:8px;align-items:end;margin-top:8px}
+.user-card-edit .fg{margin-bottom:0}
+.user-card-actions{display:flex;gap:6px;justify-content:flex-end;align-items:center}
+.publish-warning{color:var(--red-text);background:var(--red-bg);border-radius:8px;padding:7px 9px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;max-width:900px;margin:0 auto}
 .card-title{font-size:16px;font-weight:600;letter-spacing:-.02em;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .card-title-text{display:flex;align-items:center;gap:8px}
@@ -247,6 +254,8 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   .spec-main .fg:nth-child(2),
   .spec-main .fg:nth-child(5){grid-column:1 / -1}
   .file-picker{justify-content:flex-start}
+  .user-card-edit{grid-template-columns:1fr}
+  .user-card-actions{justify-content:flex-start}
 }
 @media (max-width:480px){
   .content{padding:16px 10px 36px}
@@ -348,14 +357,14 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           <div class="panel-title">Последние опубликованные сделки</div>
           <div class="list" id="recent_deals"></div>
         </div>
-        <div class="panel">
+        <div class="panel" id="rating_panel">
           <div class="panel-title">Рейтинг по менеджерам</div>
           <div class="rating-columns">
-            <div class="rating-column">
+            <div class="rating-column" id="rating_remote_col">
               <div class="hint">Удалённые</div>
               <div class="list" id="rating_remote_list"></div>
             </div>
-            <div class="rating-column">
+            <div class="rating-column" id="rating_field_col">
               <div class="hint">Выездные</div>
               <div class="list" id="rating_field_list"></div>
             </div>
@@ -371,7 +380,10 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
         <div class="publish-text" id="publish_text">Документы скачаны. Сделка сохранена как черновик.</div>
         <div class="hint">Черновик уже в базе и будет виден в разделе сделок, пока вы не решите публиковать его или нет.</div>
       </div>
-      <button class="btn btn-g" type="button" onclick="openPublishModal()">Опубликовать сделку</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-g" type="button" onclick="openPublishModal()">Опубликовать сделку</button>
+        <button class="btn btn-d" type="button" onclick="deleteCurrentDraft()">Не публиковать</button>
+      </div>
     </div>
 
   <div class="card">
@@ -705,7 +717,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     </div>
     <div class="modal-actions">
       <button class="btn" type="button" onclick="closePublishModal()">Отмена</button>
-      <button class="btn btn-d" id="publish_delete_btn" type="button" onclick="deleteCurrentDraft()">Удалить черновик</button>
+      <button class="btn btn-d" id="publish_delete_btn" type="button" onclick="deleteCurrentDraft()">Не публиковать</button>
       <button class="btn btn-g" id="publish_submit" type="button" onclick="publishLastDeal()">Опубликовать</button>
     </div>
   </div>
@@ -774,8 +786,8 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <div class="fg">
         <label class="fl" for="manual_city">Город</label>
         <select class="fselect" id="manual_city">
-          <option value="spb">SPB</option>
-          <option value="ekb">EKB</option>
+          <option value="spb">СПБ</option>
+          <option value="ekb">ЕКБ</option>
         </select>
       </div>
     </div>
@@ -1108,9 +1120,12 @@ function syncUserUI(){
 
 async function loadAppData(){
   if(!appState.user) return;
+  const cleanupResult = await sb.rpc('cleanup_expired_deal_drafts');
+  if(cleanupResult.error) console.warn(cleanupResult.error);
+  const draftCutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const [profilesResult, draftsResult, dealsResult, ratingResult] = await Promise.all([
     sb.from('profiles').select('id, full_name, username, email, role, manager_type, city, is_active').order('full_name'),
-    sb.from('deal_drafts').select('*').order('created_at', {ascending:false}),
+    sb.from('deal_drafts').select('*').gte('created_at', draftCutoff).order('created_at', {ascending:false}),
     sb.from('published_deals').select('*').order('published_at', {ascending:false}),
     sb.from('manager_deal_totals').select('*').order('total_amount', {ascending:false})
   ]);
@@ -1133,8 +1148,13 @@ async function loadAppData(){
 }
 
 function renderDashboard(){
-  const userId = appState.user?.id;
-  const visibleDeals = appState.deals || [];
+  const role = appState.profile?.role;
+  const managerType = currentUserManagerType();
+  const visibleDeals = isAdmin()
+    ? (appState.deals || [])
+    : managerType === 'remote'
+      ? (appState.deals || []).filter((deal) => deal.remote_manager_id)
+      : (appState.deals || []).filter(isOwnDeal);
   const myDeals = visibleDeals.filter(isOwnDeal);
   const allAmount = visibleDeals.reduce((sum, deal) => sum + Number(deal.contract_amount || 0), 0);
   const myAmount = myDeals.reduce((sum, deal) => sum + Number(deal.contract_amount || 0), 0);
@@ -1142,13 +1162,13 @@ function renderDashboard(){
   document.getElementById('stat_my_amount').textContent = money(myAmount);
   document.getElementById('stat_all_count').textContent = visibleDeals.length;
   document.getElementById('stat_all_amount').textContent = money(allAmount);
-  renderRecentDeals(myDeals);
+  renderRecentDeals(role === 'manager' && managerType === 'field' ? myDeals : visibleDeals);
   renderRating();
 }
 
 function renderRecentDeals(deals){
   const list = document.getElementById('recent_deals');
-  const source = (deals.length ? deals : appState.deals).slice(0, 5);
+  const source = deals || [];
   list.innerHTML = source.length ? source.map(dealCardHtml).join('') : '<div class="hint">Пока нет опубликованных сделок.</div>';
 }
 
@@ -1171,6 +1191,19 @@ function renderRatingColumn(listId, ratings){
 
 function renderRating(){
   const ratings = appState.rating || [];
+  const panel = document.getElementById('rating_panel');
+  const remoteCol = document.getElementById('rating_remote_col');
+  const fieldCol = document.getElementById('rating_field_col');
+  const columns = document.querySelector('.rating-columns');
+  if(appState.profile?.role === 'manager' && currentUserManagerType() === 'field'){
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = '';
+  const remoteOnly = appState.profile?.role === 'manager' && currentUserManagerType() === 'remote';
+  remoteCol.style.display = '';
+  fieldCol.style.display = remoteOnly ? 'none' : '';
+  columns.style.gridTemplateColumns = remoteOnly ? '1fr' : '';
   renderRatingColumn('rating_remote_list', ratings.filter((item) => item.manager_type === 'remote'));
   renderRatingColumn('rating_field_list', ratings.filter((item) => item.manager_type === 'field'));
 }
@@ -1196,15 +1229,17 @@ function dealCardHtml(deal){
 }
 
 function draftCardHtml(draft){
+  const dateText = shortDate(draft.created_at);
   const flags = [
     '<span class="deal-flag">Черновик</span>',
-    '<span class="deal-flag">' + escapeHtml(draft.source === 'manual' ? 'Создан вручную' : 'После скачивания') + '</span>'
+    '<span class="deal-flag">' + escapeHtml(draft.source === 'manual' ? 'Создан вручную' : 'После скачивания') + '</span>',
+    '<span class="deal-flag">Хранится 24 часа</span>'
   ];
   return (
     '<div class="deal-row draft-row" onclick="openPublishModal(&quot;' + draft.id + '&quot;)">' +
       '<div class="deal-main">' +
         '<div class="deal-title">' + escapeHtml((draft.client_initials || draft.client_full_name) + (draft.contract_number ? ' · №' + draft.contract_number : '')) + '</div>' +
-        '<div class="deal-meta">' + escapeHtml((draft.city || '').toUpperCase()) + ' · удалённый: ' + escapeHtml(managerName(draft.remote_manager_id)) + ' · выездной: ' + escapeHtml(managerName(draft.field_manager_id)) + '</div>' +
+        '<div class="deal-meta">' + escapeHtml(dateText ? dateText + ' · ' : '') + escapeHtml(cityLabel(draft.city)) + ' · удалённый: ' + escapeHtml(managerName(draft.remote_manager_id)) + ' · выездной: ' + escapeHtml(managerName(draft.field_manager_id)) + '</div>' +
         '<div class="deal-flags">' + flags.join('') + '</div>' +
       '</div>' +
       '<div class="deal-amount">' + money(draft.contract_amount) + '</div>' +
@@ -1216,6 +1251,7 @@ function renderDeals(){
   const list = document.getElementById('deals_list');
   const myDeals = appState.deals.filter(isOwnDeal);
   const otherDeals = appState.deals.filter((deal) => !isOwnDeal(deal));
+  const canSeeOthers = !(appState.profile?.role === 'manager' && currentUserManagerType() === 'field');
   const draftsHtml = appState.drafts.length
     ? appState.drafts.map(draftCardHtml).join('')
     : '<div class="hint">Черновиков пока нет.</div>';
@@ -1226,9 +1262,9 @@ function renderDeals(){
     ? otherDeals.map(dealCardHtml).join('')
     : '<div class="hint">Других опубликованных сделок пока нет.</div>';
   list.innerHTML =
+    '<div class="panel"><div class="panel-title">Черновики</div><div class="list">' + draftsHtml + '</div></div>' +
     '<div class="panel"><div class="panel-title">Мои опубликованные сделки</div><div class="list">' + myDealsHtml + '</div></div>' +
-    '<div class="panel"><div class="panel-title">Остальные опубликованные сделки</div><div class="list">' + otherDealsHtml + '</div></div>' +
-    '<div class="panel"><div class="panel-title">Черновики</div><div class="list">' + draftsHtml + '</div></div>';
+    (canSeeOthers ? '<details class="panel deals-spoiler"><summary class="panel-title">Остальные опубликованные сделки</summary><div class="list">' + otherDealsHtml + '</div></details>' : '');
 }
 
 function renderUsers(){
@@ -1242,11 +1278,15 @@ function renderUsers(){
   list.innerHTML = visibleProfiles.length ? visibleProfiles.map((profile) => (
     '<div class="user-card">' +
       '<div class="user-card-title">' + escapeHtml(profile.full_name || profile.email || 'Пользователь') + '</div>' +
-      '<div class="user-card-meta">Логин: ' + escapeHtml(profile.username || '') + '</div>' +
-      '<div class="user-card-meta">' + escapeHtml(roleLabel(profile)) + '</div>' +
-      (profile.role === 'super_admin'
-        ? ''
-        : '<div class="user-card-actions"><button class="btn btn-s btn-d" type="button" onclick="deactivateUser(\'' + profile.id + '\')">Удалить</button></div>') +
+      '<div class="user-card-meta">Логин: ' + escapeHtml(profile.username || '') + ' · ' + escapeHtml(roleLabel(profile)) + '</div>' +
+      '<div class="user-card-edit">' +
+        '<div class="fg"><label class="fl" for="edit_name_' + profile.id + '">Имя</label><input class="fi" id="edit_name_' + profile.id + '" type="text" value="' + escapeHtml(profile.full_name || '') + '"></div>' +
+        '<div class="fg"><label class="fl" for="edit_pass_' + profile.id + '">Пароль</label><input class="fi" id="edit_pass_' + profile.id + '" type="text" placeholder="Новый"></div>' +
+        '<div class="user-card-actions">' +
+          '<button class="btn btn-s" type="button" onclick="saveUserChanges(\'' + profile.id + '\')">Сохранить</button>' +
+          (profile.role === 'super_admin' ? '' : '<button class="btn btn-s btn-d" type="button" onclick="deactivateUser(\'' + profile.id + '\')">Удалить</button>') +
+        '</div>' +
+      '</div>' +
     '</div>'
   )).join('') : '<div class="hint">Пользователей пока нет.</div>';
 }
@@ -1330,13 +1370,16 @@ function openPublishModal(draftId){
   fieldSelect.disabled = managerType === 'field';
   if(managerType === 'remote'){
     remoteSelect.value = appState.user.id;
-    hint.textContent = fieldSelect.value ? '' : 'Можно добавить выездного менеджера или оставить поле пустым.';
+    hint.textContent = fieldSelect.value ? '' : 'Для публикации нужно добавить выездного менеджера.';
   }else if(managerType === 'field'){
     fieldSelect.value = appState.user.id;
-    hint.textContent = remoteSelect.value ? '' : 'Можно добавить удалённого менеджера или оставить поле пустым.';
+    hint.textContent = remoteSelect.value ? '' : 'Для публикации нужно добавить удалённого менеджера.';
   }else{
-    hint.textContent = 'Можно указать ответственных менеджеров или оставить поля пустыми.';
+    hint.textContent = 'Для публикации нужно указать удалённого и выездного менеджера.';
   }
+  remoteSelect.onchange = () => setPublishValidationState(false);
+  fieldSelect.onchange = () => setPublishValidationState(false);
+  setPublishValidationState(false);
   document.getElementById('publish_note').value = draft.deal_note || '';
   document.getElementById('publish_modal').classList.add('open');
 }
@@ -1346,16 +1389,48 @@ function closePublishModal(){
   appState.activePublishDraftId = null;
 }
 
+function getPublishManagerIds(){
+  let remoteManagerId = document.getElementById('publish_remote_manager').value || null;
+  let fieldManagerId = document.getElementById('publish_field_manager').value || null;
+  if(currentUserManagerType() === 'remote') remoteManagerId = appState.user.id;
+  if(currentUserManagerType() === 'field') fieldManagerId = appState.user.id;
+  return {remoteManagerId, fieldManagerId};
+}
+
+function setPublishValidationState(showWarning){
+  const {remoteManagerId, fieldManagerId} = getPublishManagerIds();
+  const remoteSelect = document.getElementById('publish_remote_manager');
+  const fieldSelect = document.getElementById('publish_field_manager');
+  const hint = document.getElementById('publish_counterpart_hint');
+  const remoteMissing = !remoteManagerId;
+  const fieldMissing = !fieldManagerId;
+  remoteSelect.classList.toggle('fi-error', showWarning && remoteMissing);
+  fieldSelect.classList.toggle('fi-error', showWarning && fieldMissing);
+  hint.classList.toggle('publish-warning', showWarning && (remoteMissing || fieldMissing));
+  if(showWarning && (remoteMissing || fieldMissing)){
+    const missing = remoteMissing && fieldMissing
+      ? 'удалённого и выездного менеджера'
+      : remoteMissing ? 'удалённого менеджера' : 'выездного менеджера';
+    hint.textContent = 'Сделку нельзя опубликовать: добавьте ' + missing + '.';
+    return false;
+  }
+  if(!remoteMissing && !fieldMissing){
+    hint.textContent = '';
+  }
+  return true;
+}
+
 async function publishLastDeal(){
   const draft = getDraftById(appState.activePublishDraftId || appState.lastDownloadedDeal?.id);
   if(!draft || !appState.user) return;
+  if(!setPublishValidationState(true)){
+    toast('Добавьте второго менеджера перед публикацией', 'e');
+    return;
+  }
   const btn = document.getElementById('publish_submit');
   btn.disabled = true;
   try{
-    let remoteManagerId = document.getElementById('publish_remote_manager').value || null;
-    let fieldManagerId = document.getElementById('publish_field_manager').value || null;
-    if(currentUserManagerType() === 'remote') remoteManagerId = appState.user.id;
-    if(currentUserManagerType() === 'field') fieldManagerId = appState.user.id;
+    const {remoteManagerId, fieldManagerId} = getPublishManagerIds();
     const payload = {
       contract_number: draft.contract_number,
       contract_date: draft.contract_date,
@@ -1363,7 +1438,7 @@ async function publishLastDeal(){
       client_initials: draft.client_initials,
       contract_amount: draft.contract_amount,
       city: draft.city || currentCity,
-      downloaded_by: draft.downloaded_by,
+      downloaded_by: draft.downloaded_by || draft.created_by || appState.user.id,
       published_by: appState.user.id,
       remote_manager_id: remoteManagerId,
       field_manager_id: fieldManagerId,
@@ -1579,6 +1654,32 @@ async function createInternalUser(){
     toast('Ошибка создания пользователя: ' + error.message, 'e');
   }finally{
     btn.disabled = false;
+  }
+}
+
+async function saveUserChanges(userId){
+  if(appState.profile?.role !== 'admin' && appState.profile?.role !== 'super_admin'){
+    toast('Изменять пользователей может только админ или супер-админ', 'e');
+    return;
+  }
+  try{
+    const fullName = document.getElementById('edit_name_' + userId).value.trim();
+    const password = document.getElementById('edit_pass_' + userId).value;
+    if(!fullName && !password){
+      throw new Error('Укажите имя или новый пароль');
+    }
+    const {error} = await sb.rpc('update_internal_user', {
+      p_user_id: userId,
+      p_full_name: fullName || null,
+      p_password: password || null
+    });
+    if(error) throw error;
+    document.getElementById('edit_pass_' + userId).value = '';
+    toast('Пользователь обновлён', 's');
+    await loadAppData();
+  }catch(error){
+    console.error(error);
+    toast('Ошибка обновления пользователя: ' + error.message, 'e');
   }
 }
 
