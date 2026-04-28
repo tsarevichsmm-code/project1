@@ -43,6 +43,7 @@ body:not(.authed) > .topbar,body:not(.authed) > .content,body:not(.authed) > .si
 body.authed .login-screen{display:none}
 body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:650}
+.topbar .logo{display:none}
 .login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9998;padding:18px}
 .login-box{width:340px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:28px}
 .login-logo{display:flex;align-items:center;gap:10px;margin-bottom:20px}
@@ -83,27 +84,29 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .view.active{display:block}
 .dash-wrap{max-width:1100px;margin:0 auto 14px}
 .dash-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
-.stat-card,.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:14px}
+.stat-card,.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:14px;min-width:0}
 .stat-label{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
 .stat-value{font-size:21px;font-weight:600;font-family:var(--mono)}
 .panel-title{font-size:14px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.dashboard-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);gap:12px}
+.dashboard-row{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px}
 .list{display:grid;gap:8px}
 .deal-row{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;cursor:pointer}
 .deal-row:hover{border-color:var(--border2);background:var(--surface2)}
-.draft-row{border-style:dashed}
+.draft-row{border-style:dashed;background:#fff8df;border-color:rgba(217,119,6,.24)}
+[data-theme=dark] .draft-row{background:#2a2415;border-color:rgba(251,191,36,.24)}
 .deal-main{min-width:0}
 .deal-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .deal-meta{font-size:11px;color:var(--text2);margin-top:2px}
 .deal-flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .deal-flag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;background:var(--surface3);font-size:10px;color:var(--text2)}
 .deal-amount{font-size:13px;font-weight:600;font-family:var(--mono);color:var(--blue)}
-.rank-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;background:var(--surface)}
-.rank-name{font-size:13px;font-weight:600}
-.rank-meta{font-size:11px;color:var(--text2)}
-.rank-amount{font-family:var(--mono);font-size:12px;font-weight:600}
-.rating-columns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.rating-column{display:grid;gap:8px}
+.rank-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px;border:1px solid var(--border);border-radius:8px;padding:7px 8px;background:var(--surface);min-width:0}
+.rank-row > div{min-width:0}
+.rank-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-meta{font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-amount{font-family:var(--mono);font-size:11px;font-weight:600;white-space:nowrap}
+.rating-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.rating-column{display:grid;gap:6px;min-width:0}
 .rating-column .panel-title{margin-bottom:2px}
 .rank-gold{border-color:rgba(180,83,9,.35);background:var(--gold-bg);color:var(--gold)}
 .rank-purple{border-color:rgba(124,58,237,.28);background:var(--purple-bg);color:var(--purple-text)}
@@ -213,12 +216,17 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:6px}
 @media (max-width:760px){
   body.authed > .topbar,body.authed > .content{margin-left:0}
+  .topbar .logo{display:flex}
   .app-shell{display:block}
   .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:701;transform:translateX(-100%);transition:transform .2s ease}
   .sidebar.open{transform:translateX(0)}
   .app-main{height:100dvh}
   .menu-btn{display:flex}
-  .dash-grid,.dashboard-row{grid-template-columns:1fr}
+  .dash-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .stat-card{padding:9px 10px}
+  .stat-label{font-size:9px;margin-bottom:3px}
+  .stat-value{font-size:16px}
+  .dashboard-row{grid-template-columns:1fr}
   .rating-columns{grid-template-columns:1fr}
   .users-grid{grid-template-columns:1fr}
   .publish-box{align-items:flex-start;flex-direction:column}
@@ -310,7 +318,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     <div class="lt">Мебель<span>Гранд</span></div>
   </div>
   <div class="topbar-right">
-    <span style="font-size:12px;color:var(--text3)">Договор</span>
     <button class="ibtn" onclick="toggleTheme()" title="Тема">◑</button>
   </div>
 </div>
@@ -622,8 +629,8 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
             <div class="fg">
             <label class="fl" for="new_user_city">Город</label>
               <select class="fselect" id="new_user_city">
-                <option value="spb">SPB</option>
-                <option value="ekb">EKB</option>
+                <option value="spb">СПБ</option>
+                <option value="ekb">ЕКБ</option>
               </select>
             </div>
           </div>
@@ -691,6 +698,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
         <select class="fselect" id="publish_field_manager"></select>
       </div>
     </div>
+    <div class="hint" id="publish_counterpart_hint" style="margin:-2px 0 10px"></div>
     <div class="fg">
       <label class="fl" for="publish_note">Заметка</label>
       <textarea class="fi" id="publish_note" rows="3" style="resize:vertical;min-height:74px"></textarea>
@@ -1001,6 +1009,15 @@ function canDeletePublishedDeal(deal){
   return isAdmin() || deal.published_by === appState.user.id;
 }
 
+function isOwnDeal(deal){
+  const userId = appState.user?.id;
+  if(!userId || !deal) return false;
+  return deal.downloaded_by === userId
+    || deal.published_by === userId
+    || deal.remote_manager_id === userId
+    || deal.field_manager_id === userId;
+}
+
 function currentUserManagerType(){
   return appState.profile?.manager_type || null;
 }
@@ -1118,12 +1135,7 @@ async function loadAppData(){
 function renderDashboard(){
   const userId = appState.user?.id;
   const visibleDeals = appState.deals || [];
-  const myDeals = visibleDeals.filter((deal) =>
-    deal.downloaded_by === userId
-    || deal.published_by === userId
-    || deal.remote_manager_id === userId
-    || deal.field_manager_id === userId
-  );
+  const myDeals = visibleDeals.filter(isOwnDeal);
   const allAmount = visibleDeals.reduce((sum, deal) => sum + Number(deal.contract_amount || 0), 0);
   const myAmount = myDeals.reduce((sum, deal) => sum + Number(deal.contract_amount || 0), 0);
   document.getElementById('stat_my_count').textContent = myDeals.length;
@@ -1163,12 +1175,20 @@ function renderRating(){
   renderRatingColumn('rating_field_list', ratings.filter((item) => item.manager_type === 'field'));
 }
 
+function shortDate(value){
+  if(!value) return '';
+  const date = new Date(value);
+  if(Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('ru-RU');
+}
+
 function dealCardHtml(deal){
+  const dateText = shortDate(deal.published_at || deal.created_at || deal.contract_date);
   return (
     '<div class="deal-row" onclick="openDealModal(&quot;' + deal.id + '&quot;)">' +
       '<div class="deal-main">' +
         '<div class="deal-title">' + escapeHtml((deal.client_initials || deal.client_full_name) + (deal.contract_number ? ' · №' + deal.contract_number : '')) + '</div>' +
-        '<div class="deal-meta">' + escapeHtml((deal.city || '').toUpperCase()) + ' · удалённый: ' + escapeHtml(managerName(deal.remote_manager_id)) + ' · выездной: ' + escapeHtml(managerName(deal.field_manager_id)) + '</div>' +
+        '<div class="deal-meta">' + escapeHtml(dateText ? dateText + ' · ' : '') + escapeHtml((deal.city || '').toUpperCase()) + ' · удалённый: ' + escapeHtml(managerName(deal.remote_manager_id)) + ' · выездной: ' + escapeHtml(managerName(deal.field_manager_id)) + '</div>' +
       '</div>' +
       '<div class="deal-amount">' + money(deal.contract_amount) + '</div>' +
     '</div>'
@@ -1194,15 +1214,21 @@ function draftCardHtml(draft){
 
 function renderDeals(){
   const list = document.getElementById('deals_list');
+  const myDeals = appState.deals.filter(isOwnDeal);
+  const otherDeals = appState.deals.filter((deal) => !isOwnDeal(deal));
   const draftsHtml = appState.drafts.length
     ? appState.drafts.map(draftCardHtml).join('')
     : '<div class="hint">Черновиков пока нет.</div>';
-  const dealsHtml = appState.deals.length
-    ? appState.deals.map(dealCardHtml).join('')
-    : '<div class="hint">Опубликованных сделок пока нет.</div>';
+  const myDealsHtml = myDeals.length
+    ? myDeals.map(dealCardHtml).join('')
+    : '<div class="hint">Ваших опубликованных сделок пока нет.</div>';
+  const otherDealsHtml = otherDeals.length
+    ? otherDeals.map(dealCardHtml).join('')
+    : '<div class="hint">Других опубликованных сделок пока нет.</div>';
   list.innerHTML =
-    '<div class="panel"><div class="panel-title">Черновики</div><div class="list">' + draftsHtml + '</div></div>' +
-    '<div class="panel"><div class="panel-title">Опубликованные сделки</div><div class="list">' + dealsHtml + '</div></div>';
+    '<div class="panel"><div class="panel-title">Мои опубликованные сделки</div><div class="list">' + myDealsHtml + '</div></div>' +
+    '<div class="panel"><div class="panel-title">Остальные опубликованные сделки</div><div class="list">' + otherDealsHtml + '</div></div>' +
+    '<div class="panel"><div class="panel-title">Черновики</div><div class="list">' + draftsHtml + '</div></div>';
 }
 
 function renderUsers(){
@@ -1296,8 +1322,21 @@ function openPublishModal(draftId){
   document.getElementById('publish_contract_number').textContent = draft.contract_number || '—';
   fillManagerSelect('publish_remote_manager', 'remote', draft.remote_manager_id);
   fillManagerSelect('publish_field_manager', 'field', draft.field_manager_id);
-  document.getElementById('publish_remote_manager').disabled = currentUserManagerType() === 'remote';
-  document.getElementById('publish_field_manager').disabled = currentUserManagerType() === 'field';
+  const managerType = currentUserManagerType();
+  const remoteSelect = document.getElementById('publish_remote_manager');
+  const fieldSelect = document.getElementById('publish_field_manager');
+  const hint = document.getElementById('publish_counterpart_hint');
+  remoteSelect.disabled = managerType === 'remote';
+  fieldSelect.disabled = managerType === 'field';
+  if(managerType === 'remote'){
+    remoteSelect.value = appState.user.id;
+    hint.textContent = fieldSelect.value ? '' : 'Можно добавить выездного менеджера или оставить поле пустым.';
+  }else if(managerType === 'field'){
+    fieldSelect.value = appState.user.id;
+    hint.textContent = remoteSelect.value ? '' : 'Можно добавить удалённого менеджера или оставить поле пустым.';
+  }else{
+    hint.textContent = 'Можно указать ответственных менеджеров или оставить поля пустыми.';
+  }
   document.getElementById('publish_note').value = draft.deal_note || '';
   document.getElementById('publish_modal').classList.add('open');
 }
