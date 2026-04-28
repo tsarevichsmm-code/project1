@@ -104,6 +104,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .deals-spoiler summary{list-style:none;cursor:pointer;padding:12px 14px}
 .deals-spoiler summary::-webkit-details-marker{display:none}
 .deals-spoiler .list{padding:0 14px 14px}
+.old-rating-panel{margin-top:12px}
 .rank-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px;border:1px solid var(--border);border-radius:8px;padding:7px 8px;background:var(--surface);min-width:0}
 .rank-row > div{min-width:0}
 .rank-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -371,6 +372,10 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           </div>
         </div>
       </div>
+      <details class="panel deals-spoiler old-rating-panel" id="old_rating_panel">
+        <summary class="panel-title">Прошлый месяц</summary>
+        <div class="list" id="old_rating_list"></div>
+      </details>
     </div>
   </section>
 
@@ -382,7 +387,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-g" type="button" onclick="openPublishModal()">Опубликовать сделку</button>
-        <button class="btn btn-d" type="button" onclick="deleteCurrentDraft()">Не публиковать</button>
       </div>
     </div>
 
@@ -827,6 +831,7 @@ const appState = {
   drafts: [],
   deals: [],
   rating: [],
+  previousRating: [],
   lastDownloadedDeal: null,
   selectedDeal: null,
   activePublishDraftId: null
@@ -1065,6 +1070,7 @@ async function signOut(){
   appState.drafts = [];
   appState.deals = [];
   appState.rating = [];
+  appState.previousRating = [];
   appState.lastDownloadedDeal = null;
   appState.activePublishDraftId = null;
   document.body.classList.remove('authed');
@@ -1107,6 +1113,7 @@ async function loadSession(){
   appState.profile = await ensureProfile(appState.user);
   document.body.classList.add('authed');
   syncUserUI();
+  applyProfileCityPreference();
   await loadAppData();
 }
 
@@ -1118,26 +1125,35 @@ function syncUserUI(){
   document.getElementById('nav_users').style.display = ['admin', 'super_admin'].includes(profile?.role) ? 'flex' : 'none';
 }
 
+function applyProfileCityPreference(){
+  const profileCity = appState.profile?.city;
+  if(appState.profile?.manager_type === 'field' && CITY_TEMPLATES[profileCity] && currentCity !== profileCity){
+    currentCity = profileCity;
+    localStorage.setItem('cf_city', currentCity);
+    syncCityUI();
+  }
+}
+
 async function loadAppData(){
   if(!appState.user) return;
-  const cleanupResult = await sb.rpc('cleanup_expired_deal_drafts');
-  if(cleanupResult.error) console.warn(cleanupResult.error);
-  const draftCutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const [profilesResult, draftsResult, dealsResult, ratingResult] = await Promise.all([
+  const [profilesResult, draftsResult, dealsResult, ratingResult, previousRatingResult] = await Promise.all([
     sb.from('profiles').select('id, full_name, username, email, role, manager_type, city, is_active').order('full_name'),
-    sb.from('deal_drafts').select('*').gte('created_at', draftCutoff).order('created_at', {ascending:false}),
+    sb.from('deal_drafts').select('*').order('created_at', {ascending:false}),
     sb.from('published_deals').select('*').order('published_at', {ascending:false}),
-    sb.from('manager_deal_totals').select('*').order('total_amount', {ascending:false})
+    sb.from('manager_deal_totals').select('*').order('total_amount', {ascending:false}),
+    sb.from('manager_deal_totals_previous_month').select('*').order('total_amount', {ascending:false})
   ]);
   if(profilesResult.error) throw profilesResult.error;
   if(draftsResult.error) throw draftsResult.error;
   if(dealsResult.error) throw dealsResult.error;
   if(ratingResult.error) throw ratingResult.error;
+  if(previousRatingResult.error) throw previousRatingResult.error;
   appState.profiles = profilesResult.data || [];
   appState.managers = appState.profiles.filter((item) => item.is_active && item.manager_type);
   appState.drafts = draftsResult.data || [];
   appState.deals = dealsResult.data || [];
   appState.rating = ratingResult.data || [];
+  appState.previousRating = previousRatingResult.data || [];
   if(appState.lastDownloadedDeal?.id){
     appState.lastDownloadedDeal = appState.drafts.find((item) => item.id === appState.lastDownloadedDeal.id) || null;
   }
@@ -1169,7 +1185,16 @@ function renderDashboard(){
 function renderRecentDeals(deals){
   const list = document.getElementById('recent_deals');
   const source = deals || [];
-  list.innerHTML = source.length ? source.map(dealCardHtml).join('') : '<div class="hint">Пока нет опубликованных сделок.</div>';
+  if(!source.length){
+    list.innerHTML = '<div class="hint">Пока нет опубликованных сделок.</div>';
+    return;
+  }
+  const first = source.slice(0, 3).map(dealCardHtml).join('');
+  const rest = source.slice(3);
+  const restHtml = rest.length
+    ? '<details class="panel deals-spoiler"><summary class="panel-title">Показать остальные</summary><div class="list">' + rest.map(dealCardHtml).join('') + '</div></details>'
+    : '';
+  list.innerHTML = first + restHtml;
 }
 
 function ratingClass(index, ratings, rating){
@@ -1197,6 +1222,7 @@ function renderRating(){
   const columns = document.querySelector('.rating-columns');
   if(appState.profile?.role === 'manager' && currentUserManagerType() === 'field'){
     panel.style.display = 'none';
+    document.getElementById('old_rating_panel').style.display = 'none';
     return;
   }
   panel.style.display = '';
@@ -1206,6 +1232,29 @@ function renderRating(){
   columns.style.gridTemplateColumns = remoteOnly ? '1fr' : '';
   renderRatingColumn('rating_remote_list', ratings.filter((item) => item.manager_type === 'remote'));
   renderRatingColumn('rating_field_list', ratings.filter((item) => item.manager_type === 'field'));
+  renderPreviousRating();
+}
+
+function renderPreviousRating(){
+  const panel = document.getElementById('old_rating_panel');
+  const list = document.getElementById('old_rating_list');
+  if(!panel || !list) return;
+  if(appState.profile?.role === 'manager' && currentUserManagerType() === 'field'){
+    panel.style.display = 'none';
+    return;
+  }
+  const remoteOnly = appState.profile?.role === 'manager' && currentUserManagerType() === 'remote';
+  const source = (appState.previousRating || [])
+    .filter((item) => !remoteOnly || item.manager_type === 'remote')
+    .filter((item) => Number(item.total_amount || 0) > 0 || Number(item.deals_count || 0) > 0);
+  panel.style.display = source.length ? '' : 'none';
+  list.innerHTML = source.length ? source.map((item) => (
+    '<div class="rank-row">' +
+      '<div><div class="rank-name">' + escapeHtml(item.manager_name || 'Менеджер') + '</div>' +
+      '<div class="rank-meta">' + escapeHtml(roleLabel(item)) + ' / ' + Number(item.deals_count || 0) + '</div></div>' +
+      '<div class="rank-amount">' + money(item.total_amount) + '</div>' +
+    '</div>'
+  )).join('') : '';
 }
 
 function shortDate(value){
@@ -1232,8 +1281,7 @@ function draftCardHtml(draft){
   const dateText = shortDate(draft.created_at);
   const flags = [
     '<span class="deal-flag">Черновик</span>',
-    '<span class="deal-flag">' + escapeHtml(draft.source === 'manual' ? 'Создан вручную' : 'После скачивания') + '</span>',
-    '<span class="deal-flag">Хранится 24 часа</span>'
+    '<span class="deal-flag">' + escapeHtml(draft.source === 'manual' ? 'Создан вручную' : 'После скачивания') + '</span>'
   ];
   return (
     '<div class="deal-row draft-row" onclick="openPublishModal(&quot;' + draft.id + '&quot;)">' +
@@ -1252,9 +1300,14 @@ function renderDeals(){
   const myDeals = appState.deals.filter(isOwnDeal);
   const otherDeals = appState.deals.filter((deal) => !isOwnDeal(deal));
   const canSeeOthers = !(appState.profile?.role === 'manager' && currentUserManagerType() === 'field');
-  const draftsHtml = appState.drafts.length
-    ? appState.drafts.map(draftCardHtml).join('')
+  const myDrafts = appState.drafts.filter(isOwnDeal);
+  const otherDrafts = appState.drafts.filter((draft) => !isOwnDeal(draft));
+  const myDraftsHtml = myDrafts.length
+    ? myDrafts.map(draftCardHtml).join('')
     : '<div class="hint">Черновиков пока нет.</div>';
+  const otherDraftsHtml = otherDrafts.length
+    ? otherDrafts.map(draftCardHtml).join('')
+    : '<div class="hint">Чужих черновиков пока нет.</div>';
   const myDealsHtml = myDeals.length
     ? myDeals.map(dealCardHtml).join('')
     : '<div class="hint">Ваших опубликованных сделок пока нет.</div>';
@@ -1262,9 +1315,10 @@ function renderDeals(){
     ? otherDeals.map(dealCardHtml).join('')
     : '<div class="hint">Других опубликованных сделок пока нет.</div>';
   list.innerHTML =
-    '<div class="panel"><div class="panel-title">Черновики</div><div class="list">' + draftsHtml + '</div></div>' +
+    '<div class="panel"><div class="panel-title">Мои черновики</div><div class="list">' + myDraftsHtml + '</div></div>' +
     '<div class="panel"><div class="panel-title">Мои опубликованные сделки</div><div class="list">' + myDealsHtml + '</div></div>' +
-    (canSeeOthers ? '<details class="panel deals-spoiler"><summary class="panel-title">Остальные опубликованные сделки</summary><div class="list">' + otherDealsHtml + '</div></details>' : '');
+    (canSeeOthers ? '<details class="panel deals-spoiler"><summary class="panel-title">Остальные опубликованные сделки</summary><div class="list">' + otherDealsHtml + '</div></details>' : '') +
+    (isAdmin() ? '<details class="panel deals-spoiler"><summary class="panel-title">Чужие черновики</summary><div class="list">' + otherDraftsHtml + '</div></details>' : '');
 }
 
 function renderUsers(){
@@ -1300,9 +1354,12 @@ function syncNewUserRoleUI(){
   }
 }
 
-function fillManagerSelect(selectId, type, selectedId, allowEmpty=true){
+function fillManagerSelect(selectId, type, selectedId, allowEmpty=true, cityFilter=null){
   const select = document.getElementById(selectId);
-  const managers = appState.managers.filter((item) => item.manager_type === type);
+  const managers = appState.managers.filter((item) =>
+    item.manager_type === type
+    && (!cityFilter || type !== 'field' || item.city === cityFilter)
+  );
   select.innerHTML = (allowEmpty ? '<option value="">Не выбран</option>' : '') + managers.map((item) => (
     '<option value="' + item.id + '"' + (item.id === selectedId ? ' selected' : '') + '>' + escapeHtml(item.full_name) + '</option>'
   )).join('');
@@ -1358,10 +1415,10 @@ function openPublishModal(draftId){
   appState.activePublishDraftId = draft.id;
   document.getElementById('publish_client').textContent = draft.client_initials || draft.client_full_name;
   document.getElementById('publish_amount').textContent = money(draft.contract_amount);
-  document.getElementById('publish_city').textContent = String(draft.city || '').toUpperCase() || '—';
+  document.getElementById('publish_city').textContent = cityLabel(draft.city) || '—';
   document.getElementById('publish_contract_number').textContent = draft.contract_number || '—';
   fillManagerSelect('publish_remote_manager', 'remote', draft.remote_manager_id);
-  fillManagerSelect('publish_field_manager', 'field', draft.field_manager_id);
+  fillManagerSelect('publish_field_manager', 'field', draft.field_manager_id, true, draft.city || currentCity);
   const managerType = currentUserManagerType();
   const remoteSelect = document.getElementById('publish_remote_manager');
   const fieldSelect = document.getElementById('publish_field_manager');
@@ -1500,7 +1557,7 @@ function openDealModal(id){
     '</div>' +
     '<div class="hint" style="margin-top:10px">Оформил: ' + escapeHtml(managerName(deal.downloaded_by)) + ' · опубликовано: ' + escapeHtml(new Date(deal.published_at).toLocaleString('ru-RU')) + ' · кем: ' + escapeHtml(managerName(deal.published_by)) + '</div>';
   fillManagerSelect('deal_remote_manager', 'remote', deal.remote_manager_id);
-  fillManagerSelect('deal_field_manager', 'field', deal.field_manager_id);
+  fillManagerSelect('deal_field_manager', 'field', deal.field_manager_id, true, deal.city);
   document.getElementById('deal_remote_manager').disabled = !isAdmin() && currentUserManagerType() === 'remote';
   document.getElementById('deal_field_manager').disabled = !isAdmin() && currentUserManagerType() === 'field';
   document.getElementById('deal_note').value = deal.deal_note || '';
@@ -1531,13 +1588,16 @@ async function deleteSelectedDeal(){
 
 function openManualDealModal(){
   fillManagerSelect('manual_remote_manager', 'remote', currentUserManagerType() === 'remote' ? appState.user?.id : null);
-  fillManagerSelect('manual_field_manager', 'field', currentUserManagerType() === 'field' ? appState.user?.id : null);
+  fillManagerSelect('manual_field_manager', 'field', currentUserManagerType() === 'field' ? appState.user?.id : null, true, currentCity);
   document.getElementById('manual_client_name').value = '';
   document.getElementById('manual_initials').value = '';
   document.getElementById('manual_contract_number').value = '';
   document.getElementById('manual_contract_date').value = isoDateFromForm();
   document.getElementById('manual_amount').value = '';
   document.getElementById('manual_city').value = currentCity;
+  document.getElementById('manual_city').onchange = (event) => {
+    fillManagerSelect('manual_field_manager', 'field', currentUserManagerType() === 'field' ? appState.user?.id : null, true, event.target.value);
+  };
   document.getElementById('manual_note').value = '';
   document.getElementById('manual_deal_modal').classList.add('open');
 }
@@ -1729,6 +1789,7 @@ function bindAuthForm(){
       }
       document.body.classList.add('authed');
       syncUserUI();
+      applyProfileCityPreference();
       await loadAppData();
     }catch(error){
       console.error(error);
