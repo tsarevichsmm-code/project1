@@ -105,13 +105,14 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .deals-spoiler summary::-webkit-details-marker{display:none}
 .deals-spoiler .list{padding:0 14px 14px}
 .old-rating-panel{margin-top:12px}
-.rank-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px;border:1px solid var(--border);border-radius:8px;padding:7px 8px;background:var(--surface);min-width:0}
+.rank-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;border:1px solid var(--border);border-radius:8px;padding:7px 8px;background:var(--surface);min-width:0}
 .rank-row > div{min-width:0}
 .rank-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rank-meta{font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rank-amount{font-family:var(--mono);font-size:11px;font-weight:600;white-space:nowrap}
 .rating-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.rating-column{display:grid;gap:6px;min-width:0}
+.rating-column{display:grid;align-content:start;gap:6px;min-width:0}
+.rating-column .list{align-content:start}
 .rating-column .panel-title{margin-bottom:2px}
 .rank-gold{border-color:rgba(180,83,9,.35);background:var(--gold-bg);color:var(--gold)}
 .rank-purple{border-color:rgba(124,58,237,.28);background:var(--purple-bg);color:var(--purple-text)}
