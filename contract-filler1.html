@@ -100,6 +100,26 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .deal-flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .deal-flag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;background:var(--surface3);font-size:10px;color:var(--text2)}
 .deal-amount{font-size:13px;font-weight:600;font-family:var(--mono);color:var(--blue)}
+.appointment-row{border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:11px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;cursor:pointer}
+.appointment-row:hover{border-color:var(--border2);background:var(--surface2)}
+.appointment-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appointment-meta{font-size:11px;color:var(--text2);margin-top:3px}
+.appointment-side{text-align:right;display:grid;align-content:start;gap:6px}
+.status-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:600;background:var(--surface3);color:var(--text2);white-space:nowrap}
+.status-assigned{background:var(--blue-bg);color:var(--blue-text)}
+.status-completed{background:var(--green-bg);color:var(--green-text)}
+.status-contracted{background:var(--gold-bg);color:var(--gold)}
+.status-rejected{background:var(--red-bg);color:var(--red-text)}
+.status-rescheduled{background:var(--purple-bg);color:var(--purple-text)}
+.measure-toolbar{max-width:1100px;margin:0 auto 12px;display:flex;gap:10px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.measure-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+.measure-filters .fg{margin-bottom:0;min-width:150px}
+.measure-table{max-width:1100px;margin:0 auto;display:grid;gap:12px}
+.notification-row{border:1px solid var(--border);background:var(--surface2);border-radius:8px;padding:9px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.notification-title{font-size:12px;font-weight:600}
+.notification-body{font-size:11px;color:var(--text2);white-space:pre-line;margin-top:3px}
+.nav-badge{margin-left:auto;min-width:18px;height:18px;border-radius:999px;background:var(--red-bg);color:var(--red-text);display:none;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.nav-badge.show{display:inline-flex}
 .deals-spoiler{padding:0;overflow:hidden}
 .deals-spoiler summary{list-style:none;cursor:pointer;padding:12px 14px}
 .deals-spoiler summary::-webkit-details-marker{display:none}
@@ -127,9 +147,9 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .user-card + .user-card{margin-top:8px}
 .user-card-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-card-meta{font-size:11px;color:var(--text2);margin-top:3px}
-.user-card-edit{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.55fr) auto;gap:8px;align-items:end;margin-top:8px}
+.user-card-edit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:end;margin-top:8px}
 .user-card-edit .fg{margin-bottom:0}
-.user-card-actions{display:flex;gap:6px;justify-content:flex-end;align-items:center}
+.user-card-actions{display:flex;gap:6px;justify-content:flex-end;align-items:center;grid-column:1/-1}
 .publish-warning{color:var(--red-text);background:var(--red-bg);border-radius:8px;padding:7px 9px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;max-width:900px;margin:0 auto}
 .card-title{font-size:16px;font-weight:600;letter-spacing:-.02em;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -236,6 +256,10 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   .stat-label{font-size:9px;margin-bottom:3px}
   .stat-value{font-size:16px}
   .dashboard-row{grid-template-columns:1fr}
+  .measure-toolbar{align-items:stretch}
+  .measure-filters,.measure-filters .fg{width:100%}
+  .appointment-row{grid-template-columns:1fr}
+  .appointment-side{text-align:left}
   .rating-columns{grid-template-columns:1fr}
   .users-grid{grid-template-columns:1fr}
   .publish-box{align-items:flex-start;flex-direction:column}
@@ -308,6 +332,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     <button class="nav-item active" type="button" data-view="contract" onclick="setView('contract')">Договор</button>
     <button class="nav-item" type="button" data-view="dashboard" onclick="setView('dashboard')">Дашборд</button>
     <button class="nav-item" type="button" data-view="deals" onclick="setView('deals')">Сделки</button>
+    <button class="nav-item" type="button" data-view="measurements" onclick="setView('measurements')">Запись на замер <span class="nav-badge" id="measurement_badge">0</span></button>
     <button class="nav-item" type="button" data-view="users" id="nav_users" onclick="setView('users')" style="display:none">Пользователи</button>
   </nav>
   <div class="sidebar-user">
@@ -625,6 +650,79 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     </div>
   </section>
 
+  <section class="view" id="view_measurements">
+    <div class="measure-toolbar">
+      <div>
+        <div class="panel-title" style="margin-bottom:2px">Запись на замер</div>
+        <div class="hint">Записываем клиента, назначаем выездного менеджера и контролируем статус замера.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-p" type="button" onclick="openMeasurementModal()">Новая запись</button>
+        <button class="btn btn-s" type="button" onclick="loadAppData()">Обновить</button>
+      </div>
+    </div>
+    <div class="measure-table">
+      <div class="panel" id="notifications_panel" style="display:none">
+        <div class="panel-title">Уведомления</div>
+        <div class="list" id="notifications_list"></div>
+      </div>
+      <div class="panel">
+        <div class="measure-filters">
+          <div class="fg">
+            <label class="fl" for="measurement_status_filter">Статус</label>
+            <select class="fselect" id="measurement_status_filter" onchange="renderMeasurements()">
+              <option value="">Все</option>
+              <option value="assigned">Назначен</option>
+              <option value="completed">Проведён</option>
+              <option value="contracted">Оформлен</option>
+              <option value="rejected">Отказ</option>
+              <option value="rescheduled">Перенос</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl" for="measurement_city_filter">Город</label>
+            <select class="fselect" id="measurement_city_filter" onchange="renderMeasurements()">
+              <option value="">Все</option>
+              <option value="spb">СПБ</option>
+              <option value="ekb">ЕКБ</option>
+            </select>
+          </div>
+          <div class="fg" style="flex:1;min-width:220px">
+            <label class="fl" for="measurement_search">Поиск</label>
+            <input class="fi" id="measurement_search" type="search" placeholder="Договор, телефон, адрес, клиент" oninput="renderMeasurements()">
+          </div>
+        </div>
+      </div>
+      <div class="panel" id="measurement_settings_panel" style="display:none">
+        <div class="panel-title">Интеграции</div>
+        <div class="grid2">
+          <div class="fg">
+            <label class="fl" for="settings_google_url">Google Docs / Sheets webhook</label>
+            <input class="fi" id="settings_google_url" type="url" placeholder="https://script.google.com/...">
+          </div>
+          <div class="fg">
+            <label class="fl" for="settings_sms_provider">SMS-провайдер</label>
+            <select class="fselect" id="settings_sms_provider">
+              <option value="">Не выбран</option>
+              <option value="sms_ru">SMS.ru</option>
+              <option value="smsc">SMSC.ru</option>
+              <option value="sms_aero">SMS Aero</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl" for="settings_sms_template">Шаблон SMS клиенту</label>
+          <textarea class="fi" id="settings_sms_template" rows="2" style="resize:vertical">Mebel Grand: напоминаем о замере {date}. Адрес: {address}</textarea>
+        </div>
+        <div class="hint">Ключи Telegram, Google и SMS нельзя хранить в HTML. Здесь сохраняем только публичные настройки, отправку подключим через серверную функцию.</div>
+        <div class="modal-actions">
+          <button class="btn btn-s" type="button" onclick="saveMeasurementSettings()">Сохранить настройки</button>
+        </div>
+      </div>
+      <div class="list" id="measurements_list"></div>
+    </div>
+  </section>
+
   <section class="view" id="view_users">
     <div class="users-wrap">
       <div class="users-grid">
@@ -817,6 +915,92 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   </div>
 </div>
 
+<div class="modal-overlay" id="measurement_modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="measurement_modal_title">Запись на замер</div>
+      <button class="ibtn" type="button" onclick="closeMeasurementModal()">×</button>
+    </div>
+    <div class="grid2">
+      <div class="fg">
+        <label class="fl" for="measurement_contract_number">Номер договора</label>
+        <input class="fi" id="measurement_contract_number" type="text">
+      </div>
+      <div class="fg">
+        <label class="fl" for="measurement_status">Статус</label>
+        <select class="fselect" id="measurement_status">
+          <option value="assigned">Назначен</option>
+          <option value="completed">Проведён</option>
+          <option value="contracted">Оформлен</option>
+          <option value="rejected">Отказ</option>
+          <option value="rescheduled">Перенос</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="fg">
+        <label class="fl" for="measurement_city">Город</label>
+        <select class="fselect" id="measurement_city">
+          <option value="spb">СПБ</option>
+          <option value="ekb">ЕКБ</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl" for="measurement_appointment_at">Дата и время замера</label>
+        <input class="fi" id="measurement_appointment_at" type="datetime-local">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="fg">
+        <label class="fl" for="measurement_manager_remind_at">Напомнить менеджеру</label>
+        <input class="fi" id="measurement_manager_remind_at" type="datetime-local">
+      </div>
+      <div class="fg">
+        <label class="fl" for="measurement_client_remind_at">Напомнить клиенту SMS</label>
+        <input class="fi" id="measurement_client_remind_at" type="datetime-local">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="fg">
+        <label class="fl" for="measurement_remote_manager">Удалённый менеджер</label>
+        <select class="fselect" id="measurement_remote_manager"></select>
+      </div>
+      <div class="fg">
+        <label class="fl" for="measurement_field_manager">Выездной менеджер</label>
+        <select class="fselect" id="measurement_field_manager"></select>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl" for="measurement_client_address">Адрес клиента</label>
+      <input class="fi" id="measurement_client_address" type="text">
+    </div>
+    <div class="fg">
+      <label class="fl" for="measurement_client_contact">Контакт клиента</label>
+      <input class="fi" id="measurement_client_contact" type="text" placeholder="Имя, телефон">
+    </div>
+    <div class="grid2">
+      <div class="fg">
+        <label class="fl" for="measurement_product_summary">Изделие и сумма</label>
+        <input class="fi" id="measurement_product_summary" type="text">
+      </div>
+      <div class="fg">
+        <label class="fl" for="measurement_final_amount">Итоговая сумма</label>
+        <input class="fi" id="measurement_final_amount" type="number" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl" for="measurement_comment">Комментарий</label>
+      <textarea class="fi" id="measurement_comment" rows="3" style="resize:vertical;min-height:74px"></textarea>
+    </div>
+    <div class="hint" id="measurement_integration_hint"></div>
+    <div class="modal-actions">
+      <button class="btn" type="button" onclick="closeMeasurementModal()">Отмена</button>
+      <button class="btn btn-d" id="measurement_delete_btn" type="button" onclick="deleteMeasurement()" style="display:none">Удалить</button>
+      <button class="btn btn-p" id="measurement_save_btn" type="button" onclick="saveMeasurement()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <div class="tco" id="tco"></div>
 
 <script>
@@ -831,10 +1015,14 @@ const appState = {
   managers: [],
   drafts: [],
   deals: [],
+  measurements: [],
+  notifications: [],
+  appSettings: {},
   rating: [],
   previousRating: [],
   lastDownloadedDeal: null,
   selectedDeal: null,
+  selectedMeasurement: null,
   activePublishDraftId: null
 };
 
@@ -1052,6 +1240,8 @@ function setView(view){
   closeMobileMenu();
   if(view === 'dashboard') renderDashboard();
   if(view === 'deals') renderDeals();
+  if(view === 'measurements') renderMeasurements();
+  if(view === 'users') renderUsers();
 }
 
 function openMobileMenu(){
@@ -1070,6 +1260,9 @@ async function signOut(){
   appState.profile = null;
   appState.drafts = [];
   appState.deals = [];
+  appState.measurements = [];
+  appState.notifications = [];
+  appState.appSettings = {};
   appState.rating = [];
   appState.previousRating = [];
   appState.lastDownloadedDeal = null;
@@ -1137,22 +1330,34 @@ function applyProfileCityPreference(){
 
 async function loadAppData(){
   if(!appState.user) return;
-  const [profilesResult, draftsResult, dealsResult, ratingResult, previousRatingResult] = await Promise.all([
-    sb.from('profiles').select('id, full_name, username, email, role, manager_type, city, is_active').order('full_name'),
+  const settingsPromise = isAdmin()
+    ? sb.from('app_settings').select('*')
+    : Promise.resolve({data: [], error: null});
+  const [profilesResult, draftsResult, dealsResult, appointmentsResult, notificationsResult, settingsResult, ratingResult, previousRatingResult] = await Promise.all([
+    sb.from('profiles').select('id, full_name, username, email, role, manager_type, city, is_active, telegram_username, telegram_chat_id, phone').order('full_name'),
     sb.from('deal_drafts').select('*').order('created_at', {ascending:false}),
     sb.from('published_deals').select('*').order('published_at', {ascending:false}),
+    sb.from('measurement_appointments').select('*').order('appointment_at', {ascending:false}),
+    sb.from('notifications').select('*').order('created_at', {ascending:false}),
+    settingsPromise,
     sb.from('manager_deal_totals').select('*').order('total_amount', {ascending:false}),
     sb.from('manager_deal_totals_previous_month').select('*').order('total_amount', {ascending:false})
   ]);
   if(profilesResult.error) throw profilesResult.error;
   if(draftsResult.error) throw draftsResult.error;
   if(dealsResult.error) throw dealsResult.error;
+  if(appointmentsResult.error) throw appointmentsResult.error;
+  if(notificationsResult.error) throw notificationsResult.error;
+  if(settingsResult.error) throw settingsResult.error;
   if(ratingResult.error) throw ratingResult.error;
   if(previousRatingResult.error) throw previousRatingResult.error;
   appState.profiles = profilesResult.data || [];
   appState.managers = appState.profiles.filter((item) => item.is_active && item.manager_type);
   appState.drafts = draftsResult.data || [];
   appState.deals = dealsResult.data || [];
+  appState.measurements = appointmentsResult.data || [];
+  appState.notifications = notificationsResult.data || [];
+  appState.appSettings = Object.fromEntries((settingsResult.data || []).map((item) => [item.key, item.value || {}]));
   appState.rating = ratingResult.data || [];
   appState.previousRating = previousRatingResult.data || [];
   if(appState.lastDownloadedDeal?.id){
@@ -1160,7 +1365,9 @@ async function loadAppData(){
   }
   renderDashboard();
   renderDeals();
+  renderMeasurements();
   renderUsers();
+  renderNotificationBadge();
   showPublishBox();
 }
 
@@ -1337,6 +1544,8 @@ function renderUsers(){
       '<div class="user-card-edit">' +
         '<div class="fg"><label class="fl" for="edit_name_' + profile.id + '">Имя</label><input class="fi" id="edit_name_' + profile.id + '" type="text" value="' + escapeHtml(profile.full_name || '') + '"></div>' +
         '<div class="fg"><label class="fl" for="edit_pass_' + profile.id + '">Пароль</label><input class="fi" id="edit_pass_' + profile.id + '" type="text" placeholder="Новый"></div>' +
+        '<div class="fg"><label class="fl" for="edit_tg_' + profile.id + '">Telegram ник</label><input class="fi" id="edit_tg_' + profile.id + '" type="text" value="' + escapeHtml(profile.telegram_username || '') + '" placeholder="@username"></div>' +
+        '<div class="fg"><label class="fl" for="edit_phone_' + profile.id + '">Телефон</label><input class="fi" id="edit_phone_' + profile.id + '" type="text" value="' + escapeHtml(profile.phone || '') + '" placeholder="+7..."></div>' +
         '<div class="user-card-actions">' +
           '<button class="btn btn-s" type="button" onclick="saveUserChanges(\'' + profile.id + '\')">Сохранить</button>' +
           (profile.role === 'super_admin' ? '' : '<button class="btn btn-s btn-d" type="button" onclick="deactivateUser(\'' + profile.id + '\')">Удалить</button>') +
@@ -1344,6 +1553,293 @@ function renderUsers(){
       '</div>' +
     '</div>'
   )).join('') : '<div class="hint">Пользователей пока нет.</div>';
+}
+
+const MEASUREMENT_STATUSES = {
+  assigned: {label: 'Назначен', cls: 'status-assigned'},
+  completed: {label: 'Проведён', cls: 'status-completed'},
+  contracted: {label: 'Оформлен', cls: 'status-contracted'},
+  rejected: {label: 'Отказ', cls: 'status-rejected'},
+  rescheduled: {label: 'Перенос', cls: 'status-rescheduled'}
+};
+
+function measurementStatusLabel(status){
+  return MEASUREMENT_STATUSES[status]?.label || status || 'Назначен';
+}
+
+function measurementStatusClass(status){
+  return MEASUREMENT_STATUSES[status]?.cls || 'status-assigned';
+}
+
+function formatDateTime(value){
+  if(!value) return '—';
+  return new Date(value).toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function toDateTimeLocalValue(value){
+  const date = value ? new Date(value) : new Date(Date.now() + 60 * 60 * 1000);
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function fromDateTimeLocalValue(value){
+  return value ? new Date(value).toISOString() : null;
+}
+
+function renderNotificationBadge(){
+  const badge = document.getElementById('measurement_badge');
+  if(!badge) return;
+  const count = (appState.notifications || []).filter((item) => !item.is_read).length;
+  badge.textContent = count > 9 ? '9+' : String(count);
+  badge.classList.toggle('show', count > 0);
+}
+
+function renderNotifications(){
+  const panel = document.getElementById('notifications_panel');
+  const list = document.getElementById('notifications_list');
+  if(!panel || !list) return;
+  const unread = (appState.notifications || []).filter((item) => !item.is_read);
+  panel.style.display = unread.length ? '' : 'none';
+  list.innerHTML = unread.length ? unread.map((item) => (
+    '<div class="notification-row">' +
+      '<div><div class="notification-title">' + escapeHtml(item.title || 'Уведомление') + '</div>' +
+      '<div class="notification-body">' + escapeHtml(item.body || '') + '</div></div>' +
+      '<button class="btn btn-s" type="button" onclick="markNotificationRead(\'' + item.id + '\')">Прочитано</button>' +
+    '</div>'
+  )).join('') : '';
+}
+
+function canEditMeasurement(appointment){
+  if(!appState.user || !appointment) return false;
+  return isAdmin()
+    || appointment.created_by === appState.user.id
+    || appointment.remote_manager_id === appState.user.id
+    || appointment.field_manager_id === appState.user.id;
+}
+
+function canDeleteMeasurement(){
+  return isAdmin();
+}
+
+function measurementCardHtml(item){
+  const status = '<span class="status-badge ' + measurementStatusClass(item.status) + '">' + escapeHtml(measurementStatusLabel(item.status)) + '</span>';
+  const searchTitle = item.contract_number ? 'Договор №' + item.contract_number : 'Замер без номера договора';
+  return (
+    '<div class="appointment-row" onclick="openMeasurementModal(\'' + item.id + '\')">' +
+      '<div>' +
+        '<div class="appointment-title">' + escapeHtml(searchTitle) + '</div>' +
+        '<div class="appointment-meta">' + escapeHtml(formatDateTime(item.appointment_at)) + ' · ' + escapeHtml(cityLabel(item.city)) + ' · ' + escapeHtml(item.client_contact || '') + '</div>' +
+        '<div class="appointment-meta">' + escapeHtml(item.client_address || '') + '</div>' +
+        '<div class="deal-flags">' +
+          '<span class="deal-flag">удалённый: ' + escapeHtml(managerName(item.remote_manager_id)) + '</span>' +
+          '<span class="deal-flag">выездной: ' + escapeHtml(managerName(item.field_manager_id)) + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="appointment-side">' +
+        status +
+        '<div class="deal-amount">' + money(item.final_amount || item.estimated_amount || 0) + '</div>' +
+      '</div>' +
+    '</div>'
+  );
+}
+
+function getFilteredMeasurements(){
+  const status = document.getElementById('measurement_status_filter')?.value || '';
+  const city = document.getElementById('measurement_city_filter')?.value || '';
+  const search = (document.getElementById('measurement_search')?.value || '').trim().toLowerCase();
+  return (appState.measurements || []).filter((item) => {
+    if(status && item.status !== status) return false;
+    if(city && item.city !== city) return false;
+    if(search){
+      const haystack = [
+        item.contract_number,
+        item.client_address,
+        item.client_contact,
+        item.product_summary,
+        item.comment,
+        managerName(item.remote_manager_id),
+        managerName(item.field_manager_id)
+      ].join(' ').toLowerCase();
+      if(!haystack.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function renderMeasurementSettings(){
+  const panel = document.getElementById('measurement_settings_panel');
+  if(!panel) return;
+  panel.style.display = isAdmin() ? '' : 'none';
+  if(!isAdmin()) return;
+  const settings = appState.appSettings.measurement_integrations || {};
+  document.getElementById('settings_google_url').value = settings.googleWebhookUrl || '';
+  document.getElementById('settings_sms_provider').value = settings.smsProvider || '';
+  document.getElementById('settings_sms_template').value = settings.smsTemplate || 'Mebel Grand: напоминаем о замере {date}. Адрес: {address}';
+}
+
+function renderMeasurements(){
+  renderNotifications();
+  renderMeasurementSettings();
+  const list = document.getElementById('measurements_list');
+  if(!list) return;
+  const appointments = getFilteredMeasurements();
+  list.innerHTML = appointments.length
+    ? appointments.map(measurementCardHtml).join('')
+    : '<div class="panel"><div class="hint">Записей на замер пока нет.</div></div>';
+}
+
+function openMeasurementModal(id){
+  const item = id ? (appState.measurements || []).find((appointment) => appointment.id === id) : null;
+  appState.selectedMeasurement = item || null;
+  const managerType = currentUserManagerType();
+  const defaultCity = item?.city || appState.profile?.city || currentCity || 'spb';
+  document.getElementById('measurement_modal_title').textContent = item ? 'Запись на замер' : 'Новая запись на замер';
+  document.getElementById('measurement_contract_number').value = item?.contract_number || '';
+  document.getElementById('measurement_status').value = item?.status || 'assigned';
+  document.getElementById('measurement_city').value = defaultCity;
+  document.getElementById('measurement_appointment_at').value = toDateTimeLocalValue(item?.appointment_at);
+  document.getElementById('measurement_manager_remind_at').value = item?.manager_remind_at ? toDateTimeLocalValue(item.manager_remind_at) : '';
+  document.getElementById('measurement_client_remind_at').value = item?.client_remind_at ? toDateTimeLocalValue(item.client_remind_at) : '';
+  fillManagerSelect('measurement_remote_manager', 'remote', item?.remote_manager_id || (managerType === 'remote' ? appState.user?.id : null));
+  fillManagerSelect('measurement_field_manager', 'field', item?.field_manager_id || (managerType === 'field' ? appState.user?.id : null), true, defaultCity);
+  document.getElementById('measurement_remote_manager').disabled = managerType === 'remote' && !isAdmin();
+  document.getElementById('measurement_field_manager').disabled = managerType === 'field' && !isAdmin();
+  document.getElementById('measurement_city').onchange = (event) => {
+    fillManagerSelect('measurement_field_manager', 'field', managerType === 'field' ? appState.user?.id : null, true, event.target.value);
+  };
+  document.getElementById('measurement_client_address').value = item?.client_address || '';
+  document.getElementById('measurement_client_contact').value = item?.client_contact || '';
+  document.getElementById('measurement_product_summary').value = item?.product_summary || '';
+  document.getElementById('measurement_final_amount').value = item?.final_amount || item?.estimated_amount || '';
+  document.getElementById('measurement_comment').value = item?.comment || '';
+  document.getElementById('measurement_integration_hint').textContent = item
+    ? 'Google: ' + (item.google_status || 'not_sent') + ' · Telegram: ' + (item.telegram_status || 'not_sent') + ' · SMS: ' + (item.sms_status || 'not_sent')
+    : 'После сохранения выездному менеджеру появится внутреннее уведомление.';
+  document.getElementById('measurement_save_btn').style.display = !item || canEditMeasurement(item) ? 'inline-flex' : 'none';
+  document.getElementById('measurement_delete_btn').style.display = item && canDeleteMeasurement() ? 'inline-flex' : 'none';
+  document.getElementById('measurement_modal').classList.add('open');
+}
+
+function closeMeasurementModal(){
+  document.getElementById('measurement_modal').classList.remove('open');
+  appState.selectedMeasurement = null;
+}
+
+function buildMeasurementPayload(){
+  const managerType = currentUserManagerType();
+  let remoteManagerId = document.getElementById('measurement_remote_manager').value || null;
+  let fieldManagerId = document.getElementById('measurement_field_manager').value || null;
+  if(managerType === 'remote' && !isAdmin()) remoteManagerId = appState.user.id;
+  if(managerType === 'field' && !isAdmin()) fieldManagerId = appState.user.id;
+  const address = document.getElementById('measurement_client_address').value.trim();
+  const contact = document.getElementById('measurement_client_contact').value.trim();
+  const appointmentAt = document.getElementById('measurement_appointment_at').value;
+  if(!address || !contact || !appointmentAt){
+    throw new Error('Заполните дату замера, адрес и контакт клиента');
+  }
+  const amount = normalizeNumber(document.getElementById('measurement_final_amount').value);
+  return {
+    contract_number: document.getElementById('measurement_contract_number').value.trim() || null,
+    status: document.getElementById('measurement_status').value || 'assigned',
+    city: document.getElementById('measurement_city').value || currentCity,
+    appointment_at: fromDateTimeLocalValue(appointmentAt),
+    manager_remind_at: fromDateTimeLocalValue(document.getElementById('measurement_manager_remind_at').value),
+    client_remind_at: fromDateTimeLocalValue(document.getElementById('measurement_client_remind_at').value),
+    remote_manager_id: remoteManagerId,
+    field_manager_id: fieldManagerId,
+    client_address: address,
+    client_contact: contact,
+    product_summary: document.getElementById('measurement_product_summary').value.trim() || null,
+    estimated_amount: amount,
+    final_amount: amount,
+    comment: document.getElementById('measurement_comment').value.trim() || null,
+    updated_by: appState.user.id
+  };
+}
+
+async function saveMeasurement(){
+  const btn = document.getElementById('measurement_save_btn');
+  btn.disabled = true;
+  try{
+    const payload = buildMeasurementPayload();
+    if(appState.selectedMeasurement?.id){
+      const {error} = await sb.from('measurement_appointments').update(payload).eq('id', appState.selectedMeasurement.id);
+      if(error) throw error;
+      toast('Запись на замер обновлена', 's');
+    }else{
+      const {error} = await sb.from('measurement_appointments').insert({
+        ...payload,
+        created_by: appState.user.id
+      });
+      if(error) throw error;
+      toast('Запись на замер создана', 's');
+    }
+    closeMeasurementModal();
+    await loadAppData();
+  }catch(error){
+    console.error(error);
+    toast('Ошибка сохранения замера: ' + error.message, 'e');
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+async function deleteMeasurement(){
+  const item = appState.selectedMeasurement;
+  if(!item || !canDeleteMeasurement()) return;
+  try{
+    const {error} = await sb.from('measurement_appointments').delete().eq('id', item.id);
+    if(error) throw error;
+    closeMeasurementModal();
+    toast('Запись на замер удалена', 's');
+    await loadAppData();
+  }catch(error){
+    console.error(error);
+    toast('Ошибка удаления замера: ' + error.message, 'e');
+  }
+}
+
+async function markNotificationRead(id){
+  try{
+    const {error} = await sb.from('notifications').update({
+      is_read: true,
+      read_at: new Date().toISOString()
+    }).eq('id', id);
+    if(error) throw error;
+    await loadAppData();
+  }catch(error){
+    console.error(error);
+    toast('Ошибка обновления уведомления: ' + error.message, 'e');
+  }
+}
+
+async function saveMeasurementSettings(){
+  if(!isAdmin()) return;
+  try{
+    const value = {
+      googleWebhookUrl: document.getElementById('settings_google_url').value.trim(),
+      smsProvider: document.getElementById('settings_sms_provider').value,
+      smsTemplate: document.getElementById('settings_sms_template').value.trim()
+    };
+    const {error} = await sb.from('app_settings').upsert({
+      key: 'measurement_integrations',
+      value,
+      updated_by: appState.user.id,
+      updated_at: new Date().toISOString()
+    });
+    if(error) throw error;
+    toast('Настройки замеров сохранены', 's');
+    await loadAppData();
+  }catch(error){
+    console.error(error);
+    toast('Ошибка сохранения настроек: ' + error.message, 'e');
+  }
 }
 
 function syncNewUserRoleUI(){
@@ -1726,8 +2222,10 @@ async function saveUserChanges(userId){
   try{
     const fullName = document.getElementById('edit_name_' + userId).value.trim();
     const password = document.getElementById('edit_pass_' + userId).value;
+    const telegramUsername = document.getElementById('edit_tg_' + userId)?.value.trim() || null;
+    const phone = document.getElementById('edit_phone_' + userId)?.value.trim() || null;
     if(!fullName && !password){
-      throw new Error('Укажите имя или новый пароль');
+      throw new Error('Укажите имя, новый пароль, Telegram или телефон');
     }
     const {error} = await sb.rpc('update_internal_user', {
       p_user_id: userId,
@@ -1735,6 +2233,12 @@ async function saveUserChanges(userId){
       p_password: password || null
     });
     if(error) throw error;
+    const profileUpdate = await sb.from('profiles').update({
+      telegram_username: telegramUsername,
+      phone,
+      updated_at: new Date().toISOString()
+    }).eq('id', userId);
+    if(profileUpdate.error) throw profileUpdate.error;
     document.getElementById('edit_pass_' + userId).value = '';
     toast('Пользователь обновлён', 's');
     await loadAppData();
