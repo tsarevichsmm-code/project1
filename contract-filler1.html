@@ -1933,6 +1933,8 @@ function buildMeasurementPayload(){
 }
 
 function buildGoogleMeasurementPayload(appointment, action){
+  const remoteManager = appState.profiles.find((profile) => profile.id === appointment.remote_manager_id);
+  const fieldManager = appState.profiles.find((profile) => profile.id === appointment.field_manager_id);
   return {
     action,
     deleted: action === 'deleted' ? 'true' : '',
@@ -1944,8 +1946,11 @@ function buildGoogleMeasurementPayload(appointment, action){
     appointment_at: formatDateTime(appointment.appointment_at),
     appointment_at_iso: appointment.appointment_at,
     contract_number: appointment.contract_number || '',
-    remote_manager: managerName(appointment.remote_manager_id),
-    field_manager: managerName(appointment.field_manager_id),
+    remote_manager_id: appointment.remote_manager_id || '',
+    remote_manager: remoteManager?.full_name || managerName(appointment.remote_manager_id),
+    field_manager_id: appointment.field_manager_id || '',
+    field_manager: fieldManager?.full_name || managerName(appointment.field_manager_id),
+    field_manager_telegram: fieldManager?.telegram_username || '',
     client_contact: appointment.client_contact || '',
     client_address: appointment.client_address || '',
     product_summary: appointment.product_summary || '',
