@@ -148,6 +148,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .users-wrap{max-width:1100px;margin:0 auto}
 .users-grid{display:grid;grid-template-columns:minmax(320px,.9fr) minmax(0,1.1fr);gap:12px}
 .user-card{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:10px}
+.user-card summary::-webkit-details-marker{display:none}
 .user-card + .user-card{margin-top:8px}
 .user-card-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-card-meta{font-size:11px;color:var(--text2);margin-top:3px}
@@ -779,10 +780,10 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           <button class="btn btn-p" type="button" id="create_user_btn" onclick="createInternalUser()">Создать пользователя</button>
           <div class="hint" style="margin-top:10px">Для удалённого сотрудника город не нужен. Админ и супер-админ тоже могут быть удалёнными или выездными и участвуют в рейтинге.</div>
         </div>
-        <details class="panel deals-spoiler">
-          <summary class="panel-title">Текущие пользователи</summary>
+        <div class="panel">
+          <div class="panel-title">Текущие пользователи</div>
           <div class="list" id="users_list"></div>
-        </details>
+        </div>
       </div>
     </div>
   </section>
@@ -932,11 +933,11 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <div class="modal-title" id="measurement_modal_title">Запись на замер</div>
       <button class="ibtn" type="button" onclick="closeMeasurementModal()">×</button>
     </div>
+    <div class="fg" id="measurement_contract_group">
+      <label class="fl" for="measurement_contract_number">Номер договора</label>
+      <input class="fi" id="measurement_contract_number" type="text">
+    </div>
     <div class="grid2">
-      <div class="fg" id="measurement_contract_group">
-        <label class="fl" for="measurement_contract_number">Номер договора</label>
-        <input class="fi" id="measurement_contract_number" type="text">
-      </div>
       <div class="fg">
         <label class="fl" for="measurement_status">Статус</label>
         <select class="fselect" id="measurement_status" onchange="syncMeasurementStatusFields()">
@@ -947,14 +948,18 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           <option value="rescheduled">Перенос</option>
         </select>
       </div>
-    </div>
-    <div class="grid2">
       <div class="fg">
         <label class="fl" for="measurement_city">Город</label>
         <select class="fselect" id="measurement_city">
           <option value="spb">СПБ</option>
           <option value="ekb">ЕКБ</option>
         </select>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="fg">
+        <label class="fl" for="measurement_client_address">Адрес клиента</label>
+        <input class="fi" id="measurement_client_address" type="text">
       </div>
       <div class="fg">
         <label class="fl" for="measurement_appointment_at">Дата и время замера</label>
@@ -967,27 +972,17 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
         <select class="fselect" id="measurement_remote_manager"></select>
       </div>
       <div class="fg">
-        <label class="fl" for="measurement_field_manager">Выездной менеджер</label>
+        <label class="fl" for="measurement_field_manager">Выездной дизайнер</label>
         <select class="fselect" id="measurement_field_manager"></select>
       </div>
-    </div>
-    <div class="fg">
-      <label class="fl" for="measurement_client_address">Адрес клиента</label>
-      <input class="fi" id="measurement_client_address" type="text">
     </div>
     <div class="fg">
       <label class="fl" for="measurement_client_contact">Контакт клиента</label>
       <input class="fi" id="measurement_client_contact" type="text" placeholder="Имя, телефон">
     </div>
-    <div class="grid2">
-      <div class="fg">
-        <label class="fl" for="measurement_product_summary">Изделие и сумма</label>
-        <input class="fi" id="measurement_product_summary" type="text">
-      </div>
-      <div class="fg">
-        <label class="fl" for="measurement_estimated_amount">Предварительная сумма</label>
-        <input class="fi" id="measurement_estimated_amount" type="number" min="0" step="0.01">
-      </div>
+    <div class="fg">
+      <label class="fl" for="measurement_product_summary">Изделие и сумма</label>
+      <input class="fi" id="measurement_product_summary" type="text">
     </div>
     <div class="fg" id="measurement_final_amount_group">
         <label class="fl" for="measurement_final_amount">Итоговая сумма</label>
@@ -1572,9 +1567,11 @@ function renderUsers(){
   }
   const visibleProfiles = appState.profiles.filter((profile) => profile.is_active);
   list.innerHTML = visibleProfiles.length ? visibleProfiles.map((profile) => (
-    '<div class="user-card">' +
-      '<div class="user-card-title">' + escapeHtml(profile.full_name || profile.email || 'Пользователь') + '</div>' +
-      '<div class="user-card-meta">Логин: ' + escapeHtml(profile.username || '') + ' · ' + escapeHtml(roleLabel(profile)) + '</div>' +
+    '<details class="user-card">' +
+      '<summary style="list-style:none;cursor:pointer">' +
+        '<div class="user-card-title">' + escapeHtml(profile.full_name || profile.email || 'Пользователь') + '</div>' +
+        '<div class="user-card-meta">Логин: ' + escapeHtml(profile.username || '') + ' · ' + escapeHtml(roleLabel(profile)) + '</div>' +
+      '</summary>' +
       '<div class="user-card-edit">' +
         '<div class="fg"><label class="fl" for="edit_name_' + profile.id + '">Имя</label><input class="fi" id="edit_name_' + profile.id + '" type="text" value="' + escapeHtml(profile.full_name || '') + '"></div>' +
         '<div class="fg"><label class="fl" for="edit_pass_' + profile.id + '">Пароль</label><input class="fi" id="edit_pass_' + profile.id + '" type="text" placeholder="Новый"></div>' +
@@ -1585,7 +1582,7 @@ function renderUsers(){
           (profile.role === 'super_admin' ? '' : '<button class="btn btn-s btn-d" type="button" onclick="deactivateUser(\'' + profile.id + '\')">Удалить</button>') +
         '</div>' +
       '</div>' +
-    '</div>'
+    '</details>'
   )).join('') : '<div class="hint">Пользователей пока нет.</div>';
 }
 
@@ -1701,7 +1698,6 @@ function measurementCardHtml(item){
   const status = '<span class="status-badge ' + measurementStatusClass(item.status) + '">' + escapeHtml(measurementStatusLabel(item.status)) + '</span>';
   const hasFinalAmount = Number(item.final_amount || 0) > 0;
   const amountValue = hasFinalAmount ? item.final_amount : item.estimated_amount;
-  const amountLabel = hasFinalAmount ? 'Итог: ' : 'Предварительно: ';
   const title = cityLabel(item.city) + ' · ' + formatDateTime(item.appointment_at) + ' · удалённый: ' + managerName(item.remote_manager_id) + ' · выездной: ' + managerName(item.field_manager_id);
   const contractHtml = item.status === 'contracted' && item.contract_number
     ? '<div class="appointment-meta appointment-line">Договор №' + escapeHtml(item.contract_number) + '</div>'
@@ -1724,7 +1720,7 @@ function measurementCardHtml(item){
       '</div>' +
       '<div class="appointment-side">' +
         status +
-        '<div class="deal-amount' + (hasFinalAmount ? ' appointment-final' : '') + '">' + amountLabel + money(amountValue || 0) + '</div>' +
+        '<div class="deal-amount' + (hasFinalAmount ? ' appointment-final' : '') + '">' + money(amountValue || 0) + '</div>' +
       '</div>' +
     '</div>'
   );
@@ -1808,7 +1804,6 @@ function openMeasurementModal(id){
   document.getElementById('measurement_client_address').value = item?.client_address || '';
   document.getElementById('measurement_client_contact').value = item?.client_contact || '';
   document.getElementById('measurement_product_summary').value = item?.product_summary || '';
-  document.getElementById('measurement_estimated_amount').value = item?.estimated_amount || '';
   document.getElementById('measurement_final_amount').value = item?.final_amount || '';
   document.getElementById('measurement_comment').value = item?.comment || '';
   document.getElementById('measurement_integration_hint').textContent = item
@@ -1840,7 +1835,7 @@ function buildMeasurementPayload(){
   }
   const status = document.getElementById('measurement_status').value || 'assigned';
   const isContracted = status === 'contracted';
-  const estimatedAmount = normalizeNumber(document.getElementById('measurement_estimated_amount').value);
+  const estimatedAmount = normalizeNumber((document.getElementById('measurement_product_summary').value.match(/[\d\s.,]+/) || ['0'])[0]);
   const finalAmount = isContracted ? normalizeNumber(document.getElementById('measurement_final_amount').value) : 0;
   const managerRemindEnabled = document.getElementById('measurement_manager_remind_enabled').checked;
   const clientRemindEnabled = document.getElementById('measurement_client_remind_enabled').checked;
