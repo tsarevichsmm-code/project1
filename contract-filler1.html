@@ -948,10 +948,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <div class="modal-title" id="measurement_modal_title">Запись на замер</div>
       <button class="ibtn" type="button" onclick="closeMeasurementModal()">×</button>
     </div>
-    <div class="fg" id="measurement_contract_group">
-      <label class="fl" for="measurement_contract_number">Номер договора</label>
-      <input class="fi" id="measurement_contract_number" type="text">
-    </div>
     <div class="grid2">
       <div class="fg">
         <label class="fl" for="measurement_status">Статус</label>
@@ -999,9 +995,15 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <label class="fl" for="measurement_product_summary">Изделие и сумма</label>
       <input class="fi" id="measurement_product_summary" type="text">
     </div>
-    <div class="fg" id="measurement_final_amount_group">
+    <div class="grid2" id="measurement_contract_result_group">
+      <div class="fg">
+        <label class="fl" for="measurement_contract_number">Номер договора</label>
+        <input class="fi" id="measurement_contract_number" type="text">
+      </div>
+      <div class="fg">
         <label class="fl" for="measurement_final_amount">Итоговая сумма</label>
         <input class="fi" id="measurement_final_amount" type="number" min="0" step="0.01">
+      </div>
     </div>
     <div class="fg">
       <label class="fl" for="measurement_comment">Комментарий</label>
@@ -1647,10 +1649,8 @@ function defaultReminderLocalValue(appointmentLocalValue){
 
 function syncMeasurementStatusFields(){
   const isContracted = document.getElementById('measurement_status')?.value === 'contracted';
-  const contractGroup = document.getElementById('measurement_contract_group');
-  const finalGroup = document.getElementById('measurement_final_amount_group');
-  if(contractGroup) contractGroup.style.display = isContracted ? '' : 'none';
-  if(finalGroup) finalGroup.style.display = isContracted ? '' : 'none';
+  const resultGroup = document.getElementById('measurement_contract_result_group');
+  if(resultGroup) resultGroup.style.display = isContracted ? '' : 'none';
 }
 
 function syncMeasurementReminderInputs(){
@@ -1939,19 +1939,33 @@ async function syncMeasurementToGoogle(appointment, action){
   }
 }
 
+function syncMeasurementToGoogleInBackground(appointment, action){
+  if(!appState.appSettings.measurement_integrations?.googleWebhookUrl || !appointment?.id) return;
+  sb.from('measurement_appointments').update({google_status: 'pending'}).eq('id', appointment.id).then(({error}) => {
+    if(error) console.error(error);
+  });
+  setTimeout(async () => {
+    const status = await syncMeasurementToGoogle(appointment, action);
+    if(status === 'error'){
+      toast('Замер сохранён, но Google не принял данные. Проверьте webhook.', 'e');
+    }
+    await loadAppData();
+  }, 0);
+}
+
 async function saveMeasurement(){
   const btn = document.getElementById('measurement_save_btn');
   btn.disabled = true;
   try{
     const payload = buildMeasurementPayload();
     let savedAppointment = null;
-    let googleStatus = 'not_sent';
+    let action = 'created';
     if(appState.selectedMeasurement?.id){
       const {data, error} = await sb.from('measurement_appointments').update(payload).eq('id', appState.selectedMeasurement.id).select('*').single();
       if(error) throw error;
       savedAppointment = data;
-      googleStatus = await syncMeasurementToGoogle(savedAppointment, 'updated');
-      toast('Запись на замер обновлена' + (googleStatus === 'sent' ? ' и отправлена в Google' : ''), 's');
+      action = 'updated';
+      toast('Запись на замер обновлена', 's');
     }else{
       const {data, error} = await sb.from('measurement_appointments').insert({
         ...payload,
@@ -1959,14 +1973,12 @@ async function saveMeasurement(){
       }).select('*').single();
       if(error) throw error;
       savedAppointment = data;
-      googleStatus = await syncMeasurementToGoogle(savedAppointment, 'created');
-      toast('Запись на замер создана' + (googleStatus === 'sent' ? ' и отправлена в Google' : ''), 's');
-    }
-    if(googleStatus === 'error'){
-      toast('Замер сохранён, но Google не принял данные. Проверьте webhook.', 'e');
+      action = 'created';
+      toast('Запись на замер создана', 's');
     }
     closeMeasurementModal();
     await loadAppData();
+    syncMeasurementToGoogleInBackground(savedAppointment, action);
   }catch(error){
     console.error(error);
     toast('Ошибка сохранения замера: ' + error.message, 'e');
