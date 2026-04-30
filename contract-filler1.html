@@ -1902,13 +1902,17 @@ function buildGoogleMeasurementPayload(appointment, action){
 async function syncMeasurementToGoogle(appointment, action){
   const webhookUrl = appState.appSettings.measurement_integrations?.googleWebhookUrl;
   if(!webhookUrl || !appointment?.id) return 'not_sent';
+  const googlePayload = buildGoogleMeasurementPayload(appointment, action);
+  const formData = new FormData();
+  Object.entries(googlePayload).forEach(([key, value]) => {
+    formData.append(key, value == null ? '' : String(value));
+  });
   try{
     await sb.from('measurement_appointments').update({google_status: 'pending'}).eq('id', appointment.id);
-    const response = await fetch(webhookUrl, {
+    await fetch(webhookUrl, {
       method: 'POST',
       mode: 'no-cors',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify(buildGoogleMeasurementPayload(appointment, action))
+      body: formData
     });
     await sb.from('measurement_appointments').update({google_status: 'sent'}).eq('id', appointment.id);
     await sb.from('notification_deliveries').insert({
@@ -1916,7 +1920,7 @@ async function syncMeasurementToGoogle(appointment, action){
       channel: 'google',
       recipient: webhookUrl,
       status: 'sent',
-      payload: buildGoogleMeasurementPayload(appointment, action),
+      payload: googlePayload,
       sent_at: new Date().toISOString()
     });
     return 'sent';
@@ -1928,7 +1932,7 @@ async function syncMeasurementToGoogle(appointment, action){
       channel: 'google',
       recipient: webhookUrl,
       status: 'error',
-      payload: buildGoogleMeasurementPayload(appointment, action),
+      payload: googlePayload,
       error_message: error.message
     });
     return 'error';
