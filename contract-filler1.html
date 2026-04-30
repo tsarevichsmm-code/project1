@@ -1873,22 +1873,93 @@ function buildMeasurementPayload(){
   };
 }
 
+function buildGoogleMeasurementPayload(appointment, action){
+  return {
+    action,
+    id: appointment.id,
+    status: measurementStatusLabel(appointment.status),
+    status_code: appointment.status,
+    city: cityLabel(appointment.city),
+    city_code: appointment.city,
+    appointment_at: formatDateTime(appointment.appointment_at),
+    appointment_at_iso: appointment.appointment_at,
+    contract_number: appointment.contract_number || '',
+    remote_manager: managerName(appointment.remote_manager_id),
+    field_manager: managerName(appointment.field_manager_id),
+    client_contact: appointment.client_contact || '',
+    client_address: appointment.client_address || '',
+    product_summary: appointment.product_summary || '',
+    estimated_amount: appointment.estimated_amount || 0,
+    final_amount: appointment.final_amount || 0,
+    comment: appointment.comment || '',
+    manager_remind_at: appointment.manager_remind_at ? formatDateTime(appointment.manager_remind_at) : '',
+    client_remind_at: appointment.client_remind_at ? formatDateTime(appointment.client_remind_at) : '',
+    created_at: appointment.created_at ? formatDateTime(appointment.created_at) : '',
+    updated_at: appointment.updated_at ? formatDateTime(appointment.updated_at) : ''
+  };
+}
+
+async function syncMeasurementToGoogle(appointment, action){
+  const webhookUrl = appState.appSettings.measurement_integrations?.googleWebhookUrl;
+  if(!webhookUrl || !appointment?.id) return 'not_sent';
+  try{
+    await sb.from('measurement_appointments').update({google_status: 'pending'}).eq('id', appointment.id);
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify(buildGoogleMeasurementPayload(appointment, action))
+    });
+    await sb.from('measurement_appointments').update({google_status: 'sent'}).eq('id', appointment.id);
+    await sb.from('notification_deliveries').insert({
+      appointment_id: appointment.id,
+      channel: 'google',
+      recipient: webhookUrl,
+      status: 'sent',
+      payload: buildGoogleMeasurementPayload(appointment, action),
+      sent_at: new Date().toISOString()
+    });
+    return 'sent';
+  }catch(error){
+    console.error(error);
+    await sb.from('measurement_appointments').update({google_status: 'error'}).eq('id', appointment.id);
+    await sb.from('notification_deliveries').insert({
+      appointment_id: appointment.id,
+      channel: 'google',
+      recipient: webhookUrl,
+      status: 'error',
+      payload: buildGoogleMeasurementPayload(appointment, action),
+      error_message: error.message
+    });
+    return 'error';
+  }
+}
+
 async function saveMeasurement(){
   const btn = document.getElementById('measurement_save_btn');
   btn.disabled = true;
   try{
     const payload = buildMeasurementPayload();
+    let savedAppointment = null;
+    let googleStatus = 'not_sent';
     if(appState.selectedMeasurement?.id){
-      const {error} = await sb.from('measurement_appointments').update(payload).eq('id', appState.selectedMeasurement.id);
+      const {data, error} = await sb.from('measurement_appointments').update(payload).eq('id', appState.selectedMeasurement.id).select('*').single();
       if(error) throw error;
-      toast('Запись на замер обновлена', 's');
+      savedAppointment = data;
+      googleStatus = await syncMeasurementToGoogle(savedAppointment, 'updated');
+      toast('Запись на замер обновлена' + (googleStatus === 'sent' ? ' и отправлена в Google' : ''), 's');
     }else{
-      const {error} = await sb.from('measurement_appointments').insert({
+      const {data, error} = await sb.from('measurement_appointments').insert({
         ...payload,
         created_by: appState.user.id
-      });
+      }).select('*').single();
       if(error) throw error;
-      toast('Запись на замер создана', 's');
+      savedAppointment = data;
+      googleStatus = await syncMeasurementToGoogle(savedAppointment, 'created');
+      toast('Запись на замер создана' + (googleStatus === 'sent' ? ' и отправлена в Google' : ''), 's');
+    }
+    if(googleStatus === 'error'){
+      toast('Замер сохранён, но Google не принял данные. Проверьте webhook.', 'e');
     }
     closeMeasurementModal();
     await loadAppData();
