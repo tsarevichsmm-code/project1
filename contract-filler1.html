@@ -948,6 +948,16 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <div class="modal-title" id="measurement_modal_title">Запись на замер</div>
       <button class="ibtn" type="button" onclick="closeMeasurementModal()">×</button>
     </div>
+    <div class="grid2" id="measurement_contract_result_group">
+      <div class="fg">
+        <label class="fl" for="measurement_contract_number">Номер договора</label>
+        <input class="fi" id="measurement_contract_number" type="text">
+      </div>
+      <div class="fg">
+        <label class="fl" for="measurement_final_amount">Итоговая сумма</label>
+        <input class="fi" id="measurement_final_amount" type="number" min="0" step="0.01">
+      </div>
+    </div>
     <div class="grid2">
       <div class="fg">
         <label class="fl" for="measurement_status">Статус</label>
@@ -994,16 +1004,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     <div class="fg">
       <label class="fl" for="measurement_product_summary">Изделие и сумма</label>
       <input class="fi" id="measurement_product_summary" type="text">
-    </div>
-    <div class="grid2" id="measurement_contract_result_group">
-      <div class="fg">
-        <label class="fl" for="measurement_contract_number">Номер договора</label>
-        <input class="fi" id="measurement_contract_number" type="text">
-      </div>
-      <div class="fg">
-        <label class="fl" for="measurement_final_amount">Итоговая сумма</label>
-        <input class="fi" id="measurement_final_amount" type="number" min="0" step="0.01">
-      </div>
     </div>
     <div class="fg">
       <label class="fl" for="measurement_comment">Комментарий</label>
@@ -1651,6 +1651,10 @@ function syncMeasurementStatusFields(){
   const isContracted = document.getElementById('measurement_status')?.value === 'contracted';
   const resultGroup = document.getElementById('measurement_contract_result_group');
   if(resultGroup) resultGroup.style.display = isContracted ? '' : 'none';
+  if(!isContracted){
+    document.getElementById('measurement_contract_number')?.classList.remove('fi-error');
+    document.getElementById('measurement_final_amount')?.classList.remove('fi-error');
+  }
 }
 
 function syncMeasurementReminderInputs(){
@@ -1813,6 +1817,9 @@ function openMeasurementModal(id){
   fillManagerSelect('measurement_field_manager', 'field', item?.field_manager_id || (managerType === 'field' ? appState.user?.id : null), true, defaultCity);
   document.getElementById('measurement_remote_manager').disabled = managerType === 'remote' && !isAdmin();
   document.getElementById('measurement_field_manager').disabled = managerType === 'field' && !isAdmin();
+  ['measurement_remote_manager','measurement_field_manager','measurement_contract_number','measurement_final_amount'].forEach((id) => {
+    document.getElementById(id)?.classList.remove('fi-error');
+  });
   document.getElementById('measurement_city').onchange = (event) => {
     fillManagerSelect('measurement_field_manager', 'field', managerType === 'field' ? appState.user?.id : null, true, event.target.value);
   };
@@ -1850,12 +1857,26 @@ function buildMeasurementPayload(){
   }
   const status = document.getElementById('measurement_status').value || 'assigned';
   const isContracted = status === 'contracted';
+  const contractNumber = document.getElementById('measurement_contract_number').value.trim();
+  const finalAmountRaw = document.getElementById('measurement_final_amount').value;
   const estimatedAmount = normalizeNumber((document.getElementById('measurement_product_summary').value.match(/[\d\s.,]+/) || ['0'])[0]);
-  const finalAmount = isContracted ? normalizeNumber(document.getElementById('measurement_final_amount').value) : 0;
+  const finalAmount = isContracted ? normalizeNumber(finalAmountRaw) : 0;
   const managerRemindEnabled = document.getElementById('measurement_manager_remind_enabled').checked;
   const clientRemindEnabled = document.getElementById('measurement_client_remind_enabled').checked;
+  const requiredChecks = [
+    {el: document.getElementById('measurement_remote_manager'), invalid: !remoteManagerId},
+    {el: document.getElementById('measurement_field_manager'), invalid: !fieldManagerId},
+    {el: document.getElementById('measurement_contract_number'), invalid: isContracted && !contractNumber},
+    {el: document.getElementById('measurement_final_amount'), invalid: isContracted && finalAmount <= 0}
+  ];
+  requiredChecks.forEach((item) => item.el?.classList.toggle('fi-error', item.invalid));
+  const firstInvalid = requiredChecks.find((item) => item.invalid);
+  if(firstInvalid){
+    firstInvalid.el?.focus();
+    throw new Error(isContracted ? 'Заполните менеджеров, номер договора и итоговую сумму' : 'Выберите удалённого менеджера и выездного дизайнера');
+  }
   return {
-    contract_number: isContracted ? (document.getElementById('measurement_contract_number').value.trim() || null) : null,
+    contract_number: isContracted ? contractNumber : null,
     status,
     city: document.getElementById('measurement_city').value || currentCity,
     appointment_at: fromDateTimeLocalValue(appointmentAt),
