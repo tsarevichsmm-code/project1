@@ -178,6 +178,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .fi[readonly]{opacity:.8;cursor:not-allowed;border-style:dashed}
 .fi-auto{background:var(--blue-bg);color:var(--blue-text);border-color:rgba(35,85,245,.2)}
 .fi-error{border-color:var(--red)!important;background:var(--red-bg)!important;color:var(--red-text)!important}
+.fi-ok{border-color:var(--green)!important;background:var(--green-bg)!important;color:var(--green-text)!important}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid3{display:grid;grid-template-columns:1.3fr .7fr .8fr;gap:10px}
 .tpl-block,.info-block,.summary-block{background:var(--surface2);border:1px dashed var(--border2);border-radius:8px;padding:12px}
@@ -1062,6 +1063,7 @@ const appState = {
   lastDownloadedDeal: null,
   selectedDeal: null,
   selectedMeasurement: null,
+  measurementValidationStarted: false,
   activePublishDraftId: null
 };
 
@@ -1652,9 +1654,11 @@ function syncMeasurementStatusFields(){
   const resultGroup = document.getElementById('measurement_contract_result_group');
   if(resultGroup) resultGroup.style.display = isContracted ? '' : 'none';
   if(!isContracted){
-    document.getElementById('measurement_contract_number')?.classList.remove('fi-error');
-    document.getElementById('measurement_final_amount')?.classList.remove('fi-error');
+    ['measurement_contract_number','measurement_final_amount'].forEach((id) => {
+      document.getElementById(id)?.classList.remove('fi-error', 'fi-ok');
+    });
   }
+  validateMeasurementRequiredFields(false);
 }
 
 function syncMeasurementReminderInputs(){
@@ -1676,6 +1680,37 @@ function syncMeasurementDefaultReminders(){
   if(managerInput && (!managerInput.value || !managerEnabled)) managerInput.value = defaultValue;
   if(clientInput && (!clientInput.value || !clientEnabled)) clientInput.value = defaultValue;
   syncMeasurementReminderInputs();
+}
+
+function setMeasurementValidationClass(element, invalid, shouldShow){
+  if(!element) return;
+  element.classList.toggle('fi-error', shouldShow && invalid);
+  element.classList.toggle('fi-ok', shouldShow && !invalid);
+}
+
+function validateMeasurementRequiredFields(force=false){
+  const managerType = currentUserManagerType();
+  const remoteSelect = document.getElementById('measurement_remote_manager');
+  const fieldSelect = document.getElementById('measurement_field_manager');
+  const contractInput = document.getElementById('measurement_contract_number');
+  const finalInput = document.getElementById('measurement_final_amount');
+  let remoteManagerId = remoteSelect?.value || null;
+  let fieldManagerId = fieldSelect?.value || null;
+  if(managerType === 'remote' && !isAdmin()) remoteManagerId = appState.user?.id;
+  if(managerType === 'field' && !isAdmin()) fieldManagerId = appState.user?.id;
+  const isContracted = document.getElementById('measurement_status')?.value === 'contracted';
+  const checks = [
+    {el: remoteSelect, invalid: !remoteManagerId},
+    {el: fieldSelect, invalid: !fieldManagerId},
+    {el: contractInput, invalid: isContracted && !String(contractInput?.value || '').trim()},
+    {el: finalInput, invalid: isContracted && normalizeNumber(finalInput?.value) <= 0}
+  ];
+  const shouldShow = force || appState.measurementValidationStarted;
+  checks.forEach((item) => {
+    const isVisible = item.el && item.el.offsetParent !== null;
+    setMeasurementValidationClass(item.el, item.invalid, shouldShow && isVisible);
+  });
+  return checks.filter((item) => item.el && item.el.offsetParent !== null).every((item) => !item.invalid);
 }
 
 function renderNotificationBadge(){
@@ -1801,6 +1836,7 @@ function renderMeasurements(){
 function openMeasurementModal(id){
   const item = id ? (appState.measurements || []).find((appointment) => appointment.id === id) : null;
   appState.selectedMeasurement = item || null;
+  appState.measurementValidationStarted = false;
   const managerType = currentUserManagerType();
   const defaultCity = item?.city || appState.profile?.city || currentCity || 'spb';
   document.getElementById('measurement_modal_title').textContent = item ? 'Запись на замер' : 'Новая запись на замер';
@@ -1818,10 +1854,14 @@ function openMeasurementModal(id){
   document.getElementById('measurement_remote_manager').disabled = managerType === 'remote' && !isAdmin();
   document.getElementById('measurement_field_manager').disabled = managerType === 'field' && !isAdmin();
   ['measurement_remote_manager','measurement_field_manager','measurement_contract_number','measurement_final_amount'].forEach((id) => {
-    document.getElementById(id)?.classList.remove('fi-error');
+    document.getElementById(id)?.classList.remove('fi-error', 'fi-ok');
+    document.getElementById(id)?.addEventListener('input', () => validateMeasurementRequiredFields(false), {once:false});
+    document.getElementById(id)?.addEventListener('change', () => validateMeasurementRequiredFields(false), {once:false});
   });
   document.getElementById('measurement_city').onchange = (event) => {
     fillManagerSelect('measurement_field_manager', 'field', managerType === 'field' ? appState.user?.id : null, true, event.target.value);
+    document.getElementById('measurement_field_manager')?.addEventListener('change', () => validateMeasurementRequiredFields(false), {once:false});
+    validateMeasurementRequiredFields(false);
   };
   document.getElementById('measurement_client_address').value = item?.client_address || '';
   document.getElementById('measurement_client_contact').value = item?.client_contact || '';
@@ -1835,12 +1875,14 @@ function openMeasurementModal(id){
   document.getElementById('measurement_delete_btn').style.display = item && canDeleteMeasurement() ? 'inline-flex' : 'none';
   syncMeasurementStatusFields();
   syncMeasurementReminderInputs();
+  validateMeasurementRequiredFields(false);
   document.getElementById('measurement_modal').classList.add('open');
 }
 
 function closeMeasurementModal(){
   document.getElementById('measurement_modal').classList.remove('open');
   appState.selectedMeasurement = null;
+  appState.measurementValidationStarted = false;
 }
 
 function buildMeasurementPayload(){
@@ -1863,16 +1905,12 @@ function buildMeasurementPayload(){
   const finalAmount = isContracted ? normalizeNumber(finalAmountRaw) : 0;
   const managerRemindEnabled = document.getElementById('measurement_manager_remind_enabled').checked;
   const clientRemindEnabled = document.getElementById('measurement_client_remind_enabled').checked;
-  const requiredChecks = [
-    {el: document.getElementById('measurement_remote_manager'), invalid: !remoteManagerId},
-    {el: document.getElementById('measurement_field_manager'), invalid: !fieldManagerId},
-    {el: document.getElementById('measurement_contract_number'), invalid: isContracted && !contractNumber},
-    {el: document.getElementById('measurement_final_amount'), invalid: isContracted && finalAmount <= 0}
-  ];
-  requiredChecks.forEach((item) => item.el?.classList.toggle('fi-error', item.invalid));
-  const firstInvalid = requiredChecks.find((item) => item.invalid);
-  if(firstInvalid){
-    firstInvalid.el?.focus();
+  appState.measurementValidationStarted = true;
+  if(!validateMeasurementRequiredFields(true)){
+    const firstInvalid = ['measurement_remote_manager','measurement_field_manager','measurement_contract_number','measurement_final_amount']
+      .map((id) => document.getElementById(id))
+      .find((el) => el && el.offsetParent !== null && el.classList.contains('fi-error'));
+    firstInvalid?.focus();
     throw new Error(isContracted ? 'Заполните менеджеров, номер договора и итоговую сумму' : 'Выберите удалённого менеджера и выездного дизайнера');
   }
   return {
@@ -1897,6 +1935,7 @@ function buildMeasurementPayload(){
 function buildGoogleMeasurementPayload(appointment, action){
   return {
     action,
+    deleted: action === 'deleted' ? 'true' : '',
     id: appointment.id,
     status: measurementStatusLabel(appointment.status),
     status_code: appointment.status,
@@ -2011,7 +2050,12 @@ async function saveMeasurement(){
 async function deleteMeasurement(){
   const item = appState.selectedMeasurement;
   if(!item || !canDeleteMeasurement()) return;
+  const label = item.client_contact || item.client_address || 'этот замер';
+  if(!window.confirm('Вы точно хотите удалить замер: ' + label + '?')){
+    return;
+  }
   try{
+    await syncMeasurementToGoogle(item, 'deleted');
     const {error} = await sb.from('measurement_appointments').delete().eq('id', item.id);
     if(error) throw error;
     closeMeasurementModal();
