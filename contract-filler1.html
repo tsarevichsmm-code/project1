@@ -87,6 +87,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .stat-card,.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:14px;min-width:0}
 .stat-label{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
 .stat-value{font-size:21px;font-weight:600;font-family:var(--mono)}
+.stat-sub{font-size:11px;color:var(--text2);margin-top:3px;line-height:1.3}
 .panel-title{font-size:14px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .dashboard-row{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px}
 .list{display:grid;gap:8px}
@@ -100,11 +101,14 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .deal-flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .deal-flag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;background:var(--surface3);font-size:10px;color:var(--text2)}
 .deal-amount{font-size:13px;font-weight:600;font-family:var(--mono);color:var(--blue)}
-.appointment-row{border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:11px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;cursor:pointer}
+.appointment-row{border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:8px 10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;cursor:pointer}
 .appointment-row:hover{border-color:var(--border2);background:var(--surface2)}
-.appointment-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.appointment-meta{font-size:11px;color:var(--text2);margin-top:3px}
-.appointment-side{text-align:right;display:grid;align-content:start;gap:6px}
+.appointment-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appointment-meta{font-size:10.5px;color:var(--text2);margin-top:2px;line-height:1.35}
+.appointment-line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appointment-side{text-align:right;display:grid;align-content:start;gap:5px}
+.appointment-final{color:var(--green-text)}
+.appointment-comment{color:var(--text3)}
 .status-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:600;background:var(--surface3);color:var(--text2);white-space:nowrap}
 .status-assigned{background:var(--blue-bg);color:var(--blue-text)}
 .status-completed{background:var(--green-bg);color:var(--green-text)}
@@ -377,6 +381,11 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
         <div class="stat-card">
           <div class="stat-label">Общая сумма</div>
           <div class="stat-value" id="stat_all_amount">0 ₽</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Замеры</div>
+          <div class="stat-value" id="stat_measurements_count">0</div>
+          <div class="stat-sub" id="stat_measurements_city">СПБ: 0 · ЕКБ: 0</div>
         </div>
       </div>
       <div class="dashboard-row">
@@ -693,33 +702,35 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           </div>
         </div>
       </div>
-      <div class="panel" id="measurement_settings_panel" style="display:none">
-        <div class="panel-title">Интеграции</div>
-        <div class="grid2">
-          <div class="fg">
-            <label class="fl" for="settings_google_url">Google Docs / Sheets webhook</label>
-            <input class="fi" id="settings_google_url" type="url" placeholder="https://script.google.com/...">
-          </div>
-          <div class="fg">
-            <label class="fl" for="settings_sms_provider">SMS-провайдер</label>
-            <select class="fselect" id="settings_sms_provider">
-              <option value="">Не выбран</option>
-              <option value="sms_ru">SMS.ru</option>
-              <option value="smsc">SMSC.ru</option>
-              <option value="sms_aero">SMS Aero</option>
-            </select>
-          </div>
-        </div>
-        <div class="fg">
-          <label class="fl" for="settings_sms_template">Шаблон SMS клиенту</label>
-          <textarea class="fi" id="settings_sms_template" rows="2" style="resize:vertical">Mebel Grand: напоминаем о замере {date}. Адрес: {address}</textarea>
-        </div>
-        <div class="hint">Ключи Telegram, Google и SMS нельзя хранить в HTML. Здесь сохраняем только публичные настройки, отправку подключим через серверную функцию.</div>
-        <div class="modal-actions">
-          <button class="btn btn-s" type="button" onclick="saveMeasurementSettings()">Сохранить настройки</button>
-        </div>
-      </div>
       <div class="list" id="measurements_list"></div>
+      <details class="panel deals-spoiler" id="measurement_settings_panel" style="display:none">
+        <summary class="panel-title">Интеграции</summary>
+        <div style="padding:0 14px 14px">
+          <div class="grid2">
+            <div class="fg">
+              <label class="fl" for="settings_google_url">Google Docs / Sheets webhook</label>
+              <input class="fi" id="settings_google_url" type="url" placeholder="https://script.google.com/...">
+            </div>
+            <div class="fg">
+              <label class="fl" for="settings_sms_provider">SMS-провайдер</label>
+              <select class="fselect" id="settings_sms_provider">
+                <option value="">Не выбран</option>
+                <option value="sms_ru">SMS.ru</option>
+                <option value="smsc">SMSC.ru</option>
+                <option value="sms_aero">SMS Aero</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl" for="settings_sms_template">Шаблон SMS клиенту</label>
+            <textarea class="fi" id="settings_sms_template" rows="2" style="resize:vertical">Mebel Grand: напоминаем о замере {date}. Адрес: {address}</textarea>
+          </div>
+          <div class="hint">Ключи Telegram, Google и SMS нельзя хранить в HTML. Здесь сохраняем только публичные настройки, отправку подключим через серверную функцию.</div>
+          <div class="modal-actions">
+            <button class="btn btn-s" type="button" onclick="saveMeasurementSettings()">Сохранить настройки</button>
+          </div>
+        </div>
+      </details>
     </div>
   </section>
 
@@ -768,10 +779,10 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           <button class="btn btn-p" type="button" id="create_user_btn" onclick="createInternalUser()">Создать пользователя</button>
           <div class="hint" style="margin-top:10px">Для удалённого сотрудника город не нужен. Админ и супер-админ тоже могут быть удалёнными или выездными и участвуют в рейтинге.</div>
         </div>
-        <div class="panel">
-          <div class="panel-title">Текущие пользователи</div>
+        <details class="panel deals-spoiler">
+          <summary class="panel-title">Текущие пользователи</summary>
           <div class="list" id="users_list"></div>
-        </div>
+        </details>
       </div>
     </div>
   </section>
@@ -922,13 +933,13 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <button class="ibtn" type="button" onclick="closeMeasurementModal()">×</button>
     </div>
     <div class="grid2">
-      <div class="fg">
+      <div class="fg" id="measurement_contract_group">
         <label class="fl" for="measurement_contract_number">Номер договора</label>
         <input class="fi" id="measurement_contract_number" type="text">
       </div>
       <div class="fg">
         <label class="fl" for="measurement_status">Статус</label>
-        <select class="fselect" id="measurement_status">
+        <select class="fselect" id="measurement_status" onchange="syncMeasurementStatusFields()">
           <option value="assigned">Назначен</option>
           <option value="completed">Проведён</option>
           <option value="contracted">Оформлен</option>
@@ -948,16 +959,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <div class="fg">
         <label class="fl" for="measurement_appointment_at">Дата и время замера</label>
         <input class="fi" id="measurement_appointment_at" type="datetime-local">
-      </div>
-    </div>
-    <div class="grid2">
-      <div class="fg">
-        <label class="fl" for="measurement_manager_remind_at">Напомнить менеджеру</label>
-        <input class="fi" id="measurement_manager_remind_at" type="datetime-local">
-      </div>
-      <div class="fg">
-        <label class="fl" for="measurement_client_remind_at">Напомнить клиенту SMS</label>
-        <input class="fi" id="measurement_client_remind_at" type="datetime-local">
       </div>
     </div>
     <div class="grid2">
@@ -984,14 +985,40 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
         <input class="fi" id="measurement_product_summary" type="text">
       </div>
       <div class="fg">
+        <label class="fl" for="measurement_estimated_amount">Предварительная сумма</label>
+        <input class="fi" id="measurement_estimated_amount" type="number" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="fg" id="measurement_final_amount_group">
         <label class="fl" for="measurement_final_amount">Итоговая сумма</label>
         <input class="fi" id="measurement_final_amount" type="number" min="0" step="0.01">
-      </div>
     </div>
     <div class="fg">
       <label class="fl" for="measurement_comment">Комментарий</label>
       <textarea class="fi" id="measurement_comment" rows="3" style="resize:vertical;min-height:74px"></textarea>
     </div>
+    <details class="deals-spoiler" style="border:1px solid var(--border);border-radius:10px;margin-top:8px">
+      <summary class="panel-title">Напоминания</summary>
+      <div style="padding:0 12px 12px">
+        <div class="grid2">
+          <div class="fg">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);text-transform:none;letter-spacing:0">
+              <input id="measurement_manager_remind_enabled" type="checkbox" onchange="syncMeasurementReminderInputs()">
+              Напомнить менеджеру
+            </label>
+            <input class="fi" id="measurement_manager_remind_at" type="datetime-local">
+          </div>
+          <div class="fg">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);text-transform:none;letter-spacing:0">
+              <input id="measurement_client_remind_enabled" type="checkbox" onchange="syncMeasurementReminderInputs()">
+              Напомнить клиенту SMS
+            </label>
+            <input class="fi" id="measurement_client_remind_at" type="datetime-local">
+          </div>
+        </div>
+        <div class="hint">По умолчанию дата ставится за один день до замера, но сохранится только если включить галочку.</div>
+      </div>
+    </details>
     <div class="hint" id="measurement_integration_hint"></div>
     <div class="modal-actions">
       <button class="btn" type="button" onclick="closeMeasurementModal()">Отмена</button>
@@ -1337,7 +1364,7 @@ async function loadAppData(){
     sb.from('profiles').select('id, full_name, username, email, role, manager_type, city, is_active, telegram_username, telegram_chat_id, phone').order('full_name'),
     sb.from('deal_drafts').select('*').order('created_at', {ascending:false}),
     sb.from('published_deals').select('*').order('published_at', {ascending:false}),
-    sb.from('measurement_appointments').select('*').order('appointment_at', {ascending:false}),
+    sb.from('measurement_appointments').select('*').order('appointment_at', {ascending:true}),
     sb.from('notifications').select('*').order('created_at', {ascending:false}),
     settingsPromise,
     sb.from('manager_deal_totals').select('*').order('total_amount', {ascending:false}),
@@ -1386,6 +1413,13 @@ function renderDashboard(){
   document.getElementById('stat_my_amount').textContent = money(myAmount);
   document.getElementById('stat_all_count').textContent = visibleDeals.length;
   document.getElementById('stat_all_amount').textContent = money(allAmount);
+  const visibleMeasurements = appState.measurements || [];
+  const spbMeasurements = visibleMeasurements.filter((item) => item.city === 'spb').length;
+  const ekbMeasurements = visibleMeasurements.filter((item) => item.city === 'ekb').length;
+  const measurementsCount = document.getElementById('stat_measurements_count');
+  const measurementsCity = document.getElementById('stat_measurements_city');
+  if(measurementsCount) measurementsCount.textContent = visibleMeasurements.length;
+  if(measurementsCity) measurementsCity.textContent = 'СПБ: ' + spbMeasurements + ' · ЕКБ: ' + ekbMeasurements;
   renderRecentDeals(role === 'manager' && managerType === 'field' ? myDeals : visibleDeals);
   renderRating();
 }
@@ -1592,6 +1626,42 @@ function fromDateTimeLocalValue(value){
   return value ? new Date(value).toISOString() : null;
 }
 
+function defaultReminderLocalValue(appointmentLocalValue){
+  const base = appointmentLocalValue ? new Date(appointmentLocalValue) : new Date(Date.now() + 60 * 60 * 1000);
+  base.setDate(base.getDate() - 1);
+  const offset = base.getTimezoneOffset() * 60000;
+  return new Date(base.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function syncMeasurementStatusFields(){
+  const isContracted = document.getElementById('measurement_status')?.value === 'contracted';
+  const contractGroup = document.getElementById('measurement_contract_group');
+  const finalGroup = document.getElementById('measurement_final_amount_group');
+  if(contractGroup) contractGroup.style.display = isContracted ? '' : 'none';
+  if(finalGroup) finalGroup.style.display = isContracted ? '' : 'none';
+}
+
+function syncMeasurementReminderInputs(){
+  const managerEnabled = document.getElementById('measurement_manager_remind_enabled')?.checked;
+  const clientEnabled = document.getElementById('measurement_client_remind_enabled')?.checked;
+  const managerInput = document.getElementById('measurement_manager_remind_at');
+  const clientInput = document.getElementById('measurement_client_remind_at');
+  if(managerInput) managerInput.disabled = !managerEnabled;
+  if(clientInput) clientInput.disabled = !clientEnabled;
+}
+
+function syncMeasurementDefaultReminders(){
+  const appointmentValue = document.getElementById('measurement_appointment_at')?.value;
+  const defaultValue = defaultReminderLocalValue(appointmentValue);
+  const managerInput = document.getElementById('measurement_manager_remind_at');
+  const clientInput = document.getElementById('measurement_client_remind_at');
+  const managerEnabled = document.getElementById('measurement_manager_remind_enabled')?.checked;
+  const clientEnabled = document.getElementById('measurement_client_remind_enabled')?.checked;
+  if(managerInput && (!managerInput.value || !managerEnabled)) managerInput.value = defaultValue;
+  if(clientInput && (!clientInput.value || !clientEnabled)) clientInput.value = defaultValue;
+  syncMeasurementReminderInputs();
+}
+
 function renderNotificationBadge(){
   const badge = document.getElementById('measurement_badge');
   if(!badge) return;
@@ -1629,21 +1699,32 @@ function canDeleteMeasurement(){
 
 function measurementCardHtml(item){
   const status = '<span class="status-badge ' + measurementStatusClass(item.status) + '">' + escapeHtml(measurementStatusLabel(item.status)) + '</span>';
-  const searchTitle = item.contract_number ? 'Договор №' + item.contract_number : 'Замер без номера договора';
+  const hasFinalAmount = Number(item.final_amount || 0) > 0;
+  const amountValue = hasFinalAmount ? item.final_amount : item.estimated_amount;
+  const amountLabel = hasFinalAmount ? 'Итог: ' : 'Предварительно: ';
+  const title = cityLabel(item.city) + ' · ' + formatDateTime(item.appointment_at) + ' · удалённый: ' + managerName(item.remote_manager_id) + ' · выездной: ' + managerName(item.field_manager_id);
+  const contractHtml = item.status === 'contracted' && item.contract_number
+    ? '<div class="appointment-meta appointment-line">Договор №' + escapeHtml(item.contract_number) + '</div>'
+    : '';
+  const productHtml = item.product_summary
+    ? '<div class="appointment-meta appointment-line">Изделие: ' + escapeHtml(item.product_summary) + '</div>'
+    : '';
+  const commentHtml = item.comment
+    ? '<div class="appointment-meta appointment-line appointment-comment">Комментарий: ' + escapeHtml(item.comment) + '</div>'
+    : '';
   return (
     '<div class="appointment-row" onclick="openMeasurementModal(\'' + item.id + '\')">' +
       '<div>' +
-        '<div class="appointment-title">' + escapeHtml(searchTitle) + '</div>' +
-        '<div class="appointment-meta">' + escapeHtml(formatDateTime(item.appointment_at)) + ' · ' + escapeHtml(cityLabel(item.city)) + ' · ' + escapeHtml(item.client_contact || '') + '</div>' +
-        '<div class="appointment-meta">' + escapeHtml(item.client_address || '') + '</div>' +
-        '<div class="deal-flags">' +
-          '<span class="deal-flag">удалённый: ' + escapeHtml(managerName(item.remote_manager_id)) + '</span>' +
-          '<span class="deal-flag">выездной: ' + escapeHtml(managerName(item.field_manager_id)) + '</span>' +
-        '</div>' +
+        '<div class="appointment-title">' + escapeHtml(title) + '</div>' +
+        '<div class="appointment-meta appointment-line">Клиент: ' + escapeHtml(item.client_contact || '') + '</div>' +
+        '<div class="appointment-meta appointment-line">Адрес: ' + escapeHtml(item.client_address || '') + '</div>' +
+        productHtml +
+        commentHtml +
+        contractHtml +
       '</div>' +
       '<div class="appointment-side">' +
         status +
-        '<div class="deal-amount">' + money(item.final_amount || item.estimated_amount || 0) + '</div>' +
+        '<div class="deal-amount' + (hasFinalAmount ? ' appointment-final' : '') + '">' + amountLabel + money(amountValue || 0) + '</div>' +
       '</div>' +
     '</div>'
   );
@@ -1669,6 +1750,14 @@ function getFilteredMeasurements(){
       if(!haystack.includes(search)) return false;
     }
     return true;
+  }).sort((a, b) => {
+    const now = Date.now();
+    const aTime = new Date(a.appointment_at || 0).getTime();
+    const bTime = new Date(b.appointment_at || 0).getTime();
+    const aFuture = aTime >= now;
+    const bFuture = bTime >= now;
+    if(aFuture !== bFuture) return aFuture ? -1 : 1;
+    return aFuture ? aTime - bTime : bTime - aTime;
   });
 }
 
@@ -1704,8 +1793,11 @@ function openMeasurementModal(id){
   document.getElementById('measurement_status').value = item?.status || 'assigned';
   document.getElementById('measurement_city').value = defaultCity;
   document.getElementById('measurement_appointment_at').value = toDateTimeLocalValue(item?.appointment_at);
-  document.getElementById('measurement_manager_remind_at').value = item?.manager_remind_at ? toDateTimeLocalValue(item.manager_remind_at) : '';
-  document.getElementById('measurement_client_remind_at').value = item?.client_remind_at ? toDateTimeLocalValue(item.client_remind_at) : '';
+  document.getElementById('measurement_appointment_at').onchange = syncMeasurementDefaultReminders;
+  document.getElementById('measurement_manager_remind_enabled').checked = Boolean(item?.manager_remind_at);
+  document.getElementById('measurement_client_remind_enabled').checked = Boolean(item?.client_remind_at);
+  document.getElementById('measurement_manager_remind_at').value = item?.manager_remind_at ? toDateTimeLocalValue(item.manager_remind_at) : defaultReminderLocalValue(document.getElementById('measurement_appointment_at').value);
+  document.getElementById('measurement_client_remind_at').value = item?.client_remind_at ? toDateTimeLocalValue(item.client_remind_at) : defaultReminderLocalValue(document.getElementById('measurement_appointment_at').value);
   fillManagerSelect('measurement_remote_manager', 'remote', item?.remote_manager_id || (managerType === 'remote' ? appState.user?.id : null));
   fillManagerSelect('measurement_field_manager', 'field', item?.field_manager_id || (managerType === 'field' ? appState.user?.id : null), true, defaultCity);
   document.getElementById('measurement_remote_manager').disabled = managerType === 'remote' && !isAdmin();
@@ -1716,13 +1808,16 @@ function openMeasurementModal(id){
   document.getElementById('measurement_client_address').value = item?.client_address || '';
   document.getElementById('measurement_client_contact').value = item?.client_contact || '';
   document.getElementById('measurement_product_summary').value = item?.product_summary || '';
-  document.getElementById('measurement_final_amount').value = item?.final_amount || item?.estimated_amount || '';
+  document.getElementById('measurement_estimated_amount').value = item?.estimated_amount || '';
+  document.getElementById('measurement_final_amount').value = item?.final_amount || '';
   document.getElementById('measurement_comment').value = item?.comment || '';
   document.getElementById('measurement_integration_hint').textContent = item
     ? 'Google: ' + (item.google_status || 'not_sent') + ' · Telegram: ' + (item.telegram_status || 'not_sent') + ' · SMS: ' + (item.sms_status || 'not_sent')
     : 'После сохранения выездному менеджеру появится внутреннее уведомление.';
   document.getElementById('measurement_save_btn').style.display = !item || canEditMeasurement(item) ? 'inline-flex' : 'none';
   document.getElementById('measurement_delete_btn').style.display = item && canDeleteMeasurement() ? 'inline-flex' : 'none';
+  syncMeasurementStatusFields();
+  syncMeasurementReminderInputs();
   document.getElementById('measurement_modal').classList.add('open');
 }
 
@@ -1743,21 +1838,26 @@ function buildMeasurementPayload(){
   if(!address || !contact || !appointmentAt){
     throw new Error('Заполните дату замера, адрес и контакт клиента');
   }
-  const amount = normalizeNumber(document.getElementById('measurement_final_amount').value);
+  const status = document.getElementById('measurement_status').value || 'assigned';
+  const isContracted = status === 'contracted';
+  const estimatedAmount = normalizeNumber(document.getElementById('measurement_estimated_amount').value);
+  const finalAmount = isContracted ? normalizeNumber(document.getElementById('measurement_final_amount').value) : 0;
+  const managerRemindEnabled = document.getElementById('measurement_manager_remind_enabled').checked;
+  const clientRemindEnabled = document.getElementById('measurement_client_remind_enabled').checked;
   return {
-    contract_number: document.getElementById('measurement_contract_number').value.trim() || null,
-    status: document.getElementById('measurement_status').value || 'assigned',
+    contract_number: isContracted ? (document.getElementById('measurement_contract_number').value.trim() || null) : null,
+    status,
     city: document.getElementById('measurement_city').value || currentCity,
     appointment_at: fromDateTimeLocalValue(appointmentAt),
-    manager_remind_at: fromDateTimeLocalValue(document.getElementById('measurement_manager_remind_at').value),
-    client_remind_at: fromDateTimeLocalValue(document.getElementById('measurement_client_remind_at').value),
+    manager_remind_at: managerRemindEnabled ? fromDateTimeLocalValue(document.getElementById('measurement_manager_remind_at').value) : null,
+    client_remind_at: clientRemindEnabled ? fromDateTimeLocalValue(document.getElementById('measurement_client_remind_at').value) : null,
     remote_manager_id: remoteManagerId,
     field_manager_id: fieldManagerId,
     client_address: address,
     client_contact: contact,
     product_summary: document.getElementById('measurement_product_summary').value.trim() || null,
-    estimated_amount: amount,
-    final_amount: amount,
+    estimated_amount: estimatedAmount,
+    final_amount: finalAmount,
     comment: document.getElementById('measurement_comment').value.trim() || null,
     updated_by: appState.user.id
   };
@@ -2251,6 +2351,11 @@ async function saveUserChanges(userId){
 async function deactivateUser(userId){
   if(appState.profile?.role !== 'admin' && appState.profile?.role !== 'super_admin'){
     toast('Удалять пользователей может только админ или супер-админ', 'e');
+    return;
+  }
+  const user = appState.profiles.find((profile) => profile.id === userId);
+  const label = user?.full_name || user?.username || 'пользователя';
+  if(!window.confirm('Точно удалить пользователя "' + label + '"? Он пропадёт из админ-панели.')){
     return;
   }
   try{
