@@ -1010,7 +1010,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <label class="fl" for="measurement_comment">Комментарий</label>
       <textarea class="fi" id="measurement_comment" rows="3" style="resize:vertical;min-height:74px"></textarea>
     </div>
-    <details class="deals-spoiler" style="border:1px solid var(--border);border-radius:10px;margin-top:8px">
+    <details class="deals-spoiler" open style="border:1px solid var(--border);border-radius:10px;margin-top:8px">
       <summary class="panel-title">Напоминания</summary>
       <div style="padding:0 12px 12px">
         <div class="grid2">
@@ -1845,7 +1845,7 @@ function openMeasurementModal(id){
   document.getElementById('measurement_city').value = defaultCity;
   document.getElementById('measurement_appointment_at').value = toDateTimeLocalValue(item?.appointment_at);
   document.getElementById('measurement_appointment_at').onchange = syncMeasurementDefaultReminders;
-  document.getElementById('measurement_manager_remind_enabled').checked = Boolean(item?.manager_remind_at);
+  document.getElementById('measurement_manager_remind_enabled').checked = item ? Boolean(item.manager_remind_at) : true;
   document.getElementById('measurement_client_remind_enabled').checked = Boolean(item?.client_remind_at);
   document.getElementById('measurement_manager_remind_at').value = item?.manager_remind_at ? toDateTimeLocalValue(item.manager_remind_at) : defaultReminderLocalValue(document.getElementById('measurement_appointment_at').value);
   document.getElementById('measurement_client_remind_at').value = item?.client_remind_at ? toDateTimeLocalValue(item.client_remind_at) : defaultReminderLocalValue(document.getElementById('measurement_appointment_at').value);
