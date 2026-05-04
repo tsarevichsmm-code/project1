@@ -1678,9 +1678,10 @@ function syncMeasurementDefaultReminders(){
   const defaultValue = defaultReminderLocalValue(appointmentValue);
   const managerInput = document.getElementById('measurement_manager_remind_at');
   const clientInput = document.getElementById('measurement_client_remind_at');
-  const managerEnabled = document.getElementById('measurement_manager_remind_enabled')?.checked;
   const clientEnabled = document.getElementById('measurement_client_remind_enabled')?.checked;
-  if(managerInput && (!managerInput.value || !managerEnabled)) managerInput.value = defaultValue;
+  // Время менеджера пересчитывается всегда при смене даты замера
+  if(managerInput) managerInput.value = defaultValue;
+  // Время клиента — только если не задано вручную или галочка выключена
   if(clientInput && (!clientInput.value || !clientEnabled)) clientInput.value = defaultValue;
   syncMeasurementReminderInputs();
 }
