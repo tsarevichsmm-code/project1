@@ -1932,9 +1932,20 @@ function buildMeasurementPayload(){
   };
 }
 
+function calcReminderMinutes(appointmentIso, remindAtIso){
+  if(!appointmentIso || !remindAtIso) return null;
+  const appointmentMs = new Date(appointmentIso).getTime();
+  const remindMs = new Date(remindAtIso).getTime();
+  if(isNaN(appointmentMs) || isNaN(remindMs)) return null;
+  const minutes = Math.round((appointmentMs - remindMs) / 60000);
+  // Ограничиваем максимумом Google Calendar (40320 мин = 4 недели) и минимумом 5 мин
+  return minutes >= 5 && minutes <= 40320 ? minutes : null;
+}
+
 function buildGoogleMeasurementPayload(appointment, action){
   const remoteManager = appState.profiles.find((profile) => profile.id === appointment.remote_manager_id);
   const fieldManager = appState.profiles.find((profile) => profile.id === appointment.field_manager_id);
+  const managerReminderMinutes = calcReminderMinutes(appointment.appointment_at, appointment.manager_remind_at);
   return {
     action,
     deleted: action === 'deleted' ? 'true' : '',
@@ -1958,7 +1969,7 @@ function buildGoogleMeasurementPayload(appointment, action){
     final_amount: appointment.final_amount || 0,
     comment: appointment.comment || '',
     manager_remind_at: appointment.manager_remind_at ? formatDateTime(appointment.manager_remind_at) : '',
-    manager_remind_at_iso: appointment.manager_remind_at || '',
+    manager_remind_at_minutes: managerReminderMinutes !== null ? String(managerReminderMinutes) : '',
     client_remind_at: appointment.client_remind_at ? formatDateTime(appointment.client_remind_at) : '',
     created_at: appointment.created_at ? formatDateTime(appointment.created_at) : '',
     updated_at: appointment.updated_at ? formatDateTime(appointment.updated_at) : ''
