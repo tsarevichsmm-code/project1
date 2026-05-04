@@ -1645,8 +1645,11 @@ function fromDateTimeLocalValue(value){
 function defaultReminderLocalValue(appointmentLocalValue){
   const base = appointmentLocalValue ? new Date(appointmentLocalValue) : new Date(Date.now() + 60 * 60 * 1000);
   base.setDate(base.getDate() - 1);
-  const offset = base.getTimezoneOffset() * 60000;
-  return new Date(base.getTime() - offset).toISOString().slice(0, 16);
+  // Нельзя поставить напоминание в прошлом — берём максимум из (за сутки) и (сейчас)
+  const now = new Date();
+  const target = base < now ? now : base;
+  const offset = target.getTimezoneOffset() * 60000;
+  return new Date(target.getTime() - offset).toISOString().slice(0, 16);
 }
 
 function syncMeasurementStatusFields(){
