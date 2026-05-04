@@ -1958,6 +1958,7 @@ function buildGoogleMeasurementPayload(appointment, action){
     final_amount: appointment.final_amount || 0,
     comment: appointment.comment || '',
     manager_remind_at: appointment.manager_remind_at ? formatDateTime(appointment.manager_remind_at) : '',
+    manager_remind_at_iso: appointment.manager_remind_at || '',
     client_remind_at: appointment.client_remind_at ? formatDateTime(appointment.client_remind_at) : '',
     created_at: appointment.created_at ? formatDateTime(appointment.created_at) : '',
     updated_at: appointment.updated_at ? formatDateTime(appointment.updated_at) : ''
