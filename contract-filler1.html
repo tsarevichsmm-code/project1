@@ -1386,9 +1386,7 @@ function applyProfileCityPreference(){
 
 async function loadAppData(){
   if(!appState.user) return;
-  const settingsPromise = isAdmin()
-    ? sb.from('app_settings').select('*')
-    : Promise.resolve({data: [], error: null});
+  const settingsPromise = sb.from('app_settings').select('*');
   const [profilesResult, draftsResult, dealsResult, appointmentsResult, notificationsResult, settingsResult, ratingResult, previousRatingResult] = await Promise.all([
     sb.from('profiles').select('id, full_name, username, email, role, manager_type, city, is_active, telegram_username, telegram_chat_id, phone').order('full_name'),
     sb.from('deal_drafts').select('*').order('created_at', {ascending:false}),
