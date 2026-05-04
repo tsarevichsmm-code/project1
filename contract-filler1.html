@@ -448,6 +448,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <div class="city-switch" aria-label="Выбор города">
         <button class="city-btn active" type="button" id="city_btn_spb" onclick="setCity('spb')">СПБ</button>
         <button class="city-btn" type="button" id="city_btn_ekb" onclick="setCity('ekb')">ЕКБ</button>
+        <button class="city-btn" type="button" id="city_btn_msk" onclick="setCity('msk')">МСК</button>
       </div>
     </div>
 
@@ -711,6 +712,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
               <option value="">Все</option>
               <option value="spb">СПБ</option>
               <option value="ekb">ЕКБ</option>
+              <option value="msk">МСК</option>
             </select>
           </div>
           <div class="fg" style="flex:1;min-width:220px">
@@ -774,6 +776,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
               <select class="fselect" id="new_user_city">
                 <option value="spb">СПБ</option>
                 <option value="ekb">ЕКБ</option>
+                <option value="msk">МСК</option>
               </select>
             </div>
           </div>
@@ -919,6 +922,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
         <select class="fselect" id="manual_city">
           <option value="spb">СПБ</option>
           <option value="ekb">ЕКБ</option>
+          <option value="msk">МСК</option>
         </select>
       </div>
     </div>
@@ -975,6 +979,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
         <select class="fselect" id="measurement_city">
           <option value="spb">СПБ</option>
           <option value="ekb">ЕКБ</option>
+          <option value="msk">МСК</option>
         </select>
       </div>
     </div>
@@ -1079,6 +1084,12 @@ const CITY_TEMPLATES = {
     contractPath: './Договор mebel_grand ЕКБ.docx',
     specPath: './Спецификая_Мебель_Гранд ЕКБ.docx',
     actPath: './Акт доставки ЕКБ.docx'
+  },
+  msk: {
+    code: 'МСК',
+    contractPath: './Договор mebel_grand МСК.docx',
+    specPath: './Спецификая_Мебель_Гранд МСК.docx',
+    actPath: './Акт доставки МСК.docx'
   }
 };
 const SPEC_ITEM_COUNT = 10;
@@ -1150,8 +1161,10 @@ function syncCityUI(){
   const templates = getCurrentTemplates();
   const spbBtn = document.getElementById('city_btn_spb');
   const ekbBtn = document.getElementById('city_btn_ekb');
+  const mskBtn = document.getElementById('city_btn_msk');
   if(spbBtn) spbBtn.classList.toggle('active', currentCity === 'spb');
   if(ekbBtn) ekbBtn.classList.toggle('active', currentCity === 'ekb');
+  if(mskBtn) mskBtn.classList.toggle('active', currentCity === 'msk');
   const contractTitle = document.getElementById('contract_section_title');
   const specTitle = document.getElementById('spec_section_title');
   const actTitle = document.getElementById('act_section_title');
@@ -1207,7 +1220,8 @@ function roleLabel(profile){
   };
   const cityMap = {
     spb: 'СПБ',
-    ekb: 'ЕКБ'
+    ekb: 'ЕКБ',
+    msk: 'МСК'
   };
   const type = profile.manager_type ? typeMap[profile.manager_type] || profile.manager_type : '';
   return [roleMap[profile.role] || profile.role, type, cityMap[profile.city] || profile.city].filter(Boolean).join(' / ');
@@ -1235,7 +1249,8 @@ function managerTypeLabel(value){
 }
 
 function cityLabel(value){
-  return value === 'spb' ? 'СПБ' : value === 'ekb' ? 'ЕКБ' : value || '';
+  const labels = {spb: 'СПБ', ekb: 'ЕКБ', msk: 'МСК'};
+  return labels[value] || value || '';
 }
 
 function isAdmin(){
@@ -1430,10 +1445,11 @@ function renderDashboard(){
   const visibleMeasurements = appState.measurements || [];
   const spbMeasurements = visibleMeasurements.filter((item) => item.city === 'spb').length;
   const ekbMeasurements = visibleMeasurements.filter((item) => item.city === 'ekb').length;
+  const mskMeasurements = visibleMeasurements.filter((item) => item.city === 'msk').length;
   const measurementsCount = document.getElementById('stat_measurements_count');
   const measurementsCity = document.getElementById('stat_measurements_city');
   if(measurementsCount) measurementsCount.textContent = visibleMeasurements.length;
-  if(measurementsCity) measurementsCity.textContent = 'СПБ: ' + spbMeasurements + ' · ЕКБ: ' + ekbMeasurements;
+  if(measurementsCity) measurementsCity.textContent = 'СПБ: ' + spbMeasurements + ' · ЕКБ: ' + ekbMeasurements + ' · МСК: ' + mskMeasurements;
   renderRecentDeals(role === 'manager' && managerType === 'field' ? myDeals : visibleDeals);
   renderRating();
 }
