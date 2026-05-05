@@ -758,46 +758,55 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <div class="users-grid">
         <div class="panel">
           <div class="panel-title">Создать пользователя</div>
-          <div class="fg">
-            <label class="fl" for="new_user_name">ФИО</label>
-            <input class="fi" id="new_user_name" type="text">
-          </div>
-          <div class="fg">
-            <label class="fl" for="new_user_username">Логин</label>
-            <input class="fi" id="new_user_username" type="text" placeholder="manager_spb">
-          </div>
-          <div class="grid2">
-            <div class="fg">
-              <label class="fl" for="new_user_password">Пароль</label>
-              <input class="fi" id="new_user_password" type="text" value="Manager123!">
+          <details id="create_user_spoiler" ontoggle="document.getElementById('cu_icon').textContent=this.open?'−':'+'">
+            <summary style="list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:8px 0;font-size:13px;color:var(--text2);user-select:none">
+              <span id="cu_icon" style="font-size:18px;font-weight:300;line-height:1;flex-shrink:0">+</span>
+              <span>Заполнить данные нового пользователя</span>
+            </summary>
+            <div style="padding-top:6px">
+              <div class="fg">
+                <label class="fl" for="new_user_name">ФИО</label>
+                <input class="fi" id="new_user_name" type="text">
+              </div>
+              <div class="fg">
+                <label class="fl" for="new_user_username">Логин</label>
+                <input class="fi" id="new_user_username" type="text" placeholder="manager_spb">
+              </div>
+              <div class="grid2">
+                <div class="fg">
+                  <label class="fl" for="new_user_password">Пароль</label>
+                  <input class="fi" id="new_user_password" type="text" value="Manager123!">
+                </div>
+                <div class="fg">
+                  <label class="fl" for="new_user_city">Город</label>
+                  <select class="fselect" id="new_user_city">
+                    <option value="spb">СПБ</option>
+                    <option value="ekb">ЕКБ</option>
+                    <option value="msk">МСК</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid2">
+                <div class="fg">
+                  <label class="fl" for="new_user_role">Роль</label>
+                  <select class="fselect" id="new_user_role" onchange="syncNewUserRoleUI()">
+                    <option value="manager">Менеджер</option>
+                    <option value="admin">Админ</option>
+                    <option value="leader" id="role_option_leader" style="display:none">Руководитель</option>
+                  </select>
+                </div>
+                <div class="fg">
+                  <label class="fl" for="new_user_manager_type">Тип менеджера</label>
+                  <select class="fselect" id="new_user_manager_type" onchange="syncNewUserRoleUI()">
+                    <option value="remote">Удалённый</option>
+                    <option value="field">Выездной</option>
+                  </select>
+                </div>
+              </div>
+              <div class="hint" style="margin-bottom:10px">Для удалённого сотрудника город не нужен. Роль «Руководитель» назначается только супер-админом.</div>
+              <button class="btn btn-p" type="button" id="create_user_btn" onclick="createInternalUser()">Создать пользователя</button>
             </div>
-            <div class="fg">
-            <label class="fl" for="new_user_city">Город</label>
-              <select class="fselect" id="new_user_city">
-                <option value="spb">СПБ</option>
-                <option value="ekb">ЕКБ</option>
-                <option value="msk">МСК</option>
-              </select>
-            </div>
-          </div>
-          <div class="grid2">
-            <div class="fg">
-            <label class="fl" for="new_user_role">Роль</label>
-              <select class="fselect" id="new_user_role" onchange="syncNewUserRoleUI()">
-                <option value="manager">Менеджер</option>
-                <option value="admin">Админ</option>
-              </select>
-            </div>
-            <div class="fg">
-            <label class="fl" for="new_user_manager_type">Тип менеджера</label>
-              <select class="fselect" id="new_user_manager_type" onchange="syncNewUserRoleUI()">
-                <option value="remote">Удалённый</option>
-                <option value="field">Выездной</option>
-              </select>
-            </div>
-          </div>
-          <button class="btn btn-p" type="button" id="create_user_btn" onclick="createInternalUser()">Создать пользователя</button>
-          <div class="hint" style="margin-top:10px">Для удалённого сотрудника город не нужен. Админ и супер-админ тоже могут быть удалёнными или выездными и участвуют в рейтинге.</div>
+          </details>
         </div>
         <div class="panel">
           <div class="panel-title">Текущие пользователи</div>
@@ -1212,6 +1221,7 @@ function roleLabel(profile){
   const roleMap = {
     super_admin: 'супер-админ',
     admin: 'админ',
+    leader: 'руководитель',
     manager: 'менеджер'
   };
   const typeMap = {
@@ -1372,7 +1382,7 @@ function syncUserUI(){
   document.getElementById('user_name').textContent = profile?.full_name || appState.user?.email || 'Пользователь';
   document.getElementById('user_role').textContent = roleLabel(profile);
   document.getElementById('user_avatar').textContent = getShortName(profile?.full_name || appState.user?.email);
-  document.getElementById('nav_users').style.display = ['admin', 'super_admin'].includes(profile?.role) ? 'flex' : 'none';
+  document.getElementById('nav_users').style.display = ['admin', 'super_admin', 'leader'].includes(profile?.role) ? 'flex' : 'none';
 }
 
 function applyProfileCityPreference(){
@@ -1594,29 +1604,67 @@ function renderDeals(){
 function renderUsers(){
   const list = document.getElementById('users_list');
   if(!list) return;
-  if(!['admin', 'super_admin'].includes(appState.profile?.role)){
+  if(!['admin', 'super_admin', 'leader'].includes(appState.profile?.role)){
     list.innerHTML = '<div class="hint">Раздел пользователей доступен только админу и супер-админу.</div>';
     return;
   }
-  const visibleProfiles = appState.profiles.filter((profile) => profile.is_active);
-  list.innerHTML = visibleProfiles.length ? visibleProfiles.map((profile) => (
-    '<details class="user-card">' +
-      '<summary style="list-style:none;cursor:pointer">' +
-        '<div class="user-card-title">' + escapeHtml(profile.full_name || profile.email || 'Пользователь') + '</div>' +
-        '<div class="user-card-meta">Логин: ' + escapeHtml(profile.username || '') + ' · ' + escapeHtml(roleLabel(profile)) + '</div>' +
-      '</summary>' +
-      '<div class="user-card-edit">' +
-        '<div class="fg"><label class="fl" for="edit_name_' + profile.id + '">Имя</label><input class="fi" id="edit_name_' + profile.id + '" type="text" value="' + escapeHtml(profile.full_name || '') + '"></div>' +
-        '<div class="fg"><label class="fl" for="edit_pass_' + profile.id + '">Пароль</label><input class="fi" id="edit_pass_' + profile.id + '" type="text" placeholder="Новый"></div>' +
-        '<div class="fg"><label class="fl" for="edit_tg_' + profile.id + '">Telegram ник</label><input class="fi" id="edit_tg_' + profile.id + '" type="text" value="' + escapeHtml(profile.telegram_username || '') + '" placeholder="@username"></div>' +
-        '<div class="fg"><label class="fl" for="edit_phone_' + profile.id + '">Телефон</label><input class="fi" id="edit_phone_' + profile.id + '" type="text" value="' + escapeHtml(profile.phone || '') + '" placeholder="+7..."></div>' +
-        '<div class="user-card-actions">' +
-          '<button class="btn btn-s" type="button" onclick="saveUserChanges(\'' + profile.id + '\')">Сохранить</button>' +
-          (profile.role === 'super_admin' ? '' : '<button class="btn btn-s btn-d" type="button" onclick="deactivateUser(\'' + profile.id + '\')">Удалить</button>') +
+  const isSuperAdmin = appState.profile?.role === 'super_admin';
+  const visibleProfiles = appState.profiles.filter((p) => p.is_active);
+
+  function userCardHtml(profile){
+    const canDelete = profile.role !== 'super_admin';
+    return (
+      '<details class="user-card">' +
+        '<summary style="list-style:none;cursor:pointer">' +
+          '<div class="user-card-title">' + escapeHtml(profile.full_name || profile.email || 'Пользователь') + '</div>' +
+          '<div class="user-card-meta">Логин: ' + escapeHtml(profile.username || '') + ' · ' + escapeHtml(roleLabel(profile)) + '</div>' +
+        '</summary>' +
+        '<div class="user-card-edit">' +
+          '<div class="fg"><label class="fl" for="edit_name_' + profile.id + '">Имя</label><input class="fi" id="edit_name_' + profile.id + '" type="text" value="' + escapeHtml(profile.full_name || '') + '"></div>' +
+          '<div class="fg"><label class="fl" for="edit_pass_' + profile.id + '">Пароль</label><input class="fi" id="edit_pass_' + profile.id + '" type="text" placeholder="Новый"></div>' +
+          '<div class="fg"><label class="fl" for="edit_tg_' + profile.id + '">Telegram ник</label><input class="fi" id="edit_tg_' + profile.id + '" type="text" value="' + escapeHtml(profile.telegram_username || '') + '" placeholder="@username"></div>' +
+          '<div class="fg"><label class="fl" for="edit_phone_' + profile.id + '">Телефон</label><input class="fi" id="edit_phone_' + profile.id + '" type="text" value="' + escapeHtml(profile.phone || '') + '" placeholder="+7..."></div>' +
+          '<div class="user-card-actions">' +
+            '<button class="btn btn-s" type="button" onclick="saveUserChanges(\'' + profile.id + '\')">Сохранить</button>' +
+            (canDelete ? '<button class="btn btn-s btn-d" type="button" onclick="deactivateUser(\'' + profile.id + '\')">Удалить</button>' : '') +
+          '</div>' +
         '</div>' +
-      '</div>' +
-    '</details>'
-  )).join('') : '<div class="hint">Пользователей пока нет.</div>';
+      '</details>'
+    );
+  }
+
+  function groupSection(title, profiles){
+    if(!profiles.length) return '';
+    return (
+      '<div style="margin-bottom:14px">' +
+        '<div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding:6px 0 6px;border-bottom:1px solid var(--border);margin-bottom:8px">' + escapeHtml(title) + ' <span style="font-weight:400">(' + profiles.length + ')</span></div>' +
+        profiles.map(userCardHtml).join('') +
+      '</div>'
+    );
+  }
+
+  const superAdmins = visibleProfiles.filter((p) => p.role === 'super_admin');
+  const leaders    = visibleProfiles.filter((p) => p.role === 'leader');
+  const admins     = visibleProfiles.filter((p) => p.role === 'admin');
+  const remote     = visibleProfiles.filter((p) => p.role === 'manager' && p.manager_type === 'remote');
+  const fieldSpb   = visibleProfiles.filter((p) => p.manager_type === 'field' && p.city === 'spb');
+  const fieldEkb   = visibleProfiles.filter((p) => p.manager_type === 'field' && p.city === 'ekb');
+  const fieldMsk   = visibleProfiles.filter((p) => p.manager_type === 'field' && p.city === 'msk');
+
+  const html =
+    groupSection('Супер-администраторы', superAdmins) +
+    groupSection('Руководители', leaders) +
+    groupSection('Администраторы', admins) +
+    groupSection('Удалённые менеджеры', remote) +
+    groupSection('Выездные — СПБ', fieldSpb) +
+    groupSection('Выездные — ЕКБ', fieldEkb) +
+    groupSection('Выездные — МСК', fieldMsk);
+
+  list.innerHTML = html || '<div class="hint">Пользователей пока нет.</div>';
+
+  // Показываем опцию «Руководитель» только супер-админу
+  const leaderOpt = document.getElementById('role_option_leader');
+  if(leaderOpt) leaderOpt.style.display = isSuperAdmin ? '' : 'none';
 }
 
 const MEASUREMENT_STATUSES = {
@@ -2140,10 +2188,15 @@ async function saveMeasurementSettings(){
 }
 
 function syncNewUserRoleUI(){
+  const role = document.getElementById('new_user_role').value;
   const managerType = document.getElementById('new_user_manager_type').value;
   const citySelect = document.getElementById('new_user_city');
-  citySelect.disabled = managerType !== 'field';
-  if(managerType !== 'field'){
+  const managerTypeRow = document.getElementById('new_user_manager_type').closest('.grid2');
+  const isLeader = role === 'leader';
+  // Для руководителя не нужен тип менеджера и город
+  if(managerTypeRow) managerTypeRow.style.display = isLeader ? 'none' : '';
+  citySelect.disabled = isLeader || managerType !== 'field';
+  if(managerType !== 'field' || isLeader){
     citySelect.value = 'spb';
   }
 }
@@ -2470,6 +2523,11 @@ async function saveDealChanges(){
 async function createInternalUser(){
   if(appState.profile?.role !== 'admin' && appState.profile?.role !== 'super_admin'){
     toast('Создавать пользователей может только админ или супер-админ', 'e');
+    return;
+  }
+  const selectedRole = document.getElementById('new_user_role').value;
+  if(selectedRole === 'leader' && appState.profile?.role !== 'super_admin'){
+    toast('Роль «Руководитель» может назначать только супер-админ', 'e');
     return;
   }
   const btn = document.getElementById('create_user_btn');
