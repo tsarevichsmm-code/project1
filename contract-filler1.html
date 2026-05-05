@@ -1219,7 +1219,7 @@ function toast(msg, type='s'){
 function roleLabel(profile){
   if(!profile) return '';
   const roleMap = {
-    super_admin: 'супер-админ',
+    super_admin: 'админ',
     admin: 'админ',
     leader: 'руководитель',
     manager: 'менеджер'
@@ -1233,7 +1233,8 @@ function roleLabel(profile){
     ekb: 'ЕКБ',
     msk: 'МСК'
   };
-  const type = profile.manager_type ? typeMap[profile.manager_type] || profile.manager_type : '';
+  // Leader не показываем manager_type (не пишем 'удалённый')
+  const type = (profile.role !== 'leader' && profile.manager_type) ? typeMap[profile.manager_type] || profile.manager_type : '';
   return [roleMap[profile.role] || profile.role, type, cityMap[profile.city] || profile.city].filter(Boolean).join(' / ');
 }
 
@@ -1612,6 +1613,8 @@ function renderUsers(){
   const visibleProfiles = appState.profiles.filter((p) => p.is_active);
 
   function userCardHtml(profile){
+    const isOwnProfile = profile.id === appState.profile?.id;
+    const canEdit = isOwnProfile || profile.role !== 'super_admin';
     const canDelete = profile.role !== 'super_admin';
     return (
       '<details class="user-card">' +
@@ -1620,14 +1623,14 @@ function renderUsers(){
           '<div class="user-card-meta">Логин: ' + escapeHtml(profile.username || '') + ' · ' + escapeHtml(roleLabel(profile)) + '</div>' +
         '</summary>' +
         '<div class="user-card-edit">' +
-          '<div class="fg"><label class="fl" for="edit_name_' + profile.id + '">Имя</label><input class="fi" id="edit_name_' + profile.id + '" type="text" value="' + escapeHtml(profile.full_name || '') + '"></div>' +
-          '<div class="fg"><label class="fl" for="edit_pass_' + profile.id + '">Пароль</label><input class="fi" id="edit_pass_' + profile.id + '" type="text" placeholder="Новый"></div>' +
-          '<div class="fg"><label class="fl" for="edit_tg_' + profile.id + '">Telegram ник</label><input class="fi" id="edit_tg_' + profile.id + '" type="text" value="' + escapeHtml(profile.telegram_username || '') + '" placeholder="@username"></div>' +
-          '<div class="fg"><label class="fl" for="edit_phone_' + profile.id + '">Телефон</label><input class="fi" id="edit_phone_' + profile.id + '" type="text" value="' + escapeHtml(profile.phone || '') + '" placeholder="+7..."></div>' +
-          '<div class="user-card-actions">' +
+          '<div class="fg"><label class="fl" for="edit_name_' + profile.id + '">Имя</label><input class="fi" id="edit_name_' + profile.id + '" type="text" value="' + escapeHtml(profile.full_name || '') + '"' + (canEdit ? '' : ' disabled') + '></div>' +
+          '<div class="fg"><label class="fl" for="edit_pass_' + profile.id + '">Пароль</label><input class="fi" id="edit_pass_' + profile.id + '" type="text" placeholder="Новый"' + (canEdit ? '' : ' disabled') + '></div>' +
+          '<div class="fg"><label class="fl" for="edit_tg_' + profile.id + '">Telegram ник</label><input class="fi" id="edit_tg_' + profile.id + '" type="text" value="' + escapeHtml(profile.telegram_username || '') + '" placeholder="@username"' + (canEdit ? '' : ' disabled') + '></div>' +
+          '<div class="fg"><label class="fl" for="edit_phone_' + profile.id + '">Телефон</label><input class="fi" id="edit_phone_' + profile.id + '" type="text" value="' + escapeHtml(profile.phone || '') + '" placeholder="+7..."' + (canEdit ? '' : ' disabled') + '></div>' +
+          (canEdit ? '<div class="user-card-actions">' +
             '<button class="btn btn-s" type="button" onclick="saveUserChanges(\'' + profile.id + '\')">Сохранить</button>' +
             (canDelete ? '<button class="btn btn-s btn-d" type="button" onclick="deactivateUser(\'' + profile.id + '\')">Удалить</button>' : '') +
-          '</div>' +
+          '</div>' : '') +
         '</div>' +
       '</details>'
     );
@@ -1643,19 +1646,16 @@ function renderUsers(){
     );
   }
 
-  const superAdmins = visibleProfiles.filter((p) => p.role === 'super_admin');
   const leaders    = visibleProfiles.filter((p) => p.role === 'leader');
-  const admins     = visibleProfiles.filter((p) => p.role === 'admin');
   const remote     = visibleProfiles.filter((p) => p.role === 'manager' && p.manager_type === 'remote');
+  const adminUsers = visibleProfiles.filter((p) => p.role === 'admin' || p.role === 'super_admin');
   const fieldSpb   = visibleProfiles.filter((p) => p.manager_type === 'field' && p.city === 'spb');
   const fieldEkb   = visibleProfiles.filter((p) => p.manager_type === 'field' && p.city === 'ekb');
   const fieldMsk   = visibleProfiles.filter((p) => p.manager_type === 'field' && p.city === 'msk');
 
   const html =
-    groupSection('Супер-администраторы', superAdmins) +
     groupSection('Руководители', leaders) +
-    groupSection('Администраторы', admins) +
-    groupSection('Удалённые менеджеры', remote) +
+    groupSection('Удалённые менеджеры', adminUsers.concat(remote)) +
     groupSection('Выездные — СПБ', fieldSpb) +
     groupSection('Выездные — ЕКБ', fieldEkb) +
     groupSection('Выездные — МСК', fieldMsk);
@@ -2574,6 +2574,11 @@ async function saveUserChanges(userId){
     toast('Изменять пользователей может только админ или супер-админ', 'e');
     return;
   }
+  const targetUser = appState.profiles.find((profile) => profile.id === userId);
+  if(targetUser?.role === 'super_admin' && userId !== appState.profile?.id){
+    toast('Нельзя изменять данные другого супер-администратора', 'e');
+    return;
+  }
   try{
     const fullName = document.getElementById('edit_name_' + userId).value.trim();
     const password = document.getElementById('edit_pass_' + userId).value;
@@ -2608,8 +2613,12 @@ async function deactivateUser(userId){
     toast('Удалять пользователей может только админ или супер-админ', 'e');
     return;
   }
-  const user = appState.profiles.find((profile) => profile.id === userId);
-  const label = user?.full_name || user?.username || 'пользователя';
+  const targetUser = appState.profiles.find((profile) => profile.id === userId);
+  if(targetUser?.role === 'super_admin'){
+    toast('Нельзя удалить супер-администратора', 'e');
+    return;
+  }
+  const label = targetUser?.full_name || targetUser?.username || 'пользователя';
   if(!window.confirm('Точно удалить пользователя "' + label + '"? Он пропадёт из админ-панели.')){
     return;
   }
