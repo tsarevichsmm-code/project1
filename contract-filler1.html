@@ -1595,7 +1595,7 @@ function renderDeals(){
     ? otherDeals.map(dealCardHtml).join('')
     : '<div class="hint">Других опубликованных сделок пока нет.</div>';
   list.innerHTML =
-    '<div class="panel"><div class="panel-title">Мои черновики</div><div class="list">' + myDraftsHtml + '</div></div>' +
+    '<div class="panel"><div class="panel-title">✏️ Мои черновики</div><div class="list">' + myDraftsHtml + '</div></div>' +
     '<div class="panel"><div class="panel-title">Мои опубликованные сделки</div><div class="list">' + myDealsHtml + '</div></div>' +
     (canSeeOthers ? '<details class="panel deals-spoiler"><summary class="panel-title">Остальные опубликованные сделки</summary><div class="list">' + otherDealsHtml + '</div></details>' : '') +
     (isAdmin() ? '<details class="panel deals-spoiler"><summary class="panel-title">Чужие черновики</summary><div class="list">' + otherDraftsHtml + '</div></details>' : '');
