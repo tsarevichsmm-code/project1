@@ -316,7 +316,8 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   #measurement_modal .deals-spoiler .grid2{grid-template-columns:1fr}
   .btn-s{width:auto}
 }
-.podpislon-frame{width:100%;height:75vh;border:1px solid var(--border);border-radius:10px;margin-top:12px;background:#fff}
+.podpislon-login-info{padding:14px;background:var(--surface2);border-radius:8px;font-size:14px;font-family:var(--mono);color:var(--text);border:1px solid var(--border)}
+.podpislon-login-info strong{color:var(--blue);font-weight:600}
 .podpislon-welcome{padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center;color:var(--text3);font-size:13px}
 .podpislon-city-switch{display:flex;gap:10px;margin-bottom:14px;justify-content:center}
 .podpislon-city-btn{padding:14px 32px;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text2);cursor:pointer;font-size:16px;font-weight:700;transition:all .12s;min-width:120px;text-align:center}
@@ -845,12 +846,19 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       </div>
 
       <div id="podpislon_content" style="display:none">
-        <iframe class="podpislon-frame" id="podpislon_frame" src="about:blank" style="width:100%;height:75vh;border:1px solid var(--border);border-radius:10px;margin-top:12px;background:#fff"></iframe>
-        <div style="display:flex;gap:10px;margin-top:10px;justify-content:center">
+        <div class="podpislon-login-info" id="podpislon_login_info" style="margin-top:12px"></div>
+        <div style="display:flex;gap:10px;margin-top:10px;justify-content:center;flex-wrap:wrap">
           <a class="btn btn-p" id="podpislon_link" href="#" target="_blank" style="font-size:14px;padding:10px 20px">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M10 4l4 4-4 4"/></svg>
             Открыть в новой вкладке
           </a>
+          <a class="btn btn-s" id="podpislon_bookmarklet" href="#" style="font-size:14px;padding:10px 20px;text-decoration:none">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 1v14l5-5 5 5V1z"/></svg>
+            Закладка для автовхода
+          </a>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3);text-align:center;background:var(--surface2);padding:8px;border-radius:6px">
+          💡 Чтобы автоматически входить: перетащите кнопку «Закладка для автовхода» на панель закладок браузера. При открытой странице Подпислона кликните закладку — поля заполнятся автоматически.
         </div>
       </div>
     </div>
@@ -1360,9 +1368,9 @@ function renderPodpislon(){
 }
 
 const PODPISLON_KEYS = {
-  spb: {apiKey: 'uqoqBQwu_SAonq1GybOSUwGzH8hxuqnw3xplimMQGYkgl5FW17044', url: 'https://lk.podpislon.ru/home/documents'},
-  ekb: {apiKey: 'Qd6OPeS_xPmYO71ACrS1Dqr2iS5C5no-thHtyvE7Yh_GL5Yp23106', url: 'https://lk.podpislon.ru/home/documents'},
-  msk: {apiKey: 'uqoqBQwu_SAonq1GybOSUwGzH8hxuqnw3xplimMQGYkgl5FW17044', url: 'https://lk.podpislon.ru/home/documents'}
+  spb: {login: 'mebel-grand93@mail.ru', password: 'dpJRiwgn', apiKey: 'uqoqBQwu_SAonq1GybOSUwGzH8hxuqnw3xplimMQGYkgl5FW17044', url: 'https://lk.podpislon.ru/home/documents'},
+  ekb: {login: 'esenin_80kg@icloud.com', password: '123654mGm', apiKey: 'Qd6OPeS_xPmYO71ACrS1Dqr2iS5C5no-thHtyvE7Yh_GL5Yp23106', url: 'https://lk.podpislon.ru/home/documents'},
+  msk: {login: 'mebel-grand93@mail.ru', password: 'dpJRiwgn', apiKey: 'uqoqBQwu_SAonq1GybOSUwGzH8hxuqnw3xplimMQGYkgl5FW17044', url: 'https://lk.podpislon.ru/home/documents'}
 };
 
 function openPodpislon(city){
@@ -1373,8 +1381,22 @@ function openPodpislon(city){
   const content = document.getElementById('podpislon_content');
   content.style.display = '';
   const cfg = PODPISLON_KEYS[city];
+  
+  // Показываем данные для входа
+  document.getElementById('podpislon_login_info').innerHTML = 
+    '<div style="display:flex;gap:16px;flex-wrap:wrap"><div><strong>Логин:</strong> ' + escapeHtml(cfg.login) + '</div><div><strong>Пароль:</strong> ' + escapeHtml(cfg.password) + '</div></div>';
+  
+  // Ссылка на ЛК
   document.getElementById('podpislon_link').href = cfg.url;
-  document.getElementById('podpislon_frame').src = cfg.url;
+  
+  // Bookmarklet для автозаполнения
+  const bookmarkletCode = "javascript:(function(){var login=document.querySelector('input[type=\\'email\\']')||document.querySelector('input[autocomplete=\\'username\\']')||document.querySelector('input[placeholder*=\\'mail\\']');var pass=document.querySelector('input[type=\\'password\\']');if(login){login.value='" + cfg.login + "';login.dispatchEvent(new Event('input',{bubbles:true}));login.dispatchEvent(new Event('change',{bubbles:true}));}if(pass){pass.value='" + cfg.password + "';pass.dispatchEvent(new Event('input',{bubbles:true}));pass.dispatchEvent(new Event('change',{bubbles:true}));}var btn=document.querySelector('button[type=\\'submit\\']')||document.querySelector('button.btn-primary')||Array.from(document.querySelectorAll('button')).find(function(b){return b.textContent.toLowerCase().includes('\\u0432\\u043e\\u0439\\u0442\\u0438')});if(btn){btn.click();}alert('\\u0410\\u0432\\u0442\\u043e\\u0437\\u0430\\u043f\\u043e\\u043b\\u043d\\u0435\\u043d\\u0438\\u0435 ' + (login&&pass?'\\u0432\\u044b\\u043f\\u043e\\u043b\\u043d\\u0435\\u043d\\u043e':'\\u043d\\u0435 ' + (login?'\\u043f\\u0430\\u0440\\u043e\\u043b\\u044c':'\\u043b\\u043e\\u0433\\u0438\\u043d')));})();";
+  
+  document.getElementById('podpislon_bookmarklet').href = bookmarkletCode;
+  document.getElementById('podpislon_bookmarklet').textContent = 'Закладка: Автовход ' + city.toUpperCase();
+  
+  // Открываем в новой вкладке
+  window.open(cfg.url, '_blank');
 }
 
 function renderPodpislon(){
@@ -1393,11 +1415,11 @@ function sendToPodpislon(){
   const firstName = nameParts[1] || '';
   const secondName = nameParts[2] || '';
   
-  // Переключаем на вкладку Подпислон и загружаем iframe с текущим городом
+  // Переключаем на вкладку Подпислон и открываем текущий город
   setView('podpislon');
   openPodpislon(currentCity || 'spb');
   
-  toast('✅ Подпислон открыт. Данные для отправки: Фамилия: ' + lastName + ', Имя: ' + firstName + ', Телефон: ' + phone, 's');
+  toast('✅ Подпислон открыт. Данные клиента: Фамилия: ' + lastName + ', Имя: ' + firstName + ', Телефон: ' + phone, 's');
 }
 
 function updatePodpislonBtn(){
