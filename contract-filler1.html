@@ -316,6 +316,15 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   #measurement_modal .deals-spoiler .grid2{grid-template-columns:1fr}
   .btn-s{width:auto}
 }
+.podpislon-frame{width:100%;height:70vh;border:1px solid var(--border);border-radius:8px;margin-top:12px;background:#fff}
+.podpislon-login-info{padding:10px;background:var(--surface2);border-radius:8px;margin-top:8px;font-size:12px;font-family:var(--mono);color:var(--text2)}
+.podpislon-city-switch{display:flex;gap:6px;margin-bottom:12px}
+.podpislon-city-btn{padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text2);cursor:pointer;font-size:13px;font-weight:600;transition:all .12s}
+.podpislon-city-btn:hover{background:var(--surface2);color:var(--text)}
+.podpislon-city-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.podpislon-welcome{padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center;color:var(--text3);font-size:13px}
+.btn-send-podpislon{display:none;gap:6px;align-items:center;margin-top:8px}
+.btn-send-podpislon.visible{display:inline-flex}
 </style>
 </head>
 <body>
@@ -355,6 +364,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     <button class="nav-item" type="button" data-view="deals" onclick="setView('deals')">Сделки</button>
     <button class="nav-item" type="button" data-view="measurements" onclick="setView('measurements')">Запись на замер <span class="nav-badge" id="measurement_badge">0</span></button>
     <button class="nav-item" type="button" data-view="users" id="nav_users" onclick="setView('users')" style="display:none">Пользователи</button>
+    <button class="nav-item" type="button" data-view="podpislon" onclick="setView('podpislon')">Подпислон</button>
   </nav>
   <div class="sidebar-user">
     <div class="user-row">
@@ -658,6 +668,10 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v9M4 7l4 4 4-4M2 14h12"/></svg>
       Скачать договор, спецификацию и акт
     </button>
+    <button class="btn btn-send-podpislon" id="btn_send_podpislon" type="button" onclick="setView('podpislon')">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M10 4l4 4-4 4"/></svg>
+      Отправить в Подпислон
+    </button>
   </div>
   </section>
 
@@ -813,6 +827,48 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           <div class="list" id="users_list"></div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="view" id="view_podpislon">
+    <div style="max-width:900px;margin:0 auto">
+      <div class="panel-title" style="margin-bottom:2px">Подпислон</div>
+      <div class="hint">Подписание документов через сервис Подпислон. Выберите город, затем в личном кабинете подпишите документы.</div>
+
+      <div class="podpislon-city-switch" id="podpislon_city_switch">
+        <button class="podpislon-city-btn active" type="button" onclick="showPodpislon('spb')">СПБ</button>
+        <button class="podpislon-city-btn" type="button" onclick="showPodpislon('ekb')">ЕКБ</button>
+        <button class="podpislon-city-btn" type="button" onclick="showPodpislon('msk')">МСК</button>
+      </div>
+
+      <div class="podpislon-welcome" id="podpislon_welcome">
+        Нажмите на город, чтобы открыть личный кабинет Подпислона.
+      </div>
+
+      <div id="podpislon_content" style="display:none">
+        <div class="podpislon-login-info" id="podpislon_login_info"></div>
+        <iframe class="podpislon-frame" id="podpislon_frame" src="about:blank" allowfullscreen></iframe>
+      </div>
+
+      <details class="panel" id="podpislon_creds" style="margin-top:14px">
+        <summary style="list-style:none;cursor:pointer">
+          <div class="panel-title">Данные для входа</div>
+        </summary>
+        <div class="list">
+          <div class="sec" style="margin-top:8px">
+            <div class="sec-label">СПБ</div>
+            <div class="podpislon-login-info">Логин: mebel-grand93@mail.ru<br>Пароль: dpJRiwgn</div>
+          </div>
+          <div class="sec" style="margin-top:8px">
+            <div class="sec-label">ЕКБ</div>
+            <div class="podpislon-login-info">Логин: esenin_80kg@icloud.com<br>Пароль: 123654mGm</div>
+          </div>
+          <div class="sec" style="margin-top:8px">
+            <div class="sec-label">МСК</div>
+            <div class="podpislon-login-info">Логин: mebel-grand93@mail.ru<br>Пароль: dpJRiwgn</div>
+          </div>
+        </div>
+      </details>
     </div>
   </section>
 </div>
@@ -1311,6 +1367,35 @@ function setView(view){
   if(view === 'deals') renderDeals();
   if(view === 'measurements') renderMeasurements();
   if(view === 'users') renderUsers();
+  if(view === 'podpislon') renderPodpislon();
+}
+
+function renderPodpislon(){
+  const creds = document.getElementById('podpislon_creds');
+  if(creds) creds.style.display = isAdmin() ? '' : 'none';
+}
+
+const PODPISLON_LOGINS = {
+  spb: {login: 'mebel-grand93@mail.ru', password: 'dpJRiwgn', url: 'https://lk.podpislon.ru/home/documents'},
+  ekb: {login: 'esenin_80kg@icloud.com', password: '123654mGm', url: 'https://lk.podpislon.ru/home/documents'},
+  msk: {login: 'mebel-grand93@mail.ru', password: 'dpJRiwgn', url: 'https://lk.podpislon.ru/home/documents'}
+};
+
+function showPodpislon(city){
+  document.querySelectorAll('.podpislon-city-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.textContent.trim() === {spb:'СПБ',ekb:'ЕКБ',msk:'МСК'}[city]);
+  });
+  document.getElementById('podpislon_welcome').style.display = 'none';
+  const content = document.getElementById('podpislon_content');
+  content.style.display = '';
+  const cred = PODPISLON_LOGINS[city];
+  document.getElementById('podpislon_login_info').innerHTML = 'Логин: ' + cred.login + '<br>Пароль: ' + cred.password;
+  document.getElementById('podpislon_frame').src = cred.url;
+}
+
+function updatePodpislonBtn(){
+  const btn = document.getElementById('btn_send_podpislon');
+  if(btn) btn.classList.toggle('visible', !!appState.lastDownloadedDeal);
 }
 
 function openMobileMenu(){
@@ -1378,6 +1463,7 @@ async function loadSession(){
   syncUserUI();
   applyProfileCityPreference();
   await loadAppData();
+  updatePodpislonBtn();
 }
 
 function syncUserUI(){
@@ -2480,6 +2566,7 @@ async function createManualDealDraft(){
     };
     const draft = await saveDraft(payload);
     appState.lastDownloadedDeal = draft;
+    updatePodpislonBtn();
     closeManualDealModal();
     toast('Черновик сохранён', 's');
     await loadAppData();
@@ -2667,6 +2754,7 @@ function bindAuthForm(){
       syncUserUI();
       applyProfileCityPreference();
       await loadAppData();
+      updatePodpislonBtn();
     }catch(error){
       console.error(error);
       showLoginError(error.message);
@@ -3435,6 +3523,7 @@ async function generateAllDocuments(){
     setTimeout(() => blobToDownload(actResult.blob, actResult.fileName), 400);
     if(appState.user){
       appState.lastDownloadedDeal = await saveDraft(buildDownloadedDeal());
+      updatePodpislonBtn();
       await loadAppData();
     }
     closeAllDealDetails();
