@@ -1265,7 +1265,7 @@ function cityLabel(value){
 }
 
 function isAdmin(){
-  return appState.profile && ['admin', 'super_admin'].includes(appState.profile.role);
+  return appState.profile && ['admin', 'super_admin', 'leader'].includes(appState.profile.role);
 }
 
 function canEditDeal(deal){
@@ -1423,8 +1423,8 @@ async function loadAppData(){
   appState.measurements = appointmentsResult.data || [];
   appState.notifications = notificationsResult.data || [];
   appState.appSettings = Object.fromEntries((settingsResult.data || []).map((item) => [item.key, item.value || {}]));
-  appState.rating = ratingResult.data || [];
-  appState.previousRating = previousRatingResult.data || [];
+  appState.rating = (ratingResult.data || []).filter((item) => item.role !== 'leader');
+  appState.previousRating = (previousRatingResult.data || []).filter((item) => item.role !== 'leader');
   if(appState.lastDownloadedDeal?.id){
     appState.lastDownloadedDeal = appState.drafts.find((item) => item.id === appState.lastDownloadedDeal.id) || null;
   }
@@ -2521,7 +2521,7 @@ async function saveDealChanges(){
 }
 
 async function createInternalUser(){
-  if(appState.profile?.role !== 'admin' && appState.profile?.role !== 'super_admin'){
+  if(!isAdmin()){
     toast('Создавать пользователей может только админ или супер-админ', 'e');
     return;
   }
@@ -2570,7 +2570,7 @@ async function createInternalUser(){
 }
 
 async function saveUserChanges(userId){
-  if(appState.profile?.role !== 'admin' && appState.profile?.role !== 'super_admin'){
+  if(!isAdmin()){
     toast('Изменять пользователей может только админ или супер-админ', 'e');
     return;
   }
@@ -2609,7 +2609,7 @@ async function saveUserChanges(userId){
 }
 
 async function deactivateUser(userId){
-  if(appState.profile?.role !== 'admin' && appState.profile?.role !== 'super_admin'){
+  if(!isAdmin()){
     toast('Удалять пользователей может только админ или супер-админ', 'e');
     return;
   }
