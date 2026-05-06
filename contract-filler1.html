@@ -316,11 +316,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   #measurement_modal .deals-spoiler .grid2{grid-template-columns:1fr}
   .btn-s{width:auto}
 }
-.podpislon-login-info{padding:10px;background:var(--surface2);border-radius:8px;margin-top:8px;font-size:12px;font-family:var(--mono);color:var(--text2)}
-.podpislon-city-switch{display:flex;gap:6px;margin-bottom:12px}
-.podpislon-city-btn{padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text2);cursor:pointer;font-size:13px;font-weight:600;transition:all .12s}
-.podpislon-city-btn:hover{background:var(--surface2);color:var(--text)}
-.podpislon-city-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 .podpislon-welcome{padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center;color:var(--text3);font-size:13px}
 .btn-send-podpislon{display:none;gap:6px;align-items:center;margin-top:8px}
 .btn-send-podpislon.visible{display:inline-flex}
@@ -835,42 +830,21 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <div class="hint">Подписание документов через сервис Подпислон. Выберите город, затем в личном кабинете подпишите документы.</div>
 
       <div class="podpislon-city-switch" id="podpislon_city_switch">
-        <button class="podpislon-city-btn active" type="button" onclick="openPodpislon('spb')">СПБ</button>
+        <button class="podpislon-city-btn" type="button" onclick="openPodpislon('spb')">СПБ</button>
         <button class="podpislon-city-btn" type="button" onclick="openPodpislon('ekb')">ЕКБ</button>
         <button class="podpislon-city-btn" type="button" onclick="openPodpislon('msk')">МСК</button>
       </div>
 
       <div class="podpislon-welcome" id="podpislon_welcome">
-        Нажмите на город, чтобы открыть личный кабинет Подпислона в новой вкладке.
+        Выберите город, чтобы открыть личный кабинет Подпислона в новой вкладке.
       </div>
 
       <div id="podpislon_content" style="display:none">
-        <div class="podpislon-login-info" id="podpislon_login_info"></div>
-        <a class="btn btn-p" id="podpislon_link" href="#" target="_blank" style="margin-top:12px;text-align:center;display:inline-flex;gap:8px">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M10 4l4 4-4 4"/></svg>
+        <a class="btn btn-p" id="podpislon_link" href="#" target="_blank" style="margin-top:12px;text-align:center;display:inline-flex;gap:8px;font-size:15px;padding:14px 28px">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M10 4l4 4-4 4"/></svg>
           Открыть Подпислон в новой вкладке
         </a>
       </div>
-
-      <details class="panel" id="podpislon_creds" style="margin-top:14px">
-        <summary style="list-style:none;cursor:pointer">
-          <div class="panel-title">Данные для входа</div>
-        </summary>
-        <div class="list">
-          <div class="sec" style="margin-top:8px">
-            <div class="sec-label">СПБ</div>
-            <div class="podpislon-login-info">Логин: mebel-grand93@mail.ru<br>Пароль: dpJRiwgn</div>
-          </div>
-          <div class="sec" style="margin-top:8px">
-            <div class="sec-label">ЕКБ</div>
-            <div class="podpislon-login-info">Логин: esenin_80kg@icloud.com<br>Пароль: 123654mGm</div>
-          </div>
-          <div class="sec" style="margin-top:8px">
-            <div class="sec-label">МСК</div>
-            <div class="podpislon-login-info">Логин: mebel-grand93@mail.ru<br>Пароль: dpJRiwgn</div>
-          </div>
-        </div>
-      </details>
     </div>
   </section>
 </div>
@@ -1377,10 +1351,10 @@ function renderPodpislon(){
   if(creds) creds.style.display = isAdmin() ? '' : 'none';
 }
 
-const PODPISLON_LOGINS = {
-  spb: {login: 'mebel-grand93@mail.ru', password: 'dpJRiwgn', url: 'https://lk.podpislon.ru/home/documents'},
-  ekb: {login: 'esenin_80kg@icloud.com', password: '123654mGm', url: 'https://lk.podpislon.ru/home/documents'},
-  msk: {login: 'mebel-grand93@mail.ru', password: 'dpJRiwgn', url: 'https://lk.podpislon.ru/home/documents'}
+const PODPISLON_KEYS = {
+  spb: {apiKey: 'uqoqBQwu_SAonq1GybOSUwGzH8hxuqnw3xplimMQGYkgl5FW17044', url: 'https://lk.podpislon.ru/home/documents'},
+  ekb: {apiKey: 'Qd6OPeS_xPmYO71ACrS1Dqr2iS5C5no-thHtyvE7Yh_GL5Yp23106', url: 'https://lk.podpislon.ru/home/documents'},
+  msk: {apiKey: 'uqoqBQwu_SAonq1GybOSUwGzH8hxuqnw3xplimMQGYkgl5FW17044', url: 'https://lk.podpislon.ru/home/documents'}
 };
 
 function openPodpislon(city){
@@ -1390,10 +1364,13 @@ function openPodpislon(city){
   document.getElementById('podpislon_welcome').style.display = 'none';
   const content = document.getElementById('podpislon_content');
   content.style.display = '';
-  const cred = PODPISLON_LOGINS[city];
-  document.getElementById('podpislon_login_info').innerHTML = 'Логин: ' + cred.login + '<br>Пароль: ' + cred.password;
-  document.getElementById('podpislon_link').href = cred.url;
-  window.open(cred.url, '_blank');
+  const cfg = PODPISLON_KEYS[city];
+  document.getElementById('podpislon_link').href = cfg.url;
+  window.open(cfg.url, '_blank');
+}
+
+function renderPodpislon(){
+  // Данные для входа больше не показываем
 }
 
 function sendToPodpislon(){
