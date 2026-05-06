@@ -1265,7 +1265,9 @@ function cityLabel(value){
 }
 
 function isAdmin(){
-  return appState.profile && ['admin', 'super_admin', 'leader'].includes(appState.profile.role);
+  if(!appState.profile) return false;
+  return ['admin', 'super_admin', 'leader'].includes(appState.profile.role) 
+    || (appState.profile.role === 'manager' && appState.profile.manager_type === 'remote');
 }
 
 function canEditDeal(deal){
