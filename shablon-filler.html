@@ -19,6 +19,15 @@
   --red:#dc2626;--red-bg:#fef2f2;--red-text:#991b1b;
   --r:10px;--rl:14px;--font:'Golos Text',sans-serif;
 }
+[data-theme=dark]{
+  --bg:#111110;--surface:#1c1c1a;--surface2:#242422;--surface3:#2b2b28;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --text:#f0efe9;--text2:#8f8f8a;--text3:#5a5a56;
+  --blue:#4f78ff;--blue-bg:#1a2040;--blue-text:#93aaff;
+  --green-bg:#0f2a1f;--green-text:#4fd4a0;
+  --amber-bg:#2a1f0a;--amber-text:#fbbf65;
+  --red-bg:#2a1010;--red-text:#f87171;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
 body{min-height:100dvh}
@@ -110,22 +119,20 @@ body{min-height:100dvh}
       <div class="grid2">
         <div class="fg">
           <label class="fl" for="doc_date">Дата документа <span class="auto-badge">авто</span></label>
-          <input class="fi fi-auto" id="doc_date" type="text" readonly>
+          <input class="fi" id="doc_date" type="text" value="">
         </div>
         <div class="fg">
           <label class="fl" for="firm_name">Наименование фирмы</label>
-          <input class="fi" id="firm_name" type="text" value="ООО «ЛП «ХОТС»" placeholder="ООО Пример">
+          <select class="fselect" id="firm_name">
+            <option value="ООО «ЛП «ХОТС»" selected>ООО «ЛП «ХОТС»</option>
+            <option value="ООО «ХОТС»">ООО «ХОТС»</option>
+            <option value="ООО «ТД ХОТС»">ООО «ТД ХОТС»</option>
+          </select>
         </div>
       </div>
-      <div class="grid2">
-        <div class="fg">
-          <label class="fl" for="director_fio">ФИО директора</label>
-          <input class="fi" id="director_fio" type="text" value="Безрук Владимира Валерьевича" placeholder="Иванов Иван Иванович">
-        </div>
-        <div class="fg">
-          <label class="fl" for="director_basis">Действует на основании</label>
-          <input class="fi" id="director_basis" type="text" value="Устава" placeholder="Устава">
-        </div>
+      <div class="fg">
+        <label class="fl" for="director_fio">ФИО директора</label>
+        <input class="fi" id="director_fio" type="text" value="Безрук Владимира Валерьевича" placeholder="Иванов Иван Иванович">
       </div>
       <div class="grid2">
         <div class="fg">
