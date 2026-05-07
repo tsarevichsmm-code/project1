@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Заполнение возражений Ozon</title>
+<title>Мотивированные возражения — Ozon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/pizzip@3.1.7/dist/pizzip.js"></script>
@@ -29,6 +29,8 @@ body{min-height:100dvh}
 .lt{font-size:15px;font-weight:600;letter-spacing:-.02em}
 .lt span{color:var(--blue)}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ibtn{width:30px;height:30px;border:1px solid var(--border2);border-radius:7px;background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;flex-shrink:0;font-family:var(--font)}
+.ibtn:hover{background:var(--border);color:var(--text)}
 .content{padding:24px 16px 48px;min-height:calc(100dvh - 52px);background:var(--bg)}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;max-width:900px;margin:0 auto}
 .card-title{font-size:16px;font-weight:600;letter-spacing:-.02em;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -36,8 +38,8 @@ body{min-height:100dvh}
 .sec-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
 .fg{margin-bottom:10px}
 .fl{font-size:11px;color:var(--text2);font-weight:500;display:block;margin-bottom:4px;letter-spacing:.02em;text-transform:uppercase}
-.fi{width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;font-family:var(--font);transition:border-color .12s}
-.fi:focus{border-color:var(--blue);background:var(--surface2)}
+.fi,.fselect{width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;font-family:var(--font);transition:border-color .12s}
+.fi:focus,.fselect:focus{border-color:var(--blue);background:var(--surface2)}
 .fi[readonly]{opacity:.8;cursor:not-allowed;border-style:dashed}
 .fi-auto{background:var(--blue-bg);color:var(--blue-text);border-color:rgba(35,85,245,.2)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -57,25 +59,31 @@ body{min-height:100dvh}
 .btn-gen{width:100%;padding:12px;font-size:14px;font-weight:600;justify-content:center;border-radius:var(--r);margin-top:16px}
 .auto-badge{font-size:9px;background:var(--blue-bg);color:var(--blue-text);border-radius:20px;padding:1px 6px;font-weight:600;letter-spacing:.03em;margin-left:4px;vertical-align:middle}
 .detail{border:1px solid var(--border);border-radius:10px;background:var(--surface2);overflow:hidden;margin-bottom:10px}
-.detail-green{background:var(--green-bg);border-color:rgba(26,158,110,.25)}
-.detail-green summary{background:rgba(26,158,110,.08)}
-.detail-amber{background:var(--amber-bg);border-color:rgba(217,119,6,.22)}
-.detail-amber summary{background:rgba(217,119,6,.08)}
 .detail summary{list-style:none;cursor:pointer;padding:12px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .detail summary::-webkit-details-marker{display:none}
 .detail summary span:last-child{color:var(--text2);font-size:12px;font-weight:500}
 .detail-body{padding:0 14px 14px}
-.item-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.item-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.spec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.spec-title{font-size:13px;font-weight:600}
+.spec-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.spec-main{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.spec-main .fg{min-width:0}
+.spec-main .fl{font-size:10px;line-height:1.25}
+.spec-main .fi,.spec-main .fselect{font-size:12px;padding:8px 10px}
 .tco{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
 .to{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:10px 16px;font-size:13px;font-weight:500;animation:tin .2s ease;max-width:340px}
 .to.s{border-left:3px solid var(--green)}
 .to.e{border-left:3px solid var(--red)}
 .to.i{border-left:3px solid var(--blue)}
 @keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:5px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:6px}
 @media (max-width:760px){
   .card{padding:16px}
-  .grid2,.grid3,.item-grid,.item-grid-3{grid-template-columns:1fr}
+  .grid2,.grid3,.spec-main{grid-template-columns:1fr}
+  .spec-head{align-items:flex-start;flex-direction:column}
+  .spec-actions{width:100%}
 }
 </style>
 </head>
@@ -87,6 +95,7 @@ body{min-height:100dvh}
   </div>
   <div class="topbar-right">
     <span style="font-size:12px;color:var(--text3)">Мотивированные возражения</span>
+    <button class="ibtn" onclick="toggleTheme()" title="Тема">◑</button>
   </div>
 </div>
 
@@ -104,62 +113,48 @@ body{min-height:100dvh}
           <input class="fi fi-auto" id="doc_date" type="text" readonly>
         </div>
         <div class="fg">
-          <label class="fl" for="doc_number">Номер документа</label>
-          <input class="fi" id="doc_number" type="text" placeholder="001">
+          <label class="fl" for="firm_name">Наименование фирмы</label>
+          <input class="fi" id="firm_name" type="text" value="ООО «ЛП «ХОТС»" placeholder="ООО Пример">
         </div>
-      </div>
-      <div class="fg">
-        <label class="fl" for="seller_name">Наименование продавца</label>
-        <input class="fi" id="seller_name" type="text" placeholder="ООО Пример">
-      </div>
-      <div class="fg">
-        <label class="fl" for="seller_person">В лице</label>
-        <input class="fi" id="seller_person" type="text" placeholder="Иванова Ивана Ивановича">
-      </div>
-      <div class="fg">
-        <label class="fl" for="seller_basis">Действующего на основании</label>
-        <input class="fi" id="seller_basis" type="text" placeholder="Устава">
       </div>
       <div class="grid2">
         <div class="fg">
-          <label class="fl" for="accept_date">Дата приемки товара</label>
-          <input class="fi" id="accept_date" type="text" placeholder="01.01.2025">
+          <label class="fl" for="director_fio">ФИО директора</label>
+          <input class="fi" id="director_fio" type="text" value="Безрук Владимира Валерьевича" placeholder="Иванов Иван Иванович">
         </div>
         <div class="fg">
-          <label class="fl" for="ozon_contract_number">№ договора Ozon</label>
-          <input class="fi" id="ozon_contract_number" type="text" placeholder="12345">
+          <label class="fl" for="director_basis">Действует на основании</label>
+          <input class="fi" id="director_basis" type="text" value="Устава" placeholder="Устава">
         </div>
       </div>
-      <div class="fg">
-        <label class="fl" for="ozon_contract_date">Дата договора Ozon</label>
-        <input class="fi" id="ozon_contract_date" type="text" placeholder="01.01.2025">
+      <div class="grid2">
+        <div class="fg">
+          <label class="fl" for="request_number">Номер заявки</label>
+          <input class="fi" id="request_number" type="text" placeholder="12345">
+        </div>
+        <div class="fg">
+          <label class="fl" for="request_date">Дата заявки</label>
+          <input class="fi" id="request_date" type="date">
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="fg">
+          <label class="fl" for="ozon_contract">Договор Ozon</label>
+          <input class="fi" id="ozon_contract" type="text" value="МП ИР-206295/23" placeholder="МП ИР-000000/00">
+        </div>
+        <div class="fg">
+          <label class="fl" for="ozon_date">Дата договора Ozon</label>
+          <input class="fi" id="ozon_date" type="text" value="20.06.2023г." placeholder="01.01.2025">
+        </div>
       </div>
     </div>
 
     <div class="sec">
-      <div class="sec-label">Товары по количеству — версия Ozon</div>
-      <div id="ozon_items"></div>
+      <div class="sec-label">Товары в коробах</div>
+      <div id="items_container"></div>
       <div style="margin-top:10px">
-        <button class="btn btn-s btn-g" type="button" onclick="addOzonItem()">＋ Добавить позицию Ozon</button>
-        <span style="font-size:12px;color:var(--text2);margin-left:8px" id="ozon_counter">1 позиция</span>
-      </div>
-    </div>
-
-    <div class="sec">
-      <div class="sec-label">Товары по количеству — версия продавца</div>
-      <div id="prod_items"></div>
-      <div style="margin-top:10px">
-        <button class="btn btn-s btn-g" type="button" onclick="addProdItem()">＋ Добавить позицию продавца</button>
-        <span style="font-size:12px;color:var(--text2);margin-left:8px" id="prod_counter">1 позиция</span>
-      </div>
-    </div>
-
-    <div class="sec">
-      <div class="sec-label">Товары по качеству</div>
-      <div id="quality_items"></div>
-      <div style="margin-top:10px">
-        <button class="btn btn-s btn-g" type="button" onclick="addQualityItem()">＋ Добавить позицию качества</button>
-        <span style="font-size:12px;color:var(--text2);margin-left:8px" id="quality_counter">1 позиция</span>
+        <button class="btn btn-s btn-g" type="button" onclick="addItem()">＋ Добавить позицию</button>
+        <span style="font-size:12px;color:var(--text2);margin-left:8px" id="item_counter">1 позиция</span>
       </div>
     </div>
 
@@ -167,12 +162,8 @@ body{min-height:100dvh}
       <div class="sec-label">Подпись</div>
       <div class="grid2">
         <div class="fg">
-          <label class="fl" for="signer_position">Должность подписанта</label>
-          <input class="fi" id="signer_position" type="text" placeholder="Генеральный директор">
-        </div>
-        <div class="fg">
-          <label class="fl" for="signer_name">ФИО подписанта</label>
-          <input class="fi" id="signer_name" type="text" placeholder="Иванов И.И.">
+          <label class="fl" for="director_initials">Инициалы директора <span class="auto-badge">авто</span></label>
+          <input class="fi fi-auto" id="director_initials" type="text" readonly placeholder="Заполните ФИО выше">
         </div>
       </div>
     </div>
@@ -180,7 +171,7 @@ body{min-height:100dvh}
     <div class="sec">
       <div class="sec-label">Шаблон</div>
       <div class="tpl-block">
-        <div class="tpl-info">📄 Шаблон из папки проекта — Шаблон_автозаполнение.docx</div>
+        <div class="tpl-info">📄 Шаблон из папки проекта — vozrageniya_fixed.docx</div>
       </div>
     </div>
 
@@ -194,17 +185,34 @@ body{min-height:100dvh}
 <div class="tco" id="tco"></div>
 
 <script>
-const MAX_ITEMS = 10;
+const MAX_ITEMS = 20;
 const DASH = '—';
 
-let ozonItems = [{index:1, name:'', qty:''}];
-let prodItems = [{index:1, name:'', qty:''}];
-let qualityItems = [{index:1, name:'', defect:''}];
+let items = [{index:1, boxId:'', sku:'', qty:'', quality:''}];
 
 function formatDate(){
   const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
   const d = new Date();
   return '"' + String(d.getDate()).padStart(2,'0') + '" ' + months[d.getMonth()] + ' ' + d.getFullYear() + ' г.';
+}
+
+function formatDateInput(dateStr){
+  if(!dateStr) return '';
+  const d = new Date(dateStr);
+  if(isNaN(d)) return dateStr;
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  return dd + '.' + mm + '.' + yyyy;
+}
+
+function getInitials(fullName){
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if(!parts.length) return '';
+  if(parts.length === 1) return parts[0];
+  const surname = parts[0];
+  const initials = parts.slice(1).map(p => p[0].toUpperCase() + '.').join('');
+  return initials + ' ' + surname;
 }
 
 function toast(msg, type='s'){
@@ -219,115 +227,47 @@ function escapeHtml(value){
   return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function renderOzonItems(){
-  const container = document.getElementById('ozon_items');
-  container.innerHTML = ozonItems.map((item, idx) => (
+function renderItems(){
+  const container = document.getElementById('items_container');
+  container.innerHTML = items.map((item, idx) => (
     '<div class="detail">' +
-      '<div style="padding:12px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;">' +
-        '<span>Позиция ' + item.index + '</span>' +
-        '<button class="btn btn-s btn-d" type="button" onclick="removeOzonItem(' + idx + ')" ' + (ozonItems.length>1?'':'style="display:none"') + '>Удалить</button>' +
+      '<div class="spec-head" style="padding:12px 14px 0">' +
+        '<div class="spec-title">Позиция ' + item.index + '</div>' +
+        '<div class="spec-actions">' +
+          '<button class="btn btn-s btn-d" type="button" onclick="removeItem(' + idx + ')" ' + (items.length>1?'':'style="display:none"') + '>Удалить</button>' +
+        '</div>' +
       '</div>' +
       '<div class="detail-body">' +
-        '<div class="item-grid">' +
-          '<div class="fg"><label class="fl">Наименование / SKU</label><input class="fi" id="ozon_name_' + idx + '" type="text" value="' + escapeHtml(item.name) + '" placeholder="Наименование товара"></div>' +
-          '<div class="fg"><label class="fl">Количество</label><input class="fi" id="ozon_qty_' + idx + '" type="text" value="' + escapeHtml(item.qty) + '" placeholder="10"></div>' +
+        '<div class="spec-main">' +
+          '<div class="fg"><label class="fl">ID короба</label><input class="fi" id="box_' + idx + '" type="text" value="' + escapeHtml(item.boxId) + '" placeholder="BOX-001"></div>' +
+          '<div class="fg"><label class="fl">SKU номер</label><input class="fi" id="sku_' + idx + '" type="text" value="' + escapeHtml(item.sku) + '" placeholder="SKU123"></div>' +
+          '<div class="fg"><label class="fl">Количество (шт)</label><input class="fi" id="qty_' + idx + '" type="text" value="' + escapeHtml(item.qty) + '" placeholder="10"></div>' +
+          '<div class="fg"><label class="fl">Текст качество</label><input class="fi" id="qual_' + idx + '" type="text" value="' + escapeHtml(item.quality) + '" placeholder="Повреждение"></div>' +
         '</div>' +
       '</div>' +
     '</div>'
   )).join('');
 
-  ozonItems.forEach((item, idx) => {
-    document.getElementById('ozon_name_' + idx).addEventListener('input', e => { item.name = e.target.value; });
-    document.getElementById('ozon_qty_' + idx).addEventListener('input', e => { item.qty = e.target.value; });
+  items.forEach((item, idx) => {
+    document.getElementById('box_' + idx).addEventListener('input', e => { item.boxId = e.target.value; });
+    document.getElementById('sku_' + idx).addEventListener('input', e => { item.sku = e.target.value; });
+    document.getElementById('qty_' + idx).addEventListener('input', e => { item.qty = e.target.value; });
+    document.getElementById('qual_' + idx).addEventListener('input', e => { item.quality = e.target.value; });
   });
-  document.getElementById('ozon_counter').textContent = ozonItems.length + ' ' + plural(ozonItems.length, 'позиция', 'позиции', 'позиций');
+  document.getElementById('item_counter').textContent = items.length + ' ' + plural(items.length, 'позиция', 'позиции', 'позиций');
 }
 
-function addOzonItem(){
-  if(ozonItems.length >= MAX_ITEMS) return;
-  ozonItems.push({index: ozonItems.length + 1, name:'', qty:''});
-  renderOzonItems();
+function addItem(){
+  if(items.length >= MAX_ITEMS) return;
+  items.push({index: items.length + 1, boxId:'', sku:'', qty:'', quality:''});
+  renderItems();
 }
 
-function removeOzonItem(idx){
-  if(ozonItems.length <= 1){ ozonItems[0] = {index:1, name:'', qty:''}; renderOzonItems(); return; }
-  ozonItems.splice(idx, 1);
-  ozonItems.forEach((item, i) => item.index = i + 1);
-  renderOzonItems();
-}
-
-function renderProdItems(){
-  const container = document.getElementById('prod_items');
-  container.innerHTML = prodItems.map((item, idx) => (
-    '<div class="detail">' +
-      '<div style="padding:12px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;">' +
-        '<span>Позиция ' + item.index + '</span>' +
-        '<button class="btn btn-s btn-d" type="button" onclick="removeProdItem(' + idx + ')" ' + (prodItems.length>1?'':'style="display:none"') + '>Удалить</button>' +
-      '</div>' +
-      '<div class="detail-body">' +
-        '<div class="item-grid">' +
-          '<div class="fg"><label class="fl">Наименование / SKU</label><input class="fi" id="prod_name_' + idx + '" type="text" value="' + escapeHtml(item.name) + '" placeholder="Наименование товара"></div>' +
-          '<div class="fg"><label class="fl">Количество</label><input class="fi" id="prod_qty_' + idx + '" type="text" value="' + escapeHtml(item.qty) + '" placeholder="10"></div>' +
-        '</div>' +
-      '</div>' +
-    '</div>'
-  )).join('');
-
-  prodItems.forEach((item, idx) => {
-    document.getElementById('prod_name_' + idx).addEventListener('input', e => { item.name = e.target.value; });
-    document.getElementById('prod_qty_' + idx).addEventListener('input', e => { item.qty = e.target.value; });
-  });
-  document.getElementById('prod_counter').textContent = prodItems.length + ' ' + plural(prodItems.length, 'позиция', 'позиции', 'позиций');
-}
-
-function addProdItem(){
-  if(prodItems.length >= MAX_ITEMS) return;
-  prodItems.push({index: prodItems.length + 1, name:'', qty:''});
-  renderProdItems();
-}
-
-function removeProdItem(idx){
-  if(prodItems.length <= 1){ prodItems[0] = {index:1, name:'', qty:''}; renderProdItems(); return; }
-  prodItems.splice(idx, 1);
-  prodItems.forEach((item, i) => item.index = i + 1);
-  renderProdItems();
-}
-
-function renderQualityItems(){
-  const container = document.getElementById('quality_items');
-  container.innerHTML = qualityItems.map((item, idx) => (
-    '<div class="detail detail-amber">' +
-      '<div style="padding:12px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between;">' +
-        '<span>Позиция ' + item.index + '</span>' +
-        '<button class="btn btn-s btn-d" type="button" onclick="removeQualityItem(' + idx + ')" ' + (qualityItems.length>1?'':'style="display:none"') + '>Удалить</button>' +
-      '</div>' +
-      '<div class="detail-body">' +
-        '<div class="item-grid">' +
-          '<div class="fg"><label class="fl">Наименование / SKU</label><input class="fi" id="q_name_' + idx + '" type="text" value="' + escapeHtml(item.name) + '" placeholder="Наименование товара"></div>' +
-          '<div class="fg"><label class="fl">Недостатки</label><input class="fi" id="q_defect_' + idx + '" type="text" value="' + escapeHtml(item.defect) + '" placeholder="Описание недостатков"></div>' +
-        '</div>' +
-      '</div>' +
-    '</div>'
-  )).join('');
-
-  qualityItems.forEach((item, idx) => {
-    document.getElementById('q_name_' + idx).addEventListener('input', e => { item.name = e.target.value; });
-    document.getElementById('q_defect_' + idx).addEventListener('input', e => { item.defect = e.target.value; });
-  });
-  document.getElementById('quality_counter').textContent = qualityItems.length + ' ' + plural(qualityItems.length, 'позиция', 'позиции', 'позиций');
-}
-
-function addQualityItem(){
-  if(qualityItems.length >= MAX_ITEMS) return;
-  qualityItems.push({index: qualityItems.length + 1, name:'', defect:''});
-  renderQualityItems();
-}
-
-function removeQualityItem(idx){
-  if(qualityItems.length <= 1){ qualityItems[0] = {index:1, name:'', defect:''}; renderQualityItems(); return; }
-  qualityItems.splice(idx, 1);
-  qualityItems.forEach((item, i) => item.index = i + 1);
-  renderQualityItems();
+function removeItem(idx){
+  if(items.length <= 1){ items[0] = {index:1, boxId:'', sku:'', qty:'', quality:''}; renderItems(); return; }
+  items.splice(idx, 1);
+  items.forEach((item, i) => item.index = i + 1);
+  renderItems();
 }
 
 function plural(n, one, two, five){
@@ -339,32 +279,35 @@ function plural(n, one, two, five){
   return five;
 }
 
+function bindAutoFields(){
+  document.getElementById('director_fio').addEventListener('input', function(){
+    document.getElementById('director_initials').value = getInitials(this.value);
+  });
+  // Trigger once
+  document.getElementById('director_initials').value = getInitials(document.getElementById('director_fio').value);
+}
+
 function getRenderData(){
+  const requestDateRaw = document.getElementById('request_date').value;
+  const requestDate = requestDateRaw ? formatDateInput(requestDateRaw) : '';
+
   const data = {
-    'Дата_документа': document.getElementById('doc_date').value || DASH,
-    'Номер_документа': document.getElementById('doc_number').value.trim() || DASH,
-    'Наименование_продавца': document.getElementById('seller_name').value.trim() || DASH,
-    'Лицо_продавца': document.getElementById('seller_person').value.trim() || DASH,
-    'Основание_продавца': document.getElementById('seller_basis').value.trim() || DASH,
-    'Дата_приемки': document.getElementById('accept_date').value.trim() || DASH,
-    'Номер_договора_озон': document.getElementById('ozon_contract_number').value.trim() || DASH,
-    'Дата_договора_озон': document.getElementById('ozon_contract_date').value.trim() || DASH,
-    'Должность_подписанта': document.getElementById('signer_position').value.trim() || DASH,
-    'ФИО_подписанта': document.getElementById('signer_name').value.trim() || DASH,
+    'Дата_договора': document.getElementById('doc_date').value || DASH,
+    'Фирма': document.getElementById('firm_name').value.trim() || DASH,
+    'ФИО_директора': document.getElementById('director_fio').value.trim() || DASH,
+    'Номер заявки': document.getElementById('request_number').value.trim() || DASH,
+    'дата заявки': requestDate || DASH,
+    'Договор озон': document.getElementById('ozon_contract').value.trim() || DASH,
+    'дата озон': document.getElementById('ozon_date').value.trim() || DASH,
+    'Инициалы директора': document.getElementById('director_initials').value.trim() || DASH,
+    'items': items.filter(i => i.boxId.trim() || i.sku.trim() || i.qty.trim() || i.quality.trim()).map((item) => ({
+      'num': String(item.index) + '.',
+      'id короба': item.boxId.trim() || DASH,
+      'SKU номер': item.sku.trim() || DASH,
+      'шт': item.qty.trim() || DASH,
+      'текст качество': item.quality.trim() || DASH
+    }))
   };
-
-  for(let i = 1; i <= MAX_ITEMS; i++){
-    const ozon = ozonItems[i-1] || {name:'', qty:''};
-    const prod = prodItems[i-1] || {name:'', qty:''};
-    const qual = qualityItems[i-1] || {name:'', defect:''};
-
-    data['озон_товар_' + i] = ozon.name.trim() || DASH;
-    data['озон_количество_' + i] = ozon.qty.trim() || DASH;
-    data['прод_товар_' + i] = prod.name.trim() || DASH;
-    data['прод_количество_' + i] = prod.qty.trim() || DASH;
-    data['качество_товар_' + i] = qual.name.trim() || DASH;
-    data['качество_недостатки_' + i] = qual.defect.trim() || DASH;
-  }
 
   return data;
 }
@@ -396,6 +339,10 @@ function blobToDownload(blob, fileName){
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
+function getSafeToken(value){
+  return value.replace(/[^a-zA-Zа-яА-Я0-9]/g, '_');
+}
+
 async function generateDocument(){
   const btn = document.querySelector('.btn-gen');
   const originalText = btn.innerHTML;
@@ -403,15 +350,16 @@ async function generateDocument(){
   btn.disabled = true;
 
   try {
-    const zipData = await loadTemplate('./Шаблон_автозаполнение.docx');
+    const zipData = await loadTemplate('./vozrageniya_fixed.docx');
     const renderData = getRenderData();
     const doc = createDoc(zipData, renderData);
     const out = doc.getZip().generate({
       type: 'blob',
       mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     });
-    const safeNumber = (document.getElementById('doc_number').value.trim() || 'без_номера').replace(/[^a-zA-Zа-яА-Я0-9]/g, '_');
-    blobToDownload(out, 'Возражения_Ozon_' + safeNumber + '.docx');
+    const safeNumber = getSafeToken(document.getElementById('request_number').value.trim() || 'без_номера');
+    const safeDate = getSafeToken(document.getElementById('doc_date').value.trim() || '');
+    blobToDownload(out, 'Возражения_' + safeNumber + '_' + safeDate + '.docx');
     toast('Документ сгенерирован и скачан', 's');
   } catch(e) {
     console.error(e);
@@ -422,11 +370,17 @@ async function generateDocument(){
   }
 }
 
+function toggleTheme(){
+  const nextTheme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('cf_theme', nextTheme);
+}
+document.body.setAttribute('data-theme', localStorage.getItem('cf_theme') || 'light');
+
 // Init
 document.getElementById('doc_date').value = formatDate();
-renderOzonItems();
-renderProdItems();
-renderQualityItems();
+renderItems();
+bindAutoFields();
 </script>
 </body>
 </html>
