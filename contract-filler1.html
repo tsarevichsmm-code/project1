@@ -1355,15 +1355,11 @@ function setView(view){
   if(view === 'podpislon') renderPodpislon();
 }
 
-function renderPodpislon(){
-  const creds = document.getElementById('podpislon_creds');
-  if(creds) creds.style.display = isAdmin() ? '' : 'none';
-}
-
+// PODPISLON_KEYS — fallback, если ключи не заданы в Supabase app_settings.podpislon_keys
 const PODPISLON_KEYS = {
-  spb: {login: 'mebel-grand93@mail.ru', password: 'dpJRiwgn', apiKey: 'uqoqBQwu_SAonq1GybOSUwGzH8hxuqnw3xplimMQGYkgl5FW17044', url: 'https://lk.podpislon.ru/home/documents'},
-  ekb: {login: 'esenin_80kg@icloud.com', password: '123654mGm', apiKey: 'Qd6OPeS_xPmYO71ACrS1Dqr2iS5C5no-thHtyvE7Yh_GL5Yp23106', url: 'https://lk.podpislon.ru/home/documents'},
-  msk: {login: 'mebel-grand93@mail.ru', password: 'dpJRiwgn', apiKey: 'uqoqBQwu_SAonq1GybOSUwGzH8hxuqnw3xplimMQGYkgl5FW17044', url: 'https://lk.podpislon.ru/home/documents'}
+  spb: {login: 'mebel-grand93@mail.ru', password: 'dpJRiwgn', url: 'https://lk.podpislon.ru/home/documents'},
+  ekb: {login: 'esenin_80kg@icloud.com', password: '123654mGm', url: 'https://lk.podpislon.ru/home/documents'},
+  msk: {login: 'mebel-grand93@mail.ru', password: 'dpJRiwgn', url: 'https://lk.podpislon.ru/home/documents'}
 };
 
 function copyText(text){
@@ -1376,7 +1372,9 @@ function openPodpislon(city){
   });
   document.getElementById('podpislon_welcome').style.display = 'none';
   document.getElementById('podpislon_content').style.display = '';
-  var cfg = PODPISLON_KEYS[city];
+  // Приоритет: ключи из Supabase app_settings → fallback на hardcoded PODPISLON_KEYS
+  const settingsKeys = appState.appSettings && appState.appSettings.podpislon_keys;
+  const cfg = (settingsKeys && settingsKeys[city]) ? settingsKeys[city] : PODPISLON_KEYS[city];
   
   document.getElementById('podpislon_login_info').innerHTML =
     '<div style="display:grid;gap:8px">' +
@@ -1396,7 +1394,7 @@ function openPodpislon(city){
 }
 
 function renderPodpislon(){
-  // Данные для входа больше не показываем
+  // Вызывается при setView('podpislon'). Контент формируется через openPodpislon(city).
 }
 
 function sendToPodpislon(){
@@ -1510,10 +1508,16 @@ function applyProfileCityPreference(){
 
 async function loadAppData(){
   if(!appState.user) return;
+  const userId = appState.user.id;
   const settingsPromise = sb.from('app_settings').select('*');
+  // Для выездных менеджеров (не-admin) фильтруем черновики на сервере — только свои
+  let draftsQuery = sb.from('deal_drafts').select('*').order('created_at', {ascending:false});
+  if(!isAdmin() && userId){
+    draftsQuery = draftsQuery.or(`downloaded_by.eq.${userId},remote_manager_id.eq.${userId},field_manager_id.eq.${userId}`);
+  }
   const [profilesResult, draftsResult, dealsResult, appointmentsResult, notificationsResult, settingsResult, ratingResult, previousRatingResult] = await Promise.all([
     sb.from('profiles').select('id, full_name, username, email, role, manager_type, city, is_active, telegram_username, telegram_chat_id, phone').order('full_name'),
-    sb.from('deal_drafts').select('*').order('created_at', {ascending:false}),
+    draftsQuery,
     sb.from('published_deals').select('*').order('published_at', {ascending:false}),
     sb.from('measurement_appointments').select('*').order('appointment_at', {ascending:true}),
     sb.from('notifications').select('*').order('created_at', {ascending:false}),
