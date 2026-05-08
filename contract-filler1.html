@@ -1983,7 +1983,7 @@ function fillMeasurementOwnerFilter(){
   const select = document.getElementById('measurement_owner_filter');
   if(!select) return;
   const currentVal = select.value;
-  const remoteManagers = (appState.managers || []).filter((m) => m.manager_type === 'remote' && m.is_active !== false);
+  const remoteManagers = (appState.managers || []).filter((m) => m.role === 'manager' && m.manager_type === 'remote' && m.is_active !== false);
   const fieldSpb = (appState.managers || []).filter((m) => m.manager_type === 'field' && m.city === 'spb' && m.is_active !== false);
   const fieldEkb = (appState.managers || []).filter((m) => m.manager_type === 'field' && m.city === 'ekb' && m.is_active !== false);
   const fieldMsk = (appState.managers || []).filter((m) => m.manager_type === 'field' && m.city === 'msk' && m.is_active !== false);
