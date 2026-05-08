@@ -715,7 +715,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
             <select class="fselect" id="measurement_owner_filter" onchange="renderMeasurements()">
               <option value="">Все</option>
               <option value="mine">Мои</option>
-              <option value="others">Чужие</option>
             </select>
           </div>
           <div class="fg">
@@ -1980,6 +1979,37 @@ function isOwnMeasurement(item){
     || item.created_by === userId;
 }
 
+function fillMeasurementOwnerFilter(){
+  const select = document.getElementById('measurement_owner_filter');
+  if(!select) return;
+  const currentVal = select.value;
+  const remoteManagers = (appState.managers || []).filter((m) => m.manager_type === 'remote' && m.is_active !== false);
+  const fieldSpb = (appState.managers || []).filter((m) => m.manager_type === 'field' && m.city === 'spb' && m.is_active !== false);
+  const fieldEkb = (appState.managers || []).filter((m) => m.manager_type === 'field' && m.city === 'ekb' && m.is_active !== false);
+  const fieldMsk = (appState.managers || []).filter((m) => m.manager_type === 'field' && m.city === 'msk' && m.is_active !== false);
+  function managerOptions(list){
+    return list.map((m) => '<option value="' + m.id + '">' + escapeHtml(m.full_name || m.email || 'Менеджер') + '</option>').join('');
+  }
+  let html = '<option value="">Все</option><option value="mine">Мои</option>';
+  if(remoteManagers.length){
+    html += '<optgroup label="Удалённые">' + managerOptions(remoteManagers) + '</optgroup>';
+  }
+  if(fieldSpb.length){
+    html += '<optgroup label="Выездные — СПБ">' + managerOptions(fieldSpb) + '</optgroup>';
+  }
+  if(fieldEkb.length){
+    html += '<optgroup label="Выездные — ЕКБ">' + managerOptions(fieldEkb) + '</optgroup>';
+  }
+  if(fieldMsk.length){
+    html += '<optgroup label="Выездные — МСК">' + managerOptions(fieldMsk) + '</optgroup>';
+  }
+  select.innerHTML = html;
+  // Восстанавливаем выбранное значение, если оно ещё есть в списке
+  if([...select.options].some((o) => o.value === currentVal)){
+    select.value = currentVal;
+  }
+}
+
 function getFilteredMeasurements(){
   const owner = document.getElementById('measurement_owner_filter')?.value || '';
   const status = document.getElementById('measurement_status_filter')?.value || '';
@@ -1987,7 +2017,10 @@ function getFilteredMeasurements(){
   const search = (document.getElementById('measurement_search')?.value || '').trim().toLowerCase();
   return (appState.measurements || []).filter((item) => {
     if(owner === 'mine' && !isOwnMeasurement(item)) return false;
-    if(owner === 'others' && isOwnMeasurement(item)) return false;
+    if(owner !== '' && owner !== 'mine'){
+      // owner — UUID менеджера
+      if(item.remote_manager_id !== owner && item.field_manager_id !== owner) return false;
+    }
     if(status && item.status !== status) return false;
     if(city && item.city !== city) return false;
     if(search){
@@ -2028,6 +2061,7 @@ function renderMeasurementSettings(){
 function renderMeasurements(){
   renderNotifications();
   renderMeasurementSettings();
+  fillMeasurementOwnerFilter();
   const list = document.getElementById('measurements_list');
   if(!list) return;
   const appointments = getFilteredMeasurements();
