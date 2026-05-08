@@ -267,6 +267,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   .measure-toolbar .btn{width:100%;justify-content:center}
   .measure-filters{display:grid;grid-template-columns:1fr 1fr;width:100%}
   .measure-filters .fg{width:100%;min-width:0}
+  .measure-filters .fg:nth-child(1){grid-column:1/-1}
   .measure-filters .fg:last-child{grid-column:1/-1}
   .appointment-row{grid-template-columns:1fr;padding:10px}
   .appointment-title,.appointment-line{white-space:normal;overflow:visible;text-overflow:clip}
@@ -709,6 +710,14 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       </div>
       <div class="panel">
         <div class="measure-filters">
+          <div class="fg">
+            <label class="fl" for="measurement_owner_filter">Замеры</label>
+            <select class="fselect" id="measurement_owner_filter" onchange="renderMeasurements()">
+              <option value="">Все</option>
+              <option value="mine">Мои</option>
+              <option value="others">Чужие</option>
+            </select>
+          </div>
           <div class="fg">
             <label class="fl" for="measurement_status_filter">Статус</label>
             <select class="fselect" id="measurement_status_filter" onchange="renderMeasurements()">
@@ -1963,11 +1972,22 @@ function measurementCardHtml(item){
   );
 }
 
+function isOwnMeasurement(item){
+  const userId = appState.user?.id;
+  if(!userId || !item) return false;
+  return item.remote_manager_id === userId
+    || item.field_manager_id === userId
+    || item.created_by === userId;
+}
+
 function getFilteredMeasurements(){
+  const owner = document.getElementById('measurement_owner_filter')?.value || '';
   const status = document.getElementById('measurement_status_filter')?.value || '';
   const city = document.getElementById('measurement_city_filter')?.value || '';
   const search = (document.getElementById('measurement_search')?.value || '').trim().toLowerCase();
   return (appState.measurements || []).filter((item) => {
+    if(owner === 'mine' && !isOwnMeasurement(item)) return false;
+    if(owner === 'others' && isOwnMeasurement(item)) return false;
     if(status && item.status !== status) return false;
     if(city && item.city !== city) return false;
     if(search){
