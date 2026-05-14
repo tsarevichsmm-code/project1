@@ -5,34 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Заполнение договора и спецификации — Mebel Grand</title>
 <meta name="description" content="Заполнение договора и спецификации Mebel Grand">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/pizzip@3.1.7/dist/pizzip.js"></script>
 <script src="https://unpkg.com/docxtemplater@3.48.0/build/docxtemplater.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg:#F5F3EF;--surface:#FFFFFF;--surface2:#F9F7F4;--surface3:#F0EDE8;
-  --border:rgba(40,35,30,.08);--border2:rgba(40,35,30,.14);
-  --text:#1C1917;--text2:#6B6560;--text3:#A8A29A;
-  --accent:#B45F4D;--accent-bg:#FDF0ED;--accent-text:#8A4536;
-  --green:#1A9E6E;--green-bg:#E4F5EF;--green-text:#0F6847;
-  --amber:#C4913A;--amber-bg:#FEF6E6;--amber-text:#7A5A20;
-  --red:#C44B4B;--red-bg:#FDF0F0;--red-text:#8C2D2D;
-  --purple:#7C6FA8;--purple-bg:#F0EDF7;--purple-text:#4A3F7A;
-  --gold:#B8954A;--gold-bg:#FDF8EC;
-  --r:12px;--rl:16px;--font:'Manrope',sans-serif;--mono:'IBM Plex Mono',monospace;
-  --sw:240px;
+  --bg:#f4f3f0;--surface:#fff;--surface2:#f9f8f6;--surface3:#f1efe9;
+  --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.14);
+  --text:#1a1a18;--text2:#6b6b67;--text3:#a8a8a4;
+  --blue:#2355f5;--blue-bg:#eef1fe;--blue-text:#1a3db8;
+  --green:#1a9e6e;--green-bg:#e4f5ef;--green-text:#0f6847;
+  --amber:#d97706;--amber-bg:#fef3e2;--amber-text:#92520a;
+  --red:#dc2626;--red-bg:#fef2f2;--red-text:#991b1b;
+  --purple:#7c3aed;--purple-bg:#f0effe;--purple-text:#4338ca;
+  --gold:#b45309;--gold-bg:#fef9c3;
+  --r:10px;--rl:14px;--font:'Golos Text',sans-serif;--mono:'JetBrains Mono',monospace;
+  --sw:215px;
 }
 [data-theme=dark]{
-  --bg:#121110;--surface:#1C1B19;--surface2:#242320;--surface3:#2C2B28;
-  --border:rgba(240,235,228,.07);--border2:rgba(240,235,228,.12);
-  --text:#F0EDE8;--text2:#8F8A82;--text3:#5A5650;
-  --accent:#D4846A;--accent-bg:#2A1E1A;--accent-text:#E8A898;
-  --green-bg:#0F2A1F;--green-text:#4FD4A0;
-  --amber-bg:#2A1F0A;--amber-text:#F0D090;
-  --red-bg:#2A1010;--red-text:#F09090;
-  --purple-bg:#1E1A30;--purple-text:#B0A8D8;
-  --gold:#D4A84A;--gold-bg:#2A1F0A;
+  --bg:#111110;--surface:#1c1c1a;--surface2:#242422;--surface3:#2b2b28;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --text:#f0efe9;--text2:#8f8f8a;--text3:#5a5a56;
+  --blue:#4f78ff;--blue-bg:#1a2040;--blue-text:#93aaff;
+  --green-bg:#0f2a1f;--green-text:#4fd4a0;
+  --amber-bg:#2a1f0a;--amber-text:#fbbf65;
+  --red-bg:#2a1010;--red-text:#f87171;
+  --purple-bg:#1e1a40;--purple-text:#a5b4fc;
+  --gold:#d97706;--gold-bg:#2a1f0a;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%;height:auto;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
@@ -46,60 +47,60 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9998;padding:18px}
 .login-box{width:340px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:28px}
 .login-logo{display:flex;align-items:center;gap:10px;margin-bottom:20px}
-.login-title{font-size:18px;font-weight:600;font-family:'Cormorant Garamond',serif;letter-spacing:-.01em}
+.login-title{font-size:18px;font-weight:600}
 .login-error{font-size:12px;color:var(--red-text);background:var(--red-bg);border-radius:8px;padding:8px 10px;margin-bottom:12px;display:none}
 .login-note{font-size:11px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:10px}
 .app-shell{display:flex;min-height:100dvh;overflow:hidden}
 .sidebar{width:var(--sw);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
 .sidebar-head{padding:14px;border-bottom:1px solid var(--border)}
 .sidebar-nav{padding:8px;flex:1}
-.nav-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:10px 10px 4px}
-.nav-item{width:100%;display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--text2);cursor:pointer;font-size:16px;font-weight:500;font-family:'Cormorant Garamond',serif;text-align:left;margin-bottom:2px;transition:all .15s ease}
+.nav-title{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:10px 10px 4px}
+.nav-item{width:100%;display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-family:var(--font);text-align:left;margin-bottom:2px}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:var(--accent-bg);color:var(--accent-text);border-color:rgba(180,95,77,.12)}
+.nav-item.active{background:var(--blue-bg);color:var(--blue-text);border-color:rgba(35,85,245,.12)}
 .sidebar-user{padding:10px 8px;border-top:1px solid var(--border)}
 .user-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px}
-.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent-bg);color:var(--accent-text);font-size:12px;font-weight:600;font-family:var(--mono);flex-shrink:0}
+.avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--blue-bg);color:var(--blue-text);font-size:12px;font-weight:600;font-family:var(--mono);flex-shrink:0}
 .user-meta{flex:1;min-width:0}
 .user-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .user-role{font-size:10px;color:var(--text3)}
 .app-main{flex:1;min-width:0;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
-.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;z-index:100;flex-shrink:0}
-.topbar .menu-btn{display:none}
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;z-index:100;flex-shrink:0}
+.menu-btn{display:none}
 .logo{display:flex;align-items:center;gap:9px}
-.lm{width:28px;height:28px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lm{width:28px;height:28px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .lm svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2}
-.lt{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;letter-spacing:-.01em}
-.lt span{color:var(--accent)}
+.lt{font-size:15px;font-weight:600;letter-spacing:-.02em}
+.lt span{color:var(--blue)}
 .topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 .city-switch{display:flex;align-items:center;gap:4px;padding:3px;background:var(--surface2);border:1px solid var(--border2);border-radius:9px}
 .city-btn{padding:5px 10px;border:none;border-radius:7px;background:transparent;color:var(--text2);cursor:pointer;font-size:12px;font-family:var(--font);font-weight:600;transition:all .12s}
 .city-btn:hover{color:var(--text)}
-.city-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
-.ibtn{width:30px;height:30px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;flex-shrink:0;font-family:var(--font)}
+.city-btn.active{background:var(--blue);color:#fff}
+.ibtn{width:30px;height:30px;border:1px solid var(--border2);border-radius:7px;background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:14px;flex-shrink:0;font-family:var(--font)}
 .ibtn:hover{background:var(--border);color:var(--text)}
-.content{padding:24px 28px 48px;min-height:calc(100dvh - 56px);background:var(--bg);overflow-y:auto}
+.content{padding:18px 16px 48px;min-height:calc(100dvh - 52px);background:var(--bg);overflow-y:auto}
 .view{display:none}
 .view.active{display:block}
 .dash-wrap{max-width:1100px;margin:0 auto 14px}
-.dash-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:14px}
-.stat-card,.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:18px;min-width:0;box-shadow:0 1px 3px rgba(28,25,23,.04),0 4px 12px rgba(28,25,23,.03)}
+.dash-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.stat-card,.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:14px;min-width:0}
 .stat-label{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
-.stat-value{font-size:22px;font-weight:500;font-family:var(--mono)}
+.stat-value{font-size:21px;font-weight:600;font-family:var(--mono)}
 .stat-sub{font-size:11px;color:var(--text2);margin-top:3px;line-height:1.3}
-.panel-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;letter-spacing:-.01em;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.panel-title{font-size:14px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .dashboard-row{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:12px}
 .list{display:grid;gap:8px}
 .deal-row{border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;cursor:pointer}
 .deal-row:hover{border-color:var(--border2);background:var(--surface2)}
-.draft-row{border-style:dashed;background:var(--amber-bg);border-color:rgba(255,204,0,.24)}
-[data-theme=dark] .draft-row{background:var(--amber-bg);border-color:rgba(255,204,0,.24)}
+.draft-row{border-style:dashed;background:#fff8df;border-color:rgba(217,119,6,.24)}
+[data-theme=dark] .draft-row{background:#2a2415;border-color:rgba(251,191,36,.24)}
 .deal-main{min-width:0}
 .deal-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .deal-meta{font-size:11px;color:var(--text2);margin-top:2px}
 .deal-flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
 .deal-flag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:999px;background:var(--surface3);font-size:10px;color:var(--text2)}
-.deal-amount{font-size:13px;font-weight:600;font-family:var(--mono);color:var(--accent)}
+.deal-amount{font-size:13px;font-weight:600;font-family:var(--mono);color:var(--blue)}
 .appointment-row{border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:8px 10px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;cursor:pointer}
 .appointment-row:hover{border-color:var(--border2);background:var(--surface2)}
 .appointment-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -109,7 +110,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .appointment-final{color:var(--green-text)}
 .appointment-comment{color:var(--text3)}
 .status-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:600;background:var(--surface3);color:var(--text2);white-space:nowrap}
-.status-assigned{background:var(--accent-bg);color:var(--accent-text)}
+.status-assigned{background:var(--blue-bg);color:var(--blue-text)}
 .status-completed{background:var(--green-bg);color:var(--green-text)}
 .status-contracted{background:var(--gold-bg);color:var(--gold)}
 .status-rejected{background:var(--red-bg);color:var(--red-text)}
@@ -137,9 +138,9 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .rating-column{display:grid;align-content:start;gap:6px;min-width:0}
 .rating-column .list{align-content:start}
 .rating-column .panel-title{margin-bottom:2px}
-.rank-gold{border-color:rgba(255,170,0,.35);background:var(--gold-bg);color:var(--gold)}
-.rank-purple{border-color:rgba(153,51,255,.28);background:var(--purple-bg);color:var(--purple-text)}
-.publish-box{display:none;max-width:900px;margin:0 auto 14px;background:var(--green-bg);border:1px solid rgba(0,204,102,.25);border-radius:var(--rl);padding:12px 14px;align-items:center;justify-content:space-between;gap:12px}
+.rank-gold{border-color:rgba(180,83,9,.35);background:var(--gold-bg);color:var(--gold)}
+.rank-purple{border-color:rgba(124,58,237,.28);background:var(--purple-bg);color:var(--purple-text)}
+.publish-box{display:none;max-width:900px;margin:0 auto 14px;background:var(--green-bg);border:1px solid rgba(26,158,110,.25);border-radius:var(--rl);padding:12px 14px;align-items:center;justify-content:space-between;gap:12px}
 .publish-box.show{display:flex}
 .publish-text{font-size:13px;color:var(--green-text);font-weight:600}
 .deals-toolbar{max-width:1100px;margin:0 auto 12px;display:flex;gap:8px;align-items:center;justify-content:space-between}
@@ -155,15 +156,15 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .user-card-edit .fg{margin-bottom:0}
 .user-card-actions{display:flex;gap:6px;justify-content:flex-end;align-items:center;grid-column:1/-1}
 .publish-warning{color:var(--red-text);background:var(--red-bg);border-radius:8px;padding:7px 9px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:28px;max-width:900px;margin:0 auto;box-shadow:0 1px 3px rgba(28,25,23,.04),0 4px 12px rgba(28,25,23,.04)}
-.card-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;letter-spacing:-.01em;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;max-width:900px;margin:0 auto}
+.card-title{font-size:16px;font-weight:600;letter-spacing:-.02em;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .card-title-text{display:flex;align-items:center;gap:8px}
 .sec{margin-bottom:18px}
-.sec-label{font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.sec-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
 .fg{margin-bottom:10px}
-.fl{font-size:11px;color:var(--text2);font-weight:600;display:block;margin-bottom:4px;letter-spacing:.08em;text-transform:uppercase}
-.fi,.fselect{width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:4px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;font-family:var(--font);transition:border-color .12s}
-.fi:focus,.fselect:focus{border-color:var(--accent);background:var(--surface2);color:var(--text);box-shadow:0 0 0 3px rgba(180,95,77,.12)}
+.fl{font-size:11px;color:var(--text2);font-weight:500;display:block;margin-bottom:4px;letter-spacing:.02em;text-transform:uppercase}
+.fi,.fselect{width:100%;padding:8px 11px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;font-family:var(--font);transition:border-color .12s}
+.fi:focus,.fselect:focus{border-color:var(--blue);background:var(--surface2);color:var(--text)}
 .fi:-webkit-autofill,
 .fi:-webkit-autofill:hover,
 .fi:-webkit-autofill:focus,
@@ -175,32 +176,32 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   transition:background-color 9999s ease-out 0s;
 }
 .fi[readonly]{opacity:.8;cursor:not-allowed;border-style:dashed}
-.fi-auto{background:var(--accent-bg);color:var(--accent-text);border-color:rgba(0,102,255,.18)}
+.fi-auto{background:var(--blue-bg);color:var(--blue-text);border-color:rgba(35,85,245,.2)}
 .fi-error{border-color:var(--red)!important;background:var(--red-bg)!important;color:var(--red-text)!important}
 .fi-ok{border-color:var(--green)!important;background:var(--green-bg)!important;color:var(--green-text)!important}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid3{display:grid;grid-template-columns:1.3fr .7fr .8fr;gap:10px}
 .tpl-block,.info-block,.summary-block{background:var(--surface2);border:1px dashed var(--border2);border-radius:8px;padding:12px}
 .tpl-info{font-size:12px;color:var(--text2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.tpl-name{font-size:12px;font-weight:500;color:var(--accent-text);margin-top:5px;display:none;word-break:break-all}
+.tpl-name{font-size:12px;font-weight:500;color:var(--blue-text);margin-top:5px;display:none;word-break:break-all}
 .tpl-btns{display:flex;gap:8px;flex-wrap:wrap}
-.btn{padding:7px 14px;border:1px solid var(--border2);border-radius:10px;background:var(--surface);color:var(--text);cursor:pointer;font-size:13px;font-family:var(--font);font-weight:500;transition:all .12s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn{padding:7px 14px;border:1px solid var(--border2);border-radius:8px;background:var(--surface);color:var(--text);cursor:pointer;font-size:13px;font-family:var(--font);font-weight:500;transition:all .12s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
 .btn:hover{background:var(--surface2)}
 .btn:active{transform:scale(.98)}
-.btn-p{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}
-.btn-p:hover{background:#9A4F3F;border-color:#9A4F3F}
-.btn-g{background:var(--green);color:#fff;border-color:var(--green);font-weight:600}
+.btn-p{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn-p:hover{background:#1a44dd;border-color:#1a44dd}
+.btn-g{background:var(--green);color:#fff;border-color:var(--green)}
 .btn-g:hover{background:#13875d;border-color:#13875d}
 .btn-d{color:var(--red-text);border-color:currentColor}
 .btn-d:hover{background:var(--red-bg)}
-.btn-s{padding:5px 11px;font-size:12px;border-radius:8px}
+.btn-s{padding:5px 11px;font-size:12px;border-radius:7px}
 .btn-gen{width:100%;padding:12px;font-size:14px;font-weight:600;justify-content:center;border-radius:var(--r);margin-top:16px}
-.auto-badge{font-size:9px;background:var(--accent-bg);color:var(--accent-text);border-radius:20px;padding:1px 6px;font-weight:600;letter-spacing:.03em;margin-left:4px;vertical-align:middle}
+.auto-badge{font-size:9px;background:var(--blue-bg);color:var(--blue-text);border-radius:20px;padding:1px 6px;font-weight:600;letter-spacing:.03em;margin-left:4px;vertical-align:middle}
 .detail{border:1px solid var(--border);border-radius:10px;background:var(--surface2);overflow:hidden}
-.detail-green{background:var(--green-bg);border-color:rgba(0,204,102,.25)}
-.detail-green summary{background:rgba(0,204,102,.08)}
-.detail-amber{background:var(--amber-bg);border-color:rgba(255,204,0,.22)}
-.detail-amber summary{background:rgba(255,204,0,.08)}
+.detail-green{background:var(--green-bg);border-color:rgba(26,158,110,.25)}
+.detail-green summary{background:rgba(26,158,110,.08)}
+.detail-amber{background:var(--amber-bg);border-color:rgba(217,119,6,.22)}
+.detail-amber summary{background:rgba(217,119,6,.08)}
 .stack-detail{margin-bottom:3px}
 .stack-sec{margin-bottom:3px}
 .detail + .detail{margin-top:10px}
@@ -219,9 +220,9 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .spec-main .fi,.spec-main .fselect{font-size:12px;padding:8px 10px}
 .spec-item .btn-d{color:var(--text2);border-color:var(--border2);background:var(--surface)}
 .spec-item .btn-d:hover{background:var(--surface2);color:var(--text)}
-.file-picker{display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:4px 8px;border:1px solid var(--border2);border-radius:4px;background:var(--surface2)}
+.file-picker{display:flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:4px 8px;border:1px solid var(--border2);border-radius:8px;background:var(--surface2)}
 .file-picker-input{display:none}
-.file-picker-btn{padding:4px 8px;border:1px solid var(--border2);border-radius:4px;background:var(--surface);color:var(--text);cursor:pointer;font-size:10px;font-weight:500;line-height:1.15;white-space:nowrap}
+.file-picker-btn{padding:4px 8px;border:1px solid var(--border2);border-radius:7px;background:var(--surface);color:var(--text);cursor:pointer;font-size:10px;font-weight:500;line-height:1.15;white-space:nowrap}
 .file-picker-btn:hover{background:var(--surface3)}
 .file-picker-btn.remove{border-color:var(--border2);color:var(--text2)}
 .file-picker-btn.remove:hover{background:var(--surface3);color:var(--text)}
@@ -232,15 +233,15 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--amber-text);background:var(--amber-bg);border-radius:999px;padding:4px 8px}
 .muted-link{font-size:12px;color:var(--text2)}
 .tco{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
-.to{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:10px 16px;font-size:13px;font-weight:500;animation:tin .2s ease;max-width:340px;box-shadow:0 4px 16px rgba(28,25,23,.08)}
-.to.s{border-left:3px solid var(--green);box-shadow:0 0 8px rgba(0,204,102,.3)}
-.to.e{border-left:3px solid var(--red);box-shadow:0 0 8px rgba(255,51,102,.3)}
-.to.i{border-left:3px solid var(--accent)}
+.to{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:10px 16px;font-size:13px;font-weight:500;animation:tin .2s ease;max-width:340px}
+.to.s{border-left:3px solid var(--green)}
+.to.e{border-left:3px solid var(--red)}
+.to.i{border-left:3px solid var(--blue)}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:800;display:none;align-items:center;justify-content:center;padding:18px}
 .modal-overlay.open{display:flex}
-.modal{width:min(620px,100%);max-height:92dvh;overflow:auto;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:24px;box-shadow:0 8px 32px rgba(28,25,23,.12)}
+.modal{width:min(620px,100%);max-height:92dvh;overflow:auto;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:18px}
 .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
-.modal-title{font-size:18px;font-weight:600;font-family:'Cormorant Garamond',serif;letter-spacing:-.01em}
+.modal-title{font-size:16px;font-weight:600}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
 .mobile-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:700;display:none}
 .mobile-backdrop.open{display:block}
@@ -255,7 +256,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:701;transform:translateX(-100%);transition:transform .2s ease}
   .sidebar.open{transform:translateX(0)}
   .app-main{height:100dvh}
-  .topbar .menu-btn{display:flex}
+  .menu-btn{display:flex}
   .dash-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .stat-card{padding:9px 10px}
   .stat-label{font-size:9px;margin-bottom:3px}
@@ -321,8 +322,8 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .podpislon-welcome{padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-align:center;color:var(--text3);font-size:13px}
 .podpislon-city-switch{display:flex;gap:10px;margin-bottom:14px;justify-content:center}
 .podpislon-city-btn{padding:14px 32px;border:2px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text2);cursor:pointer;font-size:16px;font-weight:700;transition:all .12s;min-width:120px;text-align:center}
-.podpislon-city-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--accent)}
-.podpislon-city-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.podpislon-city-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--blue)}
+.podpislon-city-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 .btn-send-podpislon{display:none;gap:6px;align-items:center;margin-top:8px}
 .btn-send-podpislon.visible{display:inline-flex}
 </style>
@@ -332,7 +333,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   <form class="login-box" id="login_form">
     <div class="login-logo">
       <div class="lm"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><path d="M9 12h6M12 9v6"/></svg></div>
-      <div class="login-title">Mebel <span style="color:var(--accent)">Grand</span></div>
+      <div class="login-title">Mebel <span style="color:var(--blue)">Grand</span></div>
     </div>
     <div class="login-error" id="login_error"></div>
     <div class="fg">
@@ -359,12 +360,12 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
   </div>
   <nav class="sidebar-nav">
     <div class="nav-title">Меню</div>
-    <button class="nav-item" type="button" data-view="dashboard" onclick="setView('dashboard')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Дашборд</button>
-    <button class="nav-item active" type="button" data-view="contract" onclick="setView('contract')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Договор</button>
-    <button class="nav-item" type="button" data-view="deals" onclick="setView('deals')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Сделки</button>
-    <button class="nav-item" type="button" data-view="measurements" onclick="setView('measurements')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Запись на замер <span class="nav-badge" id="measurement_badge">0</span></button>
-    <button class="nav-item" type="button" data-view="users" id="nav_users" onclick="setView('users')" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Пользователи</button>
-    <button class="nav-item" type="button" data-view="podpislon" onclick="setView('podpislon')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Подпислон</button>
+    <button class="nav-item active" type="button" data-view="contract" onclick="setView('contract')">Договор</button>
+    <button class="nav-item" type="button" data-view="dashboard" onclick="setView('dashboard')">Дашборд</button>
+    <button class="nav-item" type="button" data-view="deals" onclick="setView('deals')">Сделки</button>
+    <button class="nav-item" type="button" data-view="measurements" onclick="setView('measurements')">Запись на замер <span class="nav-badge" id="measurement_badge">0</span></button>
+    <button class="nav-item" type="button" data-view="users" id="nav_users" onclick="setView('users')" style="display:none">Пользователи</button>
+    <button class="nav-item" type="button" data-view="podpislon" onclick="setView('podpislon')">Подпислон</button>
   </nav>
   <div class="sidebar-user">
     <div class="user-row">
@@ -742,48 +743,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           </div>
         </div>
       </div>
-      <details class="panel deals-spoiler">
-        <summary class="panel-title">📖 Инструкция по замерам</summary>
-        <div style="padding:0 14px 14px">
-          <div class="hint" style="margin-bottom:12px;font-weight:600;color:var(--text)">Как работать с вкладкой «Запись на замер»</div>
-
-          <div class="sec-label" style="margin-top:10px">Для удалённого менеджера</div>
-          <div class="hint" style="margin-bottom:10px">
-            1. Нажмите <b>«Новая запись»</b> и заполните данные клиента: адрес, телефон, дата и время замера.<br>
-            2. Выберите <b>выездного дизайнера</b> из списка по городу.<br>
-            3. В поле <b>«Изделие и сумма»</b> кратко опишите что планируется (кухня, шкаф и т.д.).<br>
-            4. В поле <b>«Комментарий»</b> укажите особенности: домофон, этаж, пожелания клиента.<br>
-            5. <b>Галочка «Напомнить менеджеру»</b> — если нужно дополнительное напоминание в Telegram в конкретное время (кроме автоматических за 24ч и 4ч).<br>
-            6. После замера измените статус на <b>«Проведён»</b> — выездному придёт кнопка «Написать отчёт».<br>
-            7. Если клиент оформился — переведите в <b>«Оформлен»</b>, укажите номер договора и итоговую сумму.
-          </div>
-
-          <div class="sec-label" style="margin-top:10px">Для выездного дизайнера</div>
-          <div class="hint" style="margin-bottom:10px">
-            1. После назначения замера вы получите сообщение в <b>Telegram</b> с данными клиента и кнопкой <b>«Написать отчёт»</b> (появляется в статусах «Проведён» и «Оформлен»).<br>
-            2. Также придут автоматические напоминания: за <b>24 часа</b> и за <b>4 часа</b> до замера (не ночью, сдвигаются на 7:00).<br>
-            3. Нажмите <b>«Написать отчёт»</b> и отправьте текст в ответ — он сохранится в CRM.<br>
-            4. Если не знаете что писать — нажмите <b>«Справка о чём писать»</b> (кнопка под отчётом).<br>
-            5. Все отчёты можно посмотреть в CRM на вкладке <b>«Замеры»</b> — откройте карточку замера, блок «Отчёт выездного».<br>
-            6. Если замер переносится — удалённый менеджер изменит дату, вы получите новое уведомление.
-          </div>
-
-          <div class="sec-label" style="margin-top:10px">Статусы замера</div>
-          <div class="hint" style="margin-bottom:10px">
-            <b>Назначен</b> — замер запланирован, выездной уведомлён.<br>
-            <b>Проведён</b> — замер состоялся, ждём отчёт.<br>
-            <b>Оформлен</b> — клиент заключил договор.<br>
-            <b>Отказ</b> — клиент отказался.<br>
-            <b>Перенос</b> — замер перенесён на другую дату.
-          </div>
-
-          <div class="sec-label" style="margin-top:10px">Фильтры и поиск</div>
-          <div class="hint">
-            Используйте фильтры сверху: <b>«Мои»</b> — покажет только ваши замеры, <b>«Статус»</b> — отфильтрует по этапу, <b>«Город»</b> — по городу, <b>«Поиск»</b> — найдёт по договору, телефону или адресу.
-          </div>
-        </div>
-      </details>
-
       <div class="list" id="measurements_list"></div>
       <details class="panel deals-spoiler" id="measurement_settings_panel" style="display:none">
         <summary class="panel-title">Интеграции</summary>
@@ -1114,11 +1073,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <label class="fl" for="measurement_comment">Комментарий</label>
       <textarea class="fi" id="measurement_comment" rows="3" style="resize:vertical;min-height:74px"></textarea>
     </div>
-    <!-- ✅ ИСПРАВЛЕНИЕ: отображение и редактирование отчёта выездного -->
-    <div class="fg" id="measurement_field_report_group" style="display:none">
-      <label class="fl" for="measurement_field_report">Отчёт выездного (из Telegram)</label>
-      <textarea class="fi" id="measurement_field_report" rows="4" style="resize:vertical;min-height:74px;background:var(--accent-bg);color:var(--accent-text);border-color:rgba(180,95,77,.12)"></textarea>
-    </div>
     <details class="deals-spoiler" open style="border:1px solid var(--border);border-radius:10px;margin-top:8px">
       <summary class="panel-title">Напоминания</summary>
       <div style="padding:0 12px 12px">
@@ -1138,7 +1092,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
             <input class="fi" id="measurement_client_remind_at" type="datetime-local">
           </div>
         </div>
-        <div class="hint">Можете выставить напоминание для выездного. Не забудьте поставить галочку 👆</div>
+        <div class="hint">По умолчанию дата ставится за один день до замера, но сохранится только если включить галочку.</div>
       </div>
     </details>
     <div class="hint" id="measurement_integration_hint"></div>
@@ -1766,11 +1720,8 @@ function renderDeals(){
   const otherDealsHtml = otherDeals.length
     ? otherDeals.map(dealCardHtml).join('')
     : '<div class="hint">Других опубликованных сделок пока нет.</div>';
-  const myDraftsPanel = myDrafts.length
-    ? '<div class="panel"><div class="panel-title">✏️ Мои черновики</div><div class="list">' + myDraftsHtml + '</div></div>'
-    : '';
   list.innerHTML =
-    myDraftsPanel +
+    '<div class="panel"><div class="panel-title">✏️ Мои черновики</div><div class="list">' + myDraftsHtml + '</div></div>' +
     '<div class="panel"><div class="panel-title">Мои опубликованные сделки</div><div class="list">' + myDealsHtml + '</div></div>' +
     (canSeeOthers ? '<details class="panel deals-spoiler"><summary class="panel-title">Остальные опубликованные сделки</summary><div class="list">' + otherDealsHtml + '</div></details>' : '') +
     (isAdmin() ? '<details class="panel deals-spoiler"><summary class="panel-title">Чужие черновики</summary><div class="list">' + otherDraftsHtml + '</div></details>' : '');
@@ -2002,10 +1953,6 @@ function measurementCardHtml(item){
   const commentHtml = item.comment
     ? '<div class="appointment-meta appointment-line appointment-comment">Комментарий: ' + escapeHtml(item.comment) + '</div>'
     : '';
-  // ✅ ИСПРАВЛЕНИЕ: отображаем отчёт выездного если есть
-  const fieldReportHtml = item.field_report
-    ? '<div class="appointment-meta appointment-line" style="color:var(--accent);font-weight:600;margin-top:4px;">📝 Отчёт: ' + escapeHtml(item.field_report.split('\n').pop().replace(/^\[Отчёт [\d\.\,\:]+\]:\s*/, '').substring(0, 80)) + (item.field_report.length > 80 ? '...' : '') + '</div>'
-    : '';
   return (
     '<div class="appointment-row" onclick="openMeasurementModal(\'' + item.id + '\')">' +
       '<div>' +
@@ -2015,7 +1962,6 @@ function measurementCardHtml(item){
         productHtml +
         commentHtml +
         contractHtml +
-        fieldReportHtml +
       '</div>' +
       '<div class="appointment-side">' +
         status +
@@ -2136,7 +2082,7 @@ function openMeasurementModal(id){
   document.getElementById('measurement_city').value = defaultCity;
   document.getElementById('measurement_appointment_at').value = toDateTimeLocalValue(item?.appointment_at);
   document.getElementById('measurement_appointment_at').onchange = syncMeasurementDefaultReminders;
-  document.getElementById('measurement_manager_remind_enabled').checked = item ? Boolean(item.manager_remind_at) : false;
+  document.getElementById('measurement_manager_remind_enabled').checked = item ? Boolean(item.manager_remind_at) : true;
   document.getElementById('measurement_client_remind_enabled').checked = Boolean(item?.client_remind_at);
   document.getElementById('measurement_manager_remind_at').value = item?.manager_remind_at ? toDateTimeLocalValue(item.manager_remind_at) : defaultReminderLocalValue(document.getElementById('measurement_appointment_at').value);
   document.getElementById('measurement_client_remind_at').value = item?.client_remind_at ? toDateTimeLocalValue(item.client_remind_at) : defaultReminderLocalValue(document.getElementById('measurement_appointment_at').value);
@@ -2159,18 +2105,8 @@ function openMeasurementModal(id){
   document.getElementById('measurement_product_summary').value = item?.product_summary || '';
   document.getElementById('measurement_final_amount').value = item?.final_amount || '';
   document.getElementById('measurement_comment').value = item?.comment || '';
-  // ✅ ИСПРАВЛЕНИЕ: отображаем и позволяем редактировать отчёт выездного
-  const fieldReportGroup = document.getElementById('measurement_field_report_group');
-  const fieldReportInput = document.getElementById('measurement_field_report');
-  if(item?.field_report){
-    fieldReportGroup.style.display = 'block';
-    fieldReportInput.value = item.field_report;
-  } else {
-    fieldReportGroup.style.display = 'none';
-    fieldReportInput.value = '';
-  }
   document.getElementById('measurement_integration_hint').textContent = item
-    ? ''
+    ? 'Google: ' + (item.google_status || 'not_sent') + ' · Telegram: ' + (item.telegram_status || 'not_sent') + ' · SMS: ' + (item.sms_status || 'not_sent')
     : 'После сохранения выездному менеджеру появится внутреннее уведомление.';
   document.getElementById('measurement_save_btn').style.display = !item || canEditMeasurement(item) ? 'inline-flex' : 'none';
   document.getElementById('measurement_delete_btn').style.display = item && canDeleteMeasurement() ? 'inline-flex' : 'none';
@@ -2229,7 +2165,6 @@ function buildMeasurementPayload(){
     estimated_amount: estimatedAmount,
     final_amount: finalAmount,
     comment: document.getElementById('measurement_comment').value.trim() || null,
-    field_report: document.getElementById('measurement_field_report').value.trim() || null,
     updated_by: appState.user.id
   };
 }
