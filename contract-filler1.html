@@ -2282,16 +2282,16 @@ async function syncMeasurementToGoogle(appointment, action){
   const webhookUrl = appState.appSettings.measurement_integrations?.googleWebhookUrl;
   if(!webhookUrl || !appointment?.id) return 'not_sent';
   const googlePayload = buildGoogleMeasurementPayload(appointment, action);
-  const formData = new FormData();
+  const params = new URLSearchParams();
   Object.entries(googlePayload).forEach(([key, value]) => {
-    formData.append(key, value == null ? '' : String(value));
+    params.append(key, value == null ? '' : String(value));
   });
   try{
     await sb.from('measurement_appointments').update({google_status: 'pending'}).eq('id', appointment.id);
     await fetch(webhookUrl, {
       method: 'POST',
       mode: 'no-cors',
-      body: formData
+      body: params
     });
     await sb.from('measurement_appointments').update({google_status: 'sent'}).eq('id', appointment.id);
     await sb.from('notification_deliveries').insert({
