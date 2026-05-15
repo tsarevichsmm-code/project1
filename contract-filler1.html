@@ -2290,7 +2290,6 @@ async function syncMeasurementToGoogle(appointment, action){
     await sb.from('measurement_appointments').update({google_status: 'pending'}).eq('id', appointment.id);
     await fetch(webhookUrl, {
       method: 'POST',
-      mode: 'no-cors',
       body: params
     });
     await sb.from('measurement_appointments').update({google_status: 'sent'}).eq('id', appointment.id);
