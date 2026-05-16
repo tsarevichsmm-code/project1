@@ -548,7 +548,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <div class="sec-label">Шаблоны</div>
       <div class="grid2">
         <div class="tpl-block">
-          <div class="tpl-info">📄 <span id="contract_tpl_label">Шаблон договора из папки проекта - Договор mebel_grand СПБ.docx</span></div>
+          <div class="tpl-info">📄 <span id="contract_tpl_label">Шаблон договора из папки documents - Договор mebel_grand СПБ.docx</span></div>
           <div class="tpl-name" id="contract_tpl_name"></div>
           <div class="tpl-btns">
             <!-- <button class="btn btn-s" type="button" onclick="document.getElementById('contract_tpl_file').click()">📎 Загрузить свой .docx</button> -->
@@ -557,7 +557,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           <input type="file" id="contract_tpl_file" accept=".docx" style="display:none">
         </div>
         <div class="tpl-block">
-          <div class="tpl-info">📄 <span id="spec_tpl_label">Шаблон справки из папки проекта - Спецификая_Мебель_Гранд СПБ.docx</span></div>
+          <div class="tpl-info">📄 <span id="spec_tpl_label">Шаблон справки из папки documents - Спецификая_Мебель_Гранд СПБ.docx</span></div>
           <div class="tpl-name" id="spec_tpl_name"></div>
           <div class="tpl-btns">
             <!-- <button class="btn btn-s" type="button" onclick="document.getElementById('spec_tpl_file').click()">📎 Загрузить свой .docx</button> -->
@@ -566,7 +566,7 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
           <input type="file" id="spec_tpl_file" accept=".docx" style="display:none">
         </div>
         <div class="tpl-block">
-          <div class="tpl-info">📄 <span id="act_tpl_label">Шаблон акта из папки проекта - Акт доставки СПБ.docx</span></div>
+          <div class="tpl-info">📄 <span id="act_tpl_label">Шаблон акта из папки documents - Акт доставки СПБ.docx</span></div>
           <div class="tpl-name" id="act_tpl_name"></div>
           <div class="tpl-btns">
             <!-- <button class="btn btn-s" type="button" onclick="document.getElementById('act_tpl_file').click()">📎 Загрузить свой .docx</button> -->
@@ -1179,21 +1179,21 @@ const appState = {
 const CITY_TEMPLATES = {
   spb: {
     code: 'СПБ',
-    contractPath: './Договор mebel_grand СПБ.docx',
-    specPath: './Спецификая_Мебель_Гранд СПБ.docx',
-    actPath: './Акт доставки СПБ.docx'
+    contractPath: './documents/Договор mebel_grand СПБ.docx',
+    specPath: './documents/Спецификая_Мебель_Гранд СПБ.docx',
+    actPath: './documents/Акт доставки СПБ.docx'
   },
   ekb: {
     code: 'ЕКБ',
-    contractPath: './Договор mebel_grand ЕКБ.docx',
-    specPath: './Спецификая_Мебель_Гранд ЕКБ.docx',
-    actPath: './Акт доставки ЕКБ.docx'
+    contractPath: './documents/Договор mebel_grand ЕКБ.docx',
+    specPath: './documents/Спецификая_Мебель_Гранд ЕКБ.docx',
+    actPath: './documents/Акт доставки ЕКБ.docx'
   },
   msk: {
     code: 'МСК',
-    contractPath: './Договор mebel_grand МСК.docx',
-    specPath: './Спецификая_Мебель_Гранд МСК.docx',
-    actPath: './Акт доставки МСК.docx'
+    contractPath: './documents/Договор mebel_grand МСК.docx',
+    specPath: './documents/Спецификая_Мебель_Гранд МСК.docx',
+    actPath: './documents/Акт доставки МСК.docx'
   }
 };
 const SPEC_ITEM_COUNT = 10;
@@ -1248,17 +1248,17 @@ function getCurrentTemplates(){
 
 function getDefaultContractLabel(){
   const templates = getCurrentTemplates();
-  return 'Шаблон договора из папки проекта - Договор mebel_grand ' + templates.code + '.docx';
+  return 'Шаблон договора из папки documents - Договор mebel_grand ' + templates.code + '.docx';
 }
 
 function getDefaultSpecLabel(){
   const templates = getCurrentTemplates();
-  return 'Шаблон справки из папки проекта - Спецификая_Мебель_Гранд ' + templates.code + '.docx';
+  return 'Шаблон справки из папки documents - Спецификая_Мебель_Гранд ' + templates.code + '.docx';
 }
 
 function getDefaultActLabel(){
   const templates = getCurrentTemplates();
-  return 'Шаблон акта из папки проекта - Акт доставки ' + templates.code + '.docx';
+  return 'Шаблон акта из папки documents - Акт доставки ' + templates.code + '.docx';
 }
 
 function syncCityUI(){
