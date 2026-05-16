@@ -325,11 +325,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .podpislon-city-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .btn-send-podpislon{display:none;gap:6px;align-items:center;margin-top:8px}
 .btn-send-podpislon.visible{display:inline-flex}
-.login-loading-overlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-.login-loading-overlay.show{display:flex}
-.login-spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:loginSpin .7s linear infinite}
-@keyframes loginSpin{to{transform:rotate(360deg)}}
-.login-loading-text{font-size:14px;color:var(--text2);font-weight:500}
 </style>
 </head>
 <body>
@@ -351,11 +346,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
     <button class="btn btn-p btn-gen" id="login_btn" type="submit" style="margin-top:4px">Войти</button>
     <div class="login-note">Доступ управляется через Supabase Auth. Роль и тип менеджера подтягиваются из `profiles`.</div>
   </form>
-</div>
-
-<div class="login-loading-overlay" id="login_loading">
-  <div class="login-spinner"></div>
-  <div class="login-loading-text">Вход в систему...</div>
 </div>
 
 <div class="mobile-backdrop" id="mobile_backdrop" onclick="closeMobileMenu()"></div>
@@ -1538,13 +1528,10 @@ async function ensureProfile(user){
 }
 
 async function loadSession(){
-  const loading = document.getElementById('login_loading');
-  if(loading) loading.classList.add('show');
   const {data, error} = await sb.auth.getSession();
   if(error) throw error;
   if(!data.session){
     document.body.classList.remove('authed');
-    if(loading) loading.classList.remove('show');
     return;
   }
   appState.user = data.session.user;
@@ -1554,7 +1541,6 @@ async function loadSession(){
   applyProfileCityPreference();
   await loadAppData();
   updatePodpislonBtn();
-  if(loading) loading.classList.remove('show');
 }
 
 function syncUserUI(){
@@ -2889,10 +2875,8 @@ function bindAuthForm(){
     event.preventDefault();
     const btn = document.getElementById('login_btn');
     const errorBox = document.getElementById('login_error');
-    const loading = document.getElementById('login_loading');
     errorBox.style.display = 'none';
     btn.disabled = true;
-    loading.classList.add('show');
     try{
       const login = document.getElementById('login_email').value.trim().toLowerCase();
       const password = document.getElementById('login_password').value;
@@ -2923,7 +2907,6 @@ function bindAuthForm(){
       console.error(error);
       showLoginError(error.message);
     }finally{
-      loading.classList.remove('show');
       btn.disabled = false;
     }
   });
