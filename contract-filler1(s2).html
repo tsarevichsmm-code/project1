@@ -330,7 +330,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
 .login-spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:loginSpin .7s linear infinite}
 @keyframes loginSpin{to{transform:rotate(360deg)}}
 .login-loading-text{font-size:14px;color:var(--text2);font-weight:500}
-.download-alternatives summary::-webkit-details-marker{display:none}
 </style>
 </head>
 <body>
@@ -679,14 +678,6 @@ body.authed > .topbar,body.authed > .content{margin-left:var(--sw)}
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v9M4 7l4 4 4-4M2 14h12"/></svg>
       Скачать договор, спецификацию и акт
     </button>
-    <details class="download-alternatives" id="download_alternatives" style="display:none;margin-top:10px">
-      <summary style="cursor:pointer;font-size:12px;color:var(--text2);padding:8px 10px;background:var(--surface2);border-radius:6px">📥 Если не скачиваются сразу 3 файла — скачайте по одному здесь</summary>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-        <button class="btn btn-s" type="button" onclick="downloadContractOnly()">📄 Договор</button>
-        <button class="btn btn-s" type="button" onclick="downloadSpecOnly()">📋 Спецификация</button>
-        <button class="btn btn-s" type="button" onclick="downloadActOnly()">📦 Акт</button>
-      </div>
-    </details>
     <button class="btn btn-send-podpislon" id="btn_send_podpislon" type="button" onclick="sendToPodpislon()">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 8h12M10 4l4 4-4 4"/></svg>
       Отправить в Подпислон
@@ -3684,7 +3675,6 @@ function validateBeforeGenerate(){
 async function generateAllDocuments(){
   const btn = document.getElementById('btn_gen');
   const previousHtml = btn.innerHTML;
-  const alternatives = document.getElementById('download_alternatives');
   btn.disabled = true;
   btn.textContent = '⏳ Генерирую документы...';
   try{
@@ -3694,10 +3684,8 @@ async function generateAllDocuments(){
     const specResult = await generateSpecDocument(contractData);
     const actResult = await generateActDocument(contractData);
     blobToDownload(contractResult.blob, contractResult.fileName);
-    setTimeout(() => blobToDownload(specResult.blob, specResult.fileName), 1000);
-    setTimeout(() => blobToDownload(actResult.blob, actResult.fileName), 2000);
-    alternatives.style.display = 'block';
-    alternatives.open = true;
+    setTimeout(() => blobToDownload(specResult.blob, specResult.fileName), 200);
+    setTimeout(() => blobToDownload(actResult.blob, actResult.fileName), 400);
     if(appState.user){
       appState.lastDownloadedDeal = await saveDraft(buildDownloadedDeal());
       updatePodpislonBtn();
@@ -3711,63 +3699,6 @@ async function generateAllDocuments(){
   }finally{
     btn.disabled = false;
     btn.innerHTML = previousHtml;
-  }
-}
-
-async function downloadContractOnly(){
-  const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = '⏳...';
-  try{
-    validateBeforeGenerate();
-    const contractData = getContractRenderData();
-    const result = await generateContractDocument(contractData);
-    blobToDownload(result.blob, result.fileName);
-    toast('Договор скачан', 's');
-  }catch(error){
-    console.error(error);
-    toast('Ошибка: ' + error.message, 'e');
-  }finally{
-    btn.disabled = false;
-    btn.textContent = '📄 Договор';
-  }
-}
-
-async function downloadSpecOnly(){
-  const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = '⏳...';
-  try{
-    validateBeforeGenerate();
-    const contractData = getContractRenderData();
-    const result = await generateSpecDocument(contractData);
-    blobToDownload(result.blob, result.fileName);
-    toast('Спецификация скачана', 's');
-  }catch(error){
-    console.error(error);
-    toast('Ошибка: ' + error.message, 'e');
-  }finally{
-    btn.disabled = false;
-    btn.textContent = '📋 Спецификация';
-  }
-}
-
-async function downloadActOnly(){
-  const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = '⏳...';
-  try{
-    validateBeforeGenerate();
-    const contractData = getContractRenderData();
-    const result = await generateActDocument(contractData);
-    blobToDownload(result.blob, result.fileName);
-    toast('Акт скачан', 's');
-  }catch(error){
-    console.error(error);
-    toast('Ошибка: ' + error.message, 'e');
-  }finally{
-    btn.disabled = false;
-    btn.textContent = '📦 Акт';
   }
 }
 
